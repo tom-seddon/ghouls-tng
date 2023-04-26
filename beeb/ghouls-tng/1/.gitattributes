@@ -1,0 +1,5 @@
+* -text
+$.GHOULS diff=bbcbasic
+$.GHOULS1 diff=bbcbasic
+$.GLOADER diff=bbcbasic
+$.LOAD diff=bbcbasic

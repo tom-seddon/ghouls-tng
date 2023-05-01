@@ -7,7 +7,6 @@ $(error TODO - will put the binaries in the repo)
 else
 PYTHON:=/usr/bin/python3
 TASS:=64tass
-BASICTOOL:=basictool
 endif
 
 ##########################################################################
@@ -43,14 +42,23 @@ BEEB_OUTPUT:=$(BEEB_VOLUME)/y
 # Name of final .ssd to produce
 SSD_OUTPUT:=ghouls-tng.ssd
 
+ifeq ($(OS),Windows_NT)
+else
+BASICTOOL:=$(shell $(SHELLCMD) realpath submodules/basictool/basictool)
+endif
+
 ##########################################################################
 ##########################################################################
 
 .PHONY:build
 build: _output_folders
 
+ifneq ($(OS),Windows_NT)
+	$(_V)cd submodules/basictool/src && make all
+endif
+
 # Create GBAS
-	$(_V)$(BASICTOOL) --tokenise --basic-2 src/ghouls.bas $(BEEB_OUTPUT)/$$.GBAS
+	$(_V)$(BASICTOOL) --tokenise --basic-2 --output-binary src/ghouls.bas $(BEEB_OUTPUT)/$$.GBAS
 
 # Convert !BOOT
 	$(_V)$(SHELLCMD) copy-file src/boot.txt $(BEEB_OUTPUT)/$$.!BOOT

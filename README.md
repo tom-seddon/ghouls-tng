@@ -10,16 +10,18 @@ Play the original in your browser: http://bbcmicro.co.uk/game.php?id=2506
 
 ### Windows
 
-Not supported... yet!
+- Python 3.x
+
+Additional dependencies are provided as EXEs in the repo.
 
 ### POSIX-type
 
-- GNU Make
-- Python 3.x
-- [64tass](https://sourceforge.net/projects/tass64/)
-
-All are assumed to be on PATH under their default names, but this can
-be overridden. Consult the Makefile.
+- GNU Make (`make`)
+- Python 3.x (`/usr/bin/python3`)
+- [64tass](https://sourceforge.net/projects/tass64/) (`64tass`)
+- Working C compiler
+  ([basictool](https://github.com/ZornsLemma/basictool) is compiled
+  automatically as part of the build)
 
 ## Clone the repo
 
@@ -35,7 +37,8 @@ the following from inside the working copy:
 
 # Build
 
-Run GNU Make from the working copy.
+Run `make` in the working copy. (A `make.bat` is supplied for Windows,
+which will run the supplied copy of GNU Make.)
 
 The output is a .ssd file, `ghouls-tng.ssd`, suitable for use with an
 emulator.

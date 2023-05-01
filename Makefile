@@ -3,7 +3,6 @@
 
 ifeq ($(OS),Windows_NT)
 PYTHON:=py -3
-$(error TODO - will put the binaries in the repo)
 else
 PYTHON:=/usr/bin/python3
 TASS:=64tass
@@ -43,6 +42,8 @@ BEEB_OUTPUT:=$(BEEB_VOLUME)/y
 SSD_OUTPUT:=ghouls-tng.ssd
 
 ifeq ($(OS),Windows_NT)
+TASS:=$(shell $(SHELLCMD) realpath bin/64tass.exe)
+BASICTOOL:=$(shell $(SHELLCMD) realpath bin/basictool.exe)
 else
 BASICTOOL:=$(shell $(SHELLCMD) realpath submodules/basictool/basictool)
 endif

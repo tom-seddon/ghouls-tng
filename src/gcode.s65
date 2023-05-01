@@ -1,0 +1,60 @@
+                .include "../submodules/beeb/include/beeb.s65"
+
+zaddr=$70
+                
+*=$380
+
+; Little routine to clear the keyboard buffer. Original Ghouls just
+; did *FX15, but on the Master it steps on enough OS workspace that *
+; commands don't work any more.
+; 
+; This carefully reproduces the original GCODE, but there's room for
+; improvement:
+;
+; 1. No need to save the registers, as BASIC doesn't care
+;
+; 2. Can just do sta $3e0,x or similar, surely?
+;
+; 3. plp:pla is _not_ how you do it...
+;
+; 4. could surely just do this from BASIC anyway with
+; A%=0:X%=0:Y%=0:CALL&FFF4? - though perhaps that's too obvious, and
+; there's a reason it doesn't...
+;
+; Once the memory layout is sorted out, *FX15 should start to work
+; again, and the BASIC code can go back to doing that.
+
+clear_keyboard_buffer:
+                pha
+                php
+                txa
+                pha
+                tya
+                pha
+                lda zaddr+0
+                pha
+                lda zaddr+1
+                pha
+                ldy #0
+                ldx #0
+                lda #$e0
+                sta zaddr+0
+                lda #$03
+                sta zaddr+1
+                lda #0
+loop:
+                sta (zaddr),y
+                inc zaddr+0
+                bne loop
+
+                pla
+                sta zaddr+1
+                pla
+                sta zaddr+0
+                pla
+                tay
+                pla
+                tax
+                plp
+                pla
+                rts

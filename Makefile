@@ -3,12 +3,18 @@
 
 ifeq ($(OS),Windows_NT)
 PYTHON:=py -3
-$(error TODO)
+$(error TODO - will put the binaries in the repo)
 else
 PYTHON:=/usr/bin/python3
-BEEBASM:=beebasm
 TASS:=64tass
+BASICTOOL:=basictool
 endif
+
+##########################################################################
+##########################################################################
+
+_V:=$(if $(VERBOSE),,@)
+TASS_ARGS:=--case-sensitive -Wall --cbm-prg
 
 ##########################################################################
 ##########################################################################
@@ -43,39 +49,40 @@ SSD_OUTPUT:=ghouls-tng.ssd
 .PHONY:build
 build: _output_folders
 
-# Get BeebAsm to do some file conversion
-	cd src && $(BEEBASM) -i ghouls_files.asm -do $(BUILD)/ghouls_files.ssd
-	$(SSD_EXTRACT) $(BUILD)/ghouls_files.ssd -0 -o $(BUILD)
-	$(SHELLCMD) copy-file $(BUILD)/$$.GBAS $(BEEB_OUTPUT)/
-	$(SHELLCMD) copy-file $(BUILD)/$$.!BOOT $(BEEB_OUTPUT)/
+# Create GBAS
+	$(_V)$(BASICTOOL) --tokenise --basic-2 src/ghouls.bas $(BEEB_OUTPUT)/$$.GBAS
+
+# Convert !BOOT
+	$(_V)$(SHELLCMD) copy-file src/boot.txt $(BEEB_OUTPUT)/$$.!BOOT
+	$(_V)$(PYTHON) $(BEEB_BIN)/text2bbc.py $(BEEB_OUTPUT)/$$.!BOOT
 
 # Copy GMC
-	$(SHELLCMD) copy-file $(BEEB_VOLUME)/0/$$.GMC $(BEEB_OUTPUT)/
-	$(SHELLCMD) copy-file $(BEEB_VOLUME)/0/$$.GMC.inf $(BEEB_OUTPUT)/
+	$(_V)$(SHELLCMD) copy-file $(BEEB_VOLUME)/0/$$.GMC $(BEEB_OUTPUT)/
+	$(_V)$(SHELLCMD) copy-file $(BEEB_VOLUME)/0/$$.GMC.inf $(BEEB_OUTPUT)/
 
-# Copy GCODE
-	$(SHELLCMD) copy-file $(BEEB_VOLUME)/0/$$.GCODE $(BEEB_OUTPUT)/
-	$(SHELLCMD) copy-file $(BEEB_VOLUME)/0/$$.GCODE.inf $(BEEB_OUTPUT)/
+# Create GCODE
+	$(_V)$(TASS) $(TASS_ARGS) -o $(BUILD)/gcode.prg src/gcode.s65
+	$(_V)$(PYTHON) $(BEEB_BIN)/prg2bbc.py $(BUILD)/gcode.prg $(BEEB_OUTPUT)/$$.GCODE
 
 # Set the boot option
-	echo 3 > $(BEEB_OUTPUT)/.opt4
+	$(_V)echo 3 > $(BEEB_OUTPUT)/.opt4
 
 # Create a .ssd
-	$(SSD_CREATE) -o $(SSD_OUTPUT) --dir $(BEEB_OUTPUT) $(BEEB_OUTPUT)/*
+	$(_V)$(SSD_CREATE) -o $(SSD_OUTPUT) --dir $(BEEB_OUTPUT) $(BEEB_OUTPUT)/*
 
 ##########################################################################
 ##########################################################################
 
 .PHONY:_output_folders
 _output_folders:
-	$(SHELLCMD) mkdir $(BUILD)
-	$(SHELLCMD) mkdir $(BEEB_OUTPUT)
+	$(_V)$(SHELLCMD) mkdir $(BUILD)
+	$(_V)$(SHELLCMD) mkdir $(BEEB_OUTPUT)
 
 ##########################################################################
 ##########################################################################
 
 .PHONY:clean
 clean:
-	$(SHELLCMD) rm-tree $(BUILD)
-	$(SHELLCMD) rm-tree $(BEEB_OUTPUT)
-	$(SHELLCMD) rm-file $(SSD_OUTPUT)
+	$(_V)$(SHELLCMD) rm-tree $(BUILD)
+	$(_V)$(SHELLCMD) rm-tree $(BEEB_OUTPUT)
+	$(_V)$(SHELLCMD) rm-file $(SSD_OUTPUT)

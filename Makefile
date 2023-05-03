@@ -70,8 +70,8 @@ endif
 	$(_V)$(PYTHON) $(BEEB_BIN)/text2bbc.py $(BEEB_OUTPUT)/$$.!BOOT
 
 # Copy GMC
-	$(_V)$(SHELLCMD) copy-file $(BEEB_VOLUME)/0/$$.GMC $(BEEB_OUTPUT)/
-	$(_V)$(SHELLCMD) copy-file $(BEEB_VOLUME)/0/$$.GMC.inf $(BEEB_OUTPUT)/
+	$(_V)$(TASS) $(TASS_ARGS) -o $(BUILD)/gmc.prg src/gmc.s65
+	$(_V)$(PYTHON) $(BEEB_BIN)/prg2bbc.py $(BUILD)/gmc.prg $(BEEB_OUTPUT)/$$.GMC
 
 # Create GCODE
 	$(_V)$(TASS) $(TASS_ARGS) -o $(BUILD)/gcode.prg src/gcode.s65

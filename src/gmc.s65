@@ -1,0 +1,2282 @@
+                .include "../submodules/beeb/include/beeb.s65"
+
+;-------------------------------------------------------------------------
+
+L0070=$70
+L0071=$71
+L0072=$72
+L0073=$73
+L0074=$74
+L0075=$75
+L0076=$76
+L0077=$77
+L0078=$78
+L0079=$79
+L007A=$7a
+L007B=$7b
+L007C=$7c
+L007E=$7e
+L007F=$7f
+L0080=$80
+L0081=$81
+L0082=$82
+L0083=$83
+L0084=$84
+L0085=$85
+
+;-------------------------------------------------------------------------
+
+*=$900
+sprite_pl_right_0:.byte 0, $30, $70, $50,$F0,$E0,$F0, $70, 0, 0, $80,$C0, $80, 0, 0,$C0, $70, $30, $30, $20, $20,$C0, $80, 0, $80, 0, $80, $80,$C0, $80, 0, 0; 0
+sprite_pl_right_1:.byte 0, 0, $10, $10, $30, $30, $30, $10, 0,$C0,$E0, $60,$F0, $80,$F0,$E0, $10, 0, 0, 0, 0, 0, 0, 0,$E0,$C0,$C0,$C0,$C0, $80, $80,$C0; 0
+sprite_pl_left_0:.byte 0, 0, $10, $30, $10, 0, 0, $30, 0,$C0,$E0,$A0,$F0, $70,$F0,$E0, $10, 0, $10, $10, $30, $10, 0, 0,$E0,$C0,$C0, $40, $40, $30, $10, 0; 0
+sprite_pl_left_1:.byte 0, $30, $70, $60,$F0, $10,$F0, $70, 0, 0, $80, $80,$C0,$C0,$C0, $80, $70, $30, $30, $30, $30, $10, $10, $30, $80, 0, 0, 0, 0, 0, 0, 0; 0
+sprite_pl_facing:.byte $10, $30, $10, $70, $40, $60, $30, $30, $80,$C0, $80,$E0, $20, $60,$C0,$C0, $10, $20, $20, $20, $20, $20, $20, $60, $80, $40, $40, $40, $40, $40, $40, $60; 0
+sprite_spider_0_row0:.byte 0, 0, 1, 3, $11, 3, 6, $37, 0, 0, $6E, $77, $77,$FF,$DF,$DF, 0, 0, $67,$EE,$EE,$FF,$BF,$BF, 0, 0, 8, $C, $88, $C, 6,$CE; 0
+sprite_spider_0_row1:.byte $33, $13, $17, $15, 5, 1, 0, 0, $57, $77, $77, 2, 2, 9, 8, 8,$AE,$EE,$EE, 4, 4, 9, 1, 1,$CC, $8C, $8E, $8A, $A, 8, 0, 0; 0
+sprite_floating_platform:.byte $FF,$FF, $9E, $9E, $56, 7, 8, 8,$FF,$CF,$C3,$CF,$DE, $2C, $1E, 3,$FF, $3F, $3C, $3F,$B7, $43, $87, $C,$FF,$FF, $97, $97,$A6, $E, 1, 1; 0
+sprite_goal_row0:.byte $D,$FF, $60,$F0, $58, $1E, $F, $F, $20,$D0,$F0,$A0, $70,$D0, $F, $3C, $50,$E0,$B0,$D0, $70,$A0, $F, $87, 0,$C0,$A0, $70,$C1, $87, $F, $F; 0
+sprite_goal_row1:.byte $3F, $5C, $6C, $5C, $3F, $F, 7, 1, $3C,$BD,$BD,$BC, $3C, $2D, $2D, $F,$C3,$DB,$DB,$D3, $87, $F, $F, $F,$CF,$A3, $63,$A3,$CF, $F, $E, 8; 0
+sprite_half_platform_QQQ:.byte 0, 0, 0, 0, 0, 0, 0, 0,$FF,$AA, $55, $55,$AA,$AA,$FF, 0; 0
+sprite_pl_die_8:.byte 0, $40, $20,$C0, 0, $20, $50, $10, $80,$A0, $40, 0, $30, $40, $20, 0; 0
+sprite_pl_splat:.byte 0, 0, 0, $20, $90, $70,$E0,$F0, 0, 0, 0, $40,$C0,$A0,$D0,$F0; 0
+sprite_spider_1_row0:.byte $C, $17, $11, 0, $17, $C, $33, $77, 0, 0,$CC, $55,$FF,$FF,$DF,$DF, 0, 0, $33,$AA,$FF,$FF,$BF,$BF, 3, $8E, $88, 0, $8E, 3,$CC,$EE; 0
+sprite_spider_1_row1:.byte $55, $5D, $19, $1B, $A, 2, 2, 2, $57, $77, $77, 2, 2, 4, 4, 0,$AE,$EE,$EE, 4, 4, 2, 2, 0,$AA,$AB, $89, $8D, 5, 4, 4, 4; 0
+sprite_power_pill:.byte 0, 0, $10, $21, $21, $21, $10, 0, 0, 0, $80, $48, $48, $48, $80, 0; 0
+                .word $11       ; channel
+                .word $FFF1     ; amplitude
+                .word $FF       ; pitch
+                .word 0         ; duration
+L0AC8:
+                .word $10; channel
+                .word 1         ; amplitude
+                .word 2         ; pitch
+                .word 1         ; duration
+L0AD0:
+                .word $13; channel
+                .word $FFF1     ; amplitude
+                .word 0         ; pitch
+                .word 3         ; duration
+L0AD8:
+                .word $12; channel
+                .word 2         ; amplitude
+                .word 5         ; pitch
+                .word $32       ; duration
+L0AE0:
+                .word $13; channel
+                .word 3         ; amplitude
+                .word $30       ; pitch
+                .word 5         ; duration
+                .byte 0
+                .byte 0
+bonus_update_timer:.byte 2
+L0AEB: .byte $C
+L0AEC: .byte $4D
+L0AED: .byte 1
+L0AEE: .byte 0
+L0AEF: .byte 1
+L0AF0: .byte $4D
+L0AF1: .byte 1
+L0AF2: .byte $3C
+L0AF3: .byte 0
+L0AF4: .byte $85
+unknown_update_2_timer_reset_value:.byte 6
+             .byte 1
+L0AF7: .byte $B0
+L0AF8: .byte $72
+unknown_update_2_timer:.byte 1
+L0AFA: .byte 0
+unknown_update_1_timer:.byte 2
+L0AFC: .byte 0
+player_movement:.byte 2
+player_jump_state:.byte 0
+player_anim_frame:.byte 0
+                .byte $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10; 0
+                .byte $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10; 16
+                .byte $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10; 32
+                .byte $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10; 48
+                .byte $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10; 64
+                .byte $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10; 80
+                .byte $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10; 96
+                .byte $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10; 112
+                .byte $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10; 128
+                .byte $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10; 144
+                .byte $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10; 160
+                .byte $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10; 176
+                .byte $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10; 192
+                .byte $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10; 208
+                .byte $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10; 224
+                .byte $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10; 240
+; 224       = platform ==
+; 225       = spring, row 0
+; 226       = platform \=
+; 227       = platform =/
+; 228       = spikes
+; 229       = spring, row 1
+; 230...239 = fancy digits
+; 240...242 = "BONUS"
+; 243       = 2 dots
+udgs:           .byte %11111111; 0
+                .byte %00011000 ; 1
+                .byte %11111111 ; 2
+                .byte %01100110 ; 3
+                .byte %01100110 ; 4
+                .byte %11111111 ; 5
+                .byte %00011000 ; 6
+                .byte %11111111 ; 7
+                .byte %10101010 ; 8
+                .byte %11111100 ; 9
+                .byte %00000010 ; 10
+                .byte %01111001 ; 11
+                .byte %10000101 ; 12
+                .byte %01111110 ; 13
+                .byte %00000010 ; 14
+                .byte %01111001 ; 15
+                .byte %11111111 ; 16
+                .byte %10011000 ; 17
+                .byte %01111111 ; 18
+                .byte %01100110 ; 19
+                .byte %00100110 ; 20
+                .byte %00111111 ; 21
+                .byte %00011000 ; 22
+                .byte %00000111 ; 23
+                .byte %11111111 ; 24
+                .byte %00011001 ; 25
+                .byte %11111110 ; 26
+                .byte %01100110 ; 27
+                .byte %01100100 ; 28
+                .byte %11111100 ; 29
+                .byte %00011000 ; 30
+                .byte %11110000 ; 31
+                .byte %10011001 ; 32
+                .byte %10011001 ; 33
+                .byte %10011001 ; 34
+                .byte %11011011 ; 35
+                .byte %11011011 ; 36
+                .byte %01011010 ; 37
+                .byte %01011010 ; 38
+                .byte %11111111 ; 39
+                .byte %10000101 ; 40
+                .byte %01111110 ; 41
+                .byte %00000010 ; 42
+                .byte %01111001 ; 43
+                .byte %10000101 ; 44
+                .byte %01111110 ; 45
+                .byte %10000001 ; 46
+                .byte %01111110 ; 47
+                .byte %11111110 ; 48
+                .byte %10000010 ; 49
+                .byte %10000010 ; 50
+                .byte %10000010 ; 51
+                .byte %10000110 ; 52
+                .byte %10000110 ; 53
+                .byte %10000110 ; 54
+                .byte %11111110 ; 55
+                .byte %00001100 ; 56
+                .byte %00001100 ; 57
+                .byte %00001100 ; 58
+                .byte %00001100 ; 59
+                .byte %00011100 ; 60
+                .byte %00011100 ; 61
+                .byte %00011100 ; 62
+                .byte %00011100 ; 63
+                .byte %11111110 ; 64
+                .byte %10000010 ; 65
+                .byte %10000010 ; 66
+                .byte %00000010 ; 67
+                .byte %11111110 ; 68
+                .byte %11000000 ; 69
+                .byte %11000000 ; 70
+                .byte %11111110 ; 71
+                .byte %11111100 ; 72
+                .byte %10000100 ; 73
+                .byte %10000100 ; 74
+                .byte %00000100 ; 75
+                .byte %00111110 ; 76
+                .byte %10000110 ; 77
+                .byte %10000110 ; 78
+                .byte %11111110 ; 79
+                .byte %11111100 ; 80
+                .byte %10000100 ; 81
+                .byte %10000100 ; 82
+                .byte %10000100 ; 83
+                .byte %10000100 ; 84
+                .byte %11111110 ; 85
+                .byte %00001100 ; 86
+                .byte %00001100 ; 87
+                .byte %11111110 ; 88
+                .byte %10000000 ; 89
+                .byte %10000000 ; 90
+                .byte %11111110 ; 91
+                .byte %00000110 ; 92
+                .byte %00000110 ; 93
+                .byte %10000110 ; 94
+                .byte %11111110 ; 95
+                .byte %11111110 ; 96
+                .byte %10000010 ; 97
+                .byte %10000010 ; 98
+                .byte %10000000 ; 99
+                .byte %11111110 ; 100
+                .byte %10000110 ; 101
+                .byte %10000110 ; 102
+                .byte %11111110 ; 103
+                .byte %11111110 ; 104
+                .byte %00000010 ; 105
+                .byte %00000010 ; 106
+                .byte %00000010 ; 107
+                .byte %00000110 ; 108
+                .byte %00000110 ; 109
+                .byte %00000110 ; 110
+                .byte %00000110 ; 111
+                .byte %01111100 ; 112
+                .byte %01000100 ; 113
+                .byte %01000100 ; 114
+                .byte %11111110 ; 115
+                .byte %10000110 ; 116
+                .byte %10000110 ; 117
+                .byte %10000110 ; 118
+                .byte %11111110 ; 119
+                .byte %11111110 ; 120
+                .byte %10000010 ; 121
+                .byte %10000010 ; 122
+                .byte %11111110 ; 123
+                .byte %00000110 ; 124
+                .byte %00000110 ; 125
+                .byte %00000110 ; 126
+                .byte %00000110 ; 127
+                .byte %00000000 ; 128
+                .byte %11100011 ; 129
+                .byte %10010100 ; 130
+                .byte %10010100 ; 131
+                .byte %10100100 ; 132
+                .byte %10010100 ; 133
+                .byte %10010100 ; 134
+                .byte %11100011 ; 135
+                .byte %00000000 ; 136
+                .byte %00100101 ; 137
+                .byte %10110101 ; 138
+                .byte %10110101 ; 139
+                .byte %10111101 ; 140
+                .byte %10101101 ; 141
+                .byte %10101101 ; 142
+                .byte %00100100 ; 143
+                .byte 0, $27, $28, $28, $26, $21, $21,$CE, 0, 0, 0, 0, $33, $33, 0, 0; 0
+                .byte 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0                 ; 16
+                .byte 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0                 ; 32
+                .byte 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0                 ; 48
+                .byte 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0                 ; 64
+                .byte 0, 0, 0, 0, 0, 0, 0, 0,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF         ; 80
+                .byte 0, $7E, $7E, $7E, $7E, $7E, $7E, 0                             ; 96
+ghosts_table:   .word $6A28
+                .word 0
+                .word 0
+                .word 0
+                .byte $48       ; H
+
+;-------------------------------------------------------------------------
+
+entry_draw_level:
+                lda #31
+                jsr oswrch
+                lda #0
+                jsr oswrch
+                lda #5
+                jsr oswrch
+                ldx #2
+
+L0D12:
+                ldy #$FA
+
+L0D14:
+                tya
+                pha
+                ldy #0
+                lda (L0084),y
+                jsr oswrch
+                lda L0084
+                clc
+                adc #1
+                sta L0084
+                lda L0085
+                adc #0
+
+L0D28:
+                sta L0085
+                pla
+                tay
+                dey
+                bne L0D14
+                dex
+                bne L0D12
+                rts
+
+;-------------------------------------------------------------------------
+
+                .byte $80,$FE, $29; 0
+
+;-------------------------------------------------------------------------
+
+                php
+                bne L0D3F
+                pla
+                tay
+                pla
+                jmp (userv)
+
+;-------------------------------------------------------------------------
+
+L0D3F:
+                lda $f4
+                pha
+                lda #$C
+                sta $f4
+
+L0D46:
+                sta $fe30
+                jsr $8C3A ; $8c3a corresponds to nothing obvious in
+                          ; BASIC I or BASIC II. Monitor ROM or
+                          ; something?
+                pla
+                sta $f4
+                sta $fe30
+                sec
+                bcs L0D28
+                and #8
+                bne L0D5F
+                pla
+                tay
+                pla
+                jmp (userv)
+
+;-------------------------------------------------------------------------
+
+L0D5F:
+                lda $f4
+                pha
+                lda #$C
+                sta $f4
+                sta $fe30
+                jsr $8C3A ; $8c3a corresponds to nothing obvious in
+                          ; BASIC I or BASIC II. Monitor ROM or
+                          ; something?
+                pla
+                sta $f4
+                sta $fe30
+                sec
+                bcs L0D46+2
+                brk
+
+;-------------------------------------------------------------------------
+
+                .byte 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0; 0
+                .byte 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0; 16
+                .byte 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0; 32
+                .byte 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0; 48
+                .byte 0, 0, 0, 0, $7B, $95, $C, 7, $90, $C,$C1, $90, $C,$AA, $91, $C; 64
+                .byte $D0, $95, $C, $93, $8E, $C,$AA, $95, $C, 0, 0, 0, 0, 0, 0, 0  ; 80
+                .byte 0, 0, 0, 0, 0, 0, 0, 0                                        ; 96
+L0DDE:       .byte 0, 0, 0, 0, 0, 0, 0, 0, 9, 9, 9, $D, $D, 5, 5, $F; 0
+                ; copy of what was under player, row 0?
+L0DEE:       .byte $FF, $88,$FF, $66, $66,$FF, $88, $77,$FF, $11,$FF, $66, $66,$FF, $11,$FF; 0
+                ; copy of what was under player, row 1?
+                .byte 0
+                .byte 0
+bonus_chars:    .byte 234, 238; 0
+                .byte 'E'
+                .byte 'S'
+                .byte 'T'
+                .byte 'S'
+                .byte 134
+                .byte '1'
+                .byte 'G'
+                .byte 'H'
+                .byte 'O'
+                .byte 'S'
+                .byte 'T'
+                .byte ' '
+                .byte ' '
+                .byte '$'
+score_chars:    .byte 230, 230, 230, 238, 232; 0
+                .byte ' '
+                .byte ' '
+                .byte '$'
+                .byte 'R'
+                .byte 'O'
+                .byte 'B'
+                .byte 'O'
+                .byte 'T'
+                .byte ' '
+L0E1E:       .byte ' '
+                .byte '$'
+
+;-------------------------------------------------------------------------
+
+entry_game:
+                lda #1
+                sta L0AED
+                sta L0AEF
+                sta player_anim_frame
+                lda #0
+                sta L0AEE
+                sta player_jump_state
+                sta L0AFA
+                sta L0AF3
+                lda #2
+                sta player_movement
+                sta unknown_update_1_timer
+                sta unknown_update_2_timer
+                sta L0AF1
+                sta L0AF0
+                sta L0AEC
+                lda #$1F
+                sta bonus_update_timer
+
+main_loop:
+                lda L0AF4
+                adc L0070
+                adc L007A
+                adc L007C
+                sta L0AF4
+                jsr L0E9F
+                jsr L119C
+                jsr L1205
+                jsr L13A9
+                jsr L13E3
+                lda #$81        ; INKEY (AUG p153)
+                ldx #$C8        ; P
+                ldy #$FF        ; keyboard scan
+                jsr osbyte
+                tya             ; A=$ff if pressed
+                beq L0E85
+
+pause_loop:
+                lda #$81        ; INKEY (AUG p153)
+                ldx #$C9        ; O
+                ldy #$FF        ; keyboard scan
+                jsr osbyte
+                tya
+                beq pause_loop
+
+L0E85:
+                ldx #$17
+
+L0E87:
+                ldy #0
+
+L0E89:
+                dey
+                bne L0E89
+                dex
+                bne L0E87
+                lda #$81        ; INKEY (AUG p153)
+                ldx #$8F        ; ESCAPE
+                ldy #$FF        ; keyboard scan
+                jsr osbyte
+                tya
+                beq escape_not_pressed
+                rts
+
+;-------------------------------------------------------------------------
+
+escape_not_pressed:
+                jmp main_loop
+
+;-------------------------------------------------------------------------
+
+L0E9F: .block
+
+                dec unknown_update_1_timer
+                lda unknown_update_1_timer
+                beq L0EA8
+                rts
+
+;-------------------------------------------------------------------------
+
+L0EA8:
+                lda #2
+                sta unknown_update_1_timer
+                dec bonus_update_timer
+                lda bonus_update_timer
+                bne L0EBD
+                lda #$1F
+                sta bonus_update_timer
+                jsr update_bonus
+
+L0EBD:
+                lda L0070
+                sta L0072
+                sta L0AF7
+                clc
+                adc #$40
+                sta L0074
+                lda L0071
+                sta L0073
+                sta L0AF8
+                adc #1
+                sta L0075
+                jmp L1521
+                .endblock
+
+;-------------------------------------------------------------------------
+
+L0ED7:
+                jmp L1490
+
+;-------------------------------------------------------------------------
+
+L0EDA:
+                lda #0
+                sta player_movement
+                lda #$81
+                ldx #$BD        ; X
+                ldy #$FF
+                jsr osbyte
+                tya
+                beq test_z_key
+; X pressed
+                lda player_movement
+                bne L0EF8
+; TODO: sprite_pl_left_0
+                lda #0
+                sta L0078
+                lda #9
+                sta L0079
+
+L0EF8:
+                lda #1          ; 1=right
+                sta player_movement
+                jmp L0F1E
+
+;-------------------------------------------------------------------------
+
+test_z_key:
+                lda #$81
+                ldx #$9E        ; Z
+                ldy #$FF
+                jsr osbyte
+                tya
+                beq L0F1E
+                lda player_movement
+                bne L0F19
+; TODO: sprite_pl_right_0
+                lda #$40
+                sta L0078
+                lda #9
+                sta L0079
+
+L0F19:
+                lda #2          ; 2=left
+                sta player_movement
+
+L0F1E:
+                lda player_movement
+                bne L0F2E
+; TODO: sprite_pl_facing
+                lda #$80
+                sta L0078
+                lda #9
+                sta L0079
+                jmp L1158
+
+;-------------------------------------------------------------------------
+
+L0F2E:
+                lda player_anim_frame
+                eor #1
+                sta player_anim_frame
+                bne L0F51
+; select next anim frame sprite
+                lda L0078
+                clc
+                adc #$20
+                sta L0078
+                lda L0079
+                adc #0
+                sta L0079
+                lda #7
+; TODO: L0AC0
+                ldx #$C0
+                ldy #$A
+                jsr osword
+                jmp L1158
+
+;-------------------------------------------------------------------------
+
+L0F51:
+                lda player_movement
+                cmp #2
+                beq move_player_left; taken if moving left
+                cmp #1
+                bne L0F89     ; taken if stationary
+; moving right
+                lda L0070
+                clc
+                adc #8
+                sta L0070
+                lda L0071
+                adc #0
+                sta L0071
+; TODO: sprite_pl_left_0
+                lda #0
+                sta L0078
+                lda #9
+                sta L0079
+                jmp L0F89
+
+;-------------------------------------------------------------------------
+
+move_player_left:
+                lda L0070
+                sec
+                sbc #8
+                sta L0070
+                lda L0071
+                sbc #0
+                sta L0071
+; TODO: sprite_pl_right_0
+                lda #$40
+                sta L0078
+                lda #9
+                sta L0079
+
+L0F89:
+                ldy #$F
+
+L0F8B:
+                lda L0DDE,y  ; copy of what was under player, row 0?
+                sta (L0072),y
+                lda L0DEE,y  ; copy of what was under player, row 1?
+                sta (L0074),y
+                dey
+                cpy #$FF
+                bne L0F8B
+                lda L0DDE+5  ; copy of what was under player, row 0?
+                cmp #$21
+                bne L101C
+                lda L0DDE+$C ; copy of what was under player, row 0?
+                cmp #$48
+                bne L101C
+                lda #6
+                sta L0AC8+4  ;pitch
+                lda #7
+; TODO: L0AC8
+                ldx #$C8
+                ldy #$A
+                jsr osword
+                lda #2
+                sta L0AC8+4  ;pitch
+                ldy #$F
+                lda #0
+
+L0FBF:
+                sta (L0072),y
+                sta L0DDE,y  ; copy of what was under player, row 0?
+                dey
+                bne L0FBF
+                lda #$64
+                sta L0AEE
+                ldx #$64
+                jsr add_X_to_score
+                lda #4
+                sta L0AF4    ; ghost index
+
+erase_ghosts_loop:
+                ldy L0AF4
+                lda ghosts_table,y
+                sta L0072
+                lda ghosts_table+1,y
+                sta L0073
+                beq erase_ghosts_next; taken if no ghost
+                lda L0072
+; form screen address for ghost row 1
+                clc
+                adc #$40
+                sta L0074
+                lda L0073
+                adc #1
+                sta L0075
+                ldy #$F
+
+erase_ghost_loop:
+                lda (L0072),y
+                cmp sprite_ghost_angry_row0,y
+                bne erase_ghost_row1
+                lda #0
+                sta (L0072),y
+
+erase_ghost_row1:
+                lda (L0074),y
+                cmp sprite_ghost_angry_row1,y
+                bne erase_ghost_next
+                lda #0
+                sta (L0074),y
+
+erase_ghost_next:
+                dey
+                cpy #$FF
+                bne erase_ghost_loop
+
+erase_ghosts_next:
+                dec L0AF4
+                dec L0AF4
+                lda L0AF4
+                cmp #$FE
+                bne erase_ghosts_loop
+
+L101C:
+                lda L0070
+                clc
+                adc #$40
+                sta L0072
+                lda L0071
+                adc #1
+                sta L0073
+                lda player_jump_state
+                bne L1060
+                lda L0070
+                clc
+                adc #$40
+                sta L0072
+                lda L0071
+                adc #1
+                sta L0073
+                ldy #$F
+
+L103D:
+                lda (L0072),y
+                cmp #$FF
+                beq L104B
+                dey
+                cpy #$FF
+                bne L103D
+                jmp L1082
+
+;-------------------------------------------------------------------------
+
+L104B:
+                lda L0070
+                sec
+                sbc #$40
+                sta L0070
+                lda L0071
+                sbc #1
+                sta L0071
+                ldx #5
+                jsr add_X_to_score
+                jmp L1082
+
+;-------------------------------------------------------------------------
+
+L1060:
+                lda L0072
+                clc
+                adc #$40
+                sta L0072
+                lda L0073
+                adc #1
+                sta L0073
+                ldy #0
+                lda (L0072),y
+                cmp #$FF
+                beq L107D
+                ldy #8
+                lda (L0072),y
+                cmp #$FF
+                bne L1082
+
+L107D:
+                lda #0
+                sta player_jump_state
+
+L1082:
+                ldy #$F
+                lda (L0074),y
+                cmp #$F0
+                bne L1092
+                lda player_jump_state
+                bne L1092
+                jmp L158E
+
+;-------------------------------------------------------------------------
+
+L1092:
+                lda L0070
+                clc
+                adc #$40
+                sta L0072
+                lda L0071
+                adc #1
+                sta L0073
+                ldy #$F
+
+L10A1:
+                lda (L0070),y
+                sta L0DDE,y  ; copy of what was under player, row 0?
+                lda (L0072),y
+                sta L0DEE,y  ; copy of what was under player, row 1?
+                dey
+                cpy #$FF
+                bne L10A1
+                lda L0DDE+4  ; copy of what was under player, row 0?
+                cmp #$30
+                bne L10DD
+                lda #0
+                sta L0DDE+4  ; copy of what was under player, row 0?
+                sta L0DDE+5  ; copy of what was under player, row 0?
+                lda L0085
+                clc
+                adc #4
+                sta L0085
+                lda L0085
+                sta L0AE0+4  ;pitch
+                lda #7
+; TODO: $ae0
+                ldx #$E0
+                ldy #$A
+                jsr osword
+                clc
+                ldx #3
+                jsr add_X_to_score
+                jmp L10E6
+
+;-------------------------------------------------------------------------
+
+L10DD:
+                lda player_anim_frame
+                bne L10E6
+                lda #0
+                sta L0085
+
+L10E6:
+                ldy #$F
+
+L10E8:
+                lda L0DEE,y  ; copy of what was under player, row 1?
+                cmp #8
+                beq L1104
+                cmp #1
+                beq L1104
+                lda L0DDE,y  ; copy of what was under player, row 0?
+                cmp #8
+                beq L1104
+                cmp #1
+                beq L1104
+                dey
+                bne L10E8
+                jmp L1131
+
+;-------------------------------------------------------------------------
+
+L1104:
+                ldy #$F
+                lda #0
+
+L1108:
+                sta L0DEE,y  ; copy of what was under player, row 1?
+                sta L0DDE,y  ; copy of what was under player, row 0?
+                dey
+                cpy #$FF
+                bne L1108
+                lda L0AF7
+                sta L0070
+                lda L0AF8
+                sta L0071
+                lda #7
+; TODO: $ac8
+                ldx #$C8
+                ldy #$A
+                jsr osword
+                lda player_anim_frame
+                eor #1
+                sta player_anim_frame
+                jmp L1082
+
+;-------------------------------------------------------------------------
+
+L1131:
+                ldy #$F
+
+L1133:
+                lda (L0070),y
+                beq L114B
+                cmp #$10
+                bcs L114B
+
+L113B:
+                lda L0070
+                clc
+                adc #$40
+                sta L0070
+                lda L0071
+                adc #1
+                sta L0071
+                jmp L16B4
+
+;-------------------------------------------------------------------------
+
+L114B:
+                lda (L0072),y
+                beq L1153
+                cmp #$10
+                bcc L113B
+
+L1153:
+                dey
+                cpy #$FF
+                bne L1133
+
+L1158:
+                lda L0078
+                clc
+                adc #$10
+                sta L0074
+                lda L0079
+                adc #0
+                sta L0075
+                lda L0070
+                clc
+                adc #$40
+                sta L0072
+                lda L0071
+                adc #1
+                sta L0073
+                ldy #$F
+
+L1174:
+                lda (L0070),y
+                beq L117F
+                cmp #$F
+                bcs L117F
+
+L117C:
+                jmp kill_player_and_drop_caller
+
+;-------------------------------------------------------------------------
+
+L117F:
+                lda (L0072),y
+                beq L1187
+                cmp #$F
+                bcc L117C
+
+L1187:
+                dey
+                cpy #$FF
+                bne L1174
+                ldy #$F
+
+L118E:
+                lda (L0078),y
+                sta (L0070),y
+                lda (L0074),y
+                sta (L0072),y
+                dey
+                cpy #$FF
+                bne L118E
+                rts
+
+;-------------------------------------------------------------------------
+
+L119C:       .block
+                lda L007B
+                beq L11A9
+                dec unknown_update_2_timer
+                beq L11AA
+                lda L007B
+                beq L11AA
+
+L11A9:
+                rts
+
+;-------------------------------------------------------------------------
+
+L11AA:
+                lda unknown_update_2_timer_reset_value
+                sta unknown_update_2_timer
+                ldy #$1F
+                lda #0
+
+L11B4:
+                sta (L007A),y
+                dey
+                cpy #$FF
+                bne L11B4
+
+L11BB:
+                lda L0AFA
+                beq L11D0
+                lda L007A
+                clc
+                adc #8
+                sta L007A
+                lda L007B
+                adc #0
+                sta L007B
+                jmp L11DD
+
+;-------------------------------------------------------------------------
+
+L11D0:
+                lda L007A
+                sec
+                sbc #8
+                sta L007A
+                lda L007B
+                sbc #0
+                sta L007B
+
+L11DD:
+                ldy #$1F
+
+L11DF:
+                lda (L007A),y
+                cmp #$FF
+                beq L11ED
+                dey
+                cpy #$FF
+                bne L11DF
+                jmp L11F8
+
+;-------------------------------------------------------------------------
+
+L11ED:
+                lda L0AFA
+                eor #1
+                sta L0AFA
+                jmp L11BB
+
+;-------------------------------------------------------------------------
+
+L11F8:
+                ldy #$1F
+
+L11FA:
+                lda sprite_floating_platform,y
+                sta (L007A),y
+                dey
+                cpy #$FF
+                bne L11FA
+                rts
+                .endblock
+
+;-------------------------------------------------------------------------
+
+L1205:       .block
+
+                dec L0AF1
+                lda L0AF1
+                beq L1210
+                jmp L1386
+
+;-------------------------------------------------------------------------
+
+L1210:
+                lda L0AEE
+                cmp #$55
+                bcc L1237
+                dec L0AEE
+                lda L0AEE
+                sta L0AD8+4  ;pitch
+                lda #7
+; TODO: $ad8
+                ldx #$D8
+                ldy #$A
+                jsr osword
+                lda L0AF2
+                sta L0AF1
+                ldx #5
+                jsr add_X_to_score
+                jmp L1386
+
+;-------------------------------------------------------------------------
+
+L1237:
+                lda #4
+                sta L0AF1
+
+L123C:
+                ldy L0AF1
+                lda ghosts_table,y
+                sta L007E
+                lda ghosts_table+1,y
+                sta L007F
+                lda L007E
+                sta L0072
+                lda L007F
+                sta L0073
+                bne L1256
+                jmp L1370
+
+;-------------------------------------------------------------------------
+
+L1256:
+                lda L007E
+                sec
+                sbc #$80
+                sta L0074
+                lda L007F
+                sbc #0
+                sta L0075
+                lda L0070
+                sec
+                sbc #$80
+                sta L0076
+                lda L0071
+                sbc #0
+                sta L0077
+
+L1270:
+                lda L0074
+                cmp #$40
+                lda L0075
+                sbc #1
+                bcc L128A
+                lda L0074
+                sec
+                sbc #$40
+                sta L0074
+                lda L0075
+                sbc #1
+                sta L0075
+                jmp L1270
+
+;-------------------------------------------------------------------------
+
+L128A:
+                lda L0076
+                cmp #$40
+                lda L0077
+                sbc #1
+                bcc L12A4
+                lda L0076
+                sec
+                sbc #$40
+                sta L0076
+                lda L0077
+                sbc #1
+                sta L0077
+                jmp L128A
+
+;-------------------------------------------------------------------------
+
+L12A4:
+                lda L0074
+                cmp L0076
+                bne L12AB
+                clc
+
+L12AB:
+                lda L0075
+                sbc L0077
+                bcc L12C1
+                lda L007E
+                sec
+                sbc #8
+                sta L007E
+                lda L007F
+                sbc #0
+                sta L007F
+                jmp L1301
+
+;-------------------------------------------------------------------------
+
+L12C1:
+                lda L0074
+                cmp L0076
+                beq L12D7
+                lda L007E
+                clc
+                adc #8
+                sta L007E
+                lda L007F
+                adc #0
+                sta L007F
+                jmp L1301
+
+;-------------------------------------------------------------------------
+
+L12D7:
+                lda L007E
+                cmp L0070
+                bne L12DE
+                clc
+
+L12DE:
+                lda L007F
+                sbc L0071
+                bcc L12F4
+                lda L007E
+                sec
+                sbc #$40
+                sta L007E
+                lda L007F
+                sbc #1
+                sta L007F
+                jmp L1301
+
+;-------------------------------------------------------------------------
+
+L12F4:
+                lda L007E
+                clc
+                adc #$40
+                sta L007E
+                lda L007F
+                adc #1
+                sta L007F
+
+L1301:
+                lda L0072
+                clc
+                adc #$40
+                sta L0074
+                lda L0073
+                adc #1
+                sta L0075
+                ldy #$F
+
+L1310:
+                lda (L0072),y
+                cmp sprite_ghost_angry_row0,y
+                bne L131B
+                lda #0
+                sta (L0072),y
+
+L131B:
+                lda (L0074),y
+                cmp sprite_ghost_angry_row1,y
+                bne L1326
+                lda #0
+                sta (L0074),y
+
+L1326:
+                dey
+                cpy #$FF
+                bne L1310
+                lda L007E
+                clc
+                adc #$40
+                sta L0074
+                lda L007F
+                adc #1
+                sta L0075
+                ldy #$F
+
+L133A:
+                lda (L007E),y
+                cmp #$20
+                bne L1343
+                jmp kill_player_and_drop_caller
+
+;-------------------------------------------------------------------------
+
+L1343:
+                cmp #0
+                bne L134C
+                lda sprite_ghost_angry_row0,y
+                sta ($7E),y
+
+L134C:
+                lda (L0074),y
+                cmp #$20
+                bne L1355
+                jmp kill_player_and_drop_caller
+
+;-------------------------------------------------------------------------
+
+L1355:
+                cmp #0
+                bne L135E
+                lda sprite_ghost_angry_row1,y
+                sta ($74),y
+
+L135E:
+                dey
+                cpy #$FF
+                bne L133A
+                ldy L0AF1
+                lda L007E
+                sta ghosts_table,y
+                lda L007F
+                sta ghosts_table+1,y
+
+L1370:
+                dec L0AF1
+                dec L0AF1
+                lda L0AF1
+                cmp #$FE
+                beq L1380
+                jmp L123C
+
+;-------------------------------------------------------------------------
+
+L1380:
+                lda L0AF2
+                sta L0AF1
+
+L1386:
+                lda L0AEE
+                cmp #$54
+                bcs L13A8
+                lda L0AF4
+                cmp #3
+                bcs L13A8
+                rol L0AF4
+                lda L0AF4
+                adc #1
+                sta L0AD8+4  ;pitch
+                lda #7
+; TODO: $ad8
+                ldx #$D8
+                ldy #$A
+                jsr osword
+
+L13A8:
+                rts
+                .endblock
+
+;-------------------------------------------------------------------------
+
+L13A9:       .block
+                dec L0AF0
+                beq L13AF
+
+L13AE:
+                rts
+
+;-------------------------------------------------------------------------
+
+L13AF:
+                lda L0081
+                beq L13AE
+                lda #4
+                sta L0AF0
+                jsr L156B
+                ldy #$F
+
+L13BD:
+                lda (L0080),y
+                cmp #$66
+                beq L13CB
+                dey
+                cpy #$FF
+                bne L13BD
+                jmp L13D6
+
+;-------------------------------------------------------------------------
+
+L13CB:
+                lda L0AEF
+                eor #1
+                sta L0AEF
+                jsr L156B
+
+L13D6:
+                ldy #$F
+
+L13D8:
+                lda sprite_half_platform_QQQ,y
+                sta (L0080),y
+                dey
+                cpy #$FF
+                bne L13D8
+                rts
+                .endblock
+
+;-------------------------------------------------------------------------
+
+L13E3:       .block
+                dec L0AEC
+                lda L0AEC
+                beq L13EE
+
+L13EB:
+                jmp L148F
+
+;-------------------------------------------------------------------------
+
+L13EE:
+                lda L0083
+                beq L13EB
+                lda L0AEB
+                sta L0AEC
+                lda L0082
+                clc
+                adc #$40
+                sta L0072
+                lda L0083
+                adc #1
+                sta L0073
+                lda #0
+                ldy #$1F
+
+L1409:
+                sta (L0082),y
+                sta (L0072),y
+                dey
+                cpy #$FF
+                bne L1409
+
+L1412:
+                lda L0AED
+                beq L1427
+                lda L0082
+                clc
+                adc #$40
+                sta L0082
+                lda L0083
+                adc #1
+                sta L0083
+                jmp L1434
+
+;-------------------------------------------------------------------------
+
+L1427:
+                lda L0082
+                sec
+                sbc #$40
+                sta L0082
+                lda L0083
+                sbc #1
+                sta L0083
+
+L1434:
+                lda L0082
+                clc
+                adc #$40
+                sta L0072
+                lda L0083
+                adc #1
+                sta L0073
+                ldy #$1F
+
+L1443:
+                lda (L0072),y
+                cmp #$FF
+                beq L1457
+                lda (L0082),y
+                cmp #$FF
+                beq L1457
+                dey
+                cpy #$FF
+                bne L1443
+                jmp L1462
+
+;-------------------------------------------------------------------------
+
+L1457:
+                lda L0AED
+                eor #1
+                sta L0AED
+                jmp L1412
+
+;-------------------------------------------------------------------------
+
+L1462:
+                lda L0084
+                eor #1
+                sta L0084
+                beq L147E
+                ldy #$1F
+
+L146C:
+                lda sprite_spider_0_row0,y
+                sta (L0082),y
+                lda sprite_spider_0_row1,y
+                sta (L0072),y
+                dey
+                cpy #$FF
+                bne L146C
+                jmp L148F
+
+;-------------------------------------------------------------------------
+
+L147E:
+                ldy #$1F
+
+L1480:
+                lda sprite_spider_1_row0,y
+                sta (L0082),y
+                lda sprite_spider_1_row1,y
+                sta (L0072),y
+                dey
+                cpy #$FF
+                bne L1480
+
+L148F:
+                rts
+                .endblock
+
+;-------------------------------------------------------------------------
+
+L1490:
+                lda L0070
+                clc
+                adc #$80
+                sta L0076
+                lda L0071
+                adc #2
+                sta L0077
+                ldy #0
+                lda (L0076),y
+                cmp #$A
+                beq L14AD
+                ldy #8
+                lda (L0076),y
+                cmp #$A
+                bne L14CA
+
+L14AD:
+                lda #6
+                sta player_jump_state
+                lda #1
+                sta L0AC8+4  ;pitch
+                lda #7
+; TODO: $ac8
+                ldx #$C8
+                ldy #$A
+                jsr osword
+                lda #2
+                sta L0AC8+4  ;pitch
+                ldx #3
+                jsr add_X_to_score
+
+L14CA:
+                ldy #0
+                lda (L0076),y
+                cmp #$FF
+                beq L14FA
+                ldy #8
+                lda (L0076),y
+                cmp #$FF
+                beq L14FA
+                lda L0070
+                clc
+                adc #$40
+                sta L0070
+                lda L0071
+                adc #1
+                sta L0071
+                jsr L166B
+                inc L0AFC
+                lda L0AFC
+                cmp #4
+                bne L14F7
+                jmp L16B4
+
+;-------------------------------------------------------------------------
+
+L14F7:
+                jmp L0F89
+
+;-------------------------------------------------------------------------
+
+L14FA:
+                lda player_jump_state
+                bne L1519    ; taken if already jumping
+                lda #$81        ; INKEY
+                ldx #$B6        ; RETURN
+                ldy #$FF
+                jsr osbyte
+                tya
+                beq L1519    ; taken if not pressed
+                lda #4
+                sta player_jump_state
+                lda #7
+; TODO: $ac8
+                ldx #$C8
+                ldy #$A
+                jsr osword
+
+L1519:
+                lda #0
+                sta L0AFC
+                jmp L0EDA
+
+;-------------------------------------------------------------------------
+
+L1521:
+                lda player_jump_state
+                bne L1529
+                jmp L0ED7
+
+;-------------------------------------------------------------------------
+
+L1529:
+                lda player_anim_frame
+                eor #1
+                sta player_anim_frame
+                lda player_anim_frame
+                beq L1539
+                jmp L1158
+
+;-------------------------------------------------------------------------
+
+L1539:
+                lda player_jump_state
+                cmp #3
+                bcc L154D    ; taken if 0/1/2
+; player_jump_state>=3 - move player up 1 row
+                lda L0070
+                sec
+                sbc #$40
+                sta L0070
+                lda L0071
+                sbc #1
+                sta L0071
+
+L154D:
+                lda player_jump_state
+                cmp #1
+                beq L1558
+                cmp #2
+                bne L1565
+;player_jump_state<3 - move player down 1 row
+
+L1558:
+                lda L0070
+                clc
+                adc #$40
+                sta L0070
+                lda L0071
+                adc #1
+                sta L0071
+
+L1565:
+                dec player_jump_state
+                jmp L0F51
+
+;-------------------------------------------------------------------------
+
+L156B:       .block
+                lda L0AEF
+                beq L1580
+                lda L0080
+                clc
+                adc #8
+                sta L0080
+                lda L0081
+                adc #0
+                sta L0081
+                jmp L158D
+
+;-------------------------------------------------------------------------
+
+L1580:
+                lda L0080
+                sec
+                sbc #8
+                sta L0080
+                lda L0081
+                sbc #0
+                sta L0081
+
+L158D:
+                rts
+                .endblock
+
+;-------------------------------------------------------------------------
+
+L158E:
+                lda #$FF
+                sta unknown_update_2_timer
+                lda L0070
+                clc
+                adc #$40
+                sta L0074
+                lda L0071
+                adc #1
+                sta L0075
+                ldy #$F
+
+L15A2:
+                lda sprite_pl_facing,y
+                sta (L0070),y
+                lda sprite_pl_facing+$10,y
+                sta (L0074),y
+                dey
+                cpy #$FF
+                bne L15A2
+                lda bonus_chars+1
+                sec
+                sbc #230
+                beq L15BD
+                tax
+                jsr add_X_to_score
+
+L15BD:
+                lda bonus_chars
+                sec
+                sbc #230
+                tay
+                beq L15DD
+                lda #0
+                sta L0E1E
+
+L15CB:
+                lda L0E1E
+                clc
+                adc #$A
+                sta L0E1E
+                dey
+                bne L15CB
+                ldx L0E1E
+                jsr add_X_to_score
+
+L15DD:
+                pla
+                pla
+                rts
+
+;-------------------------------------------------------------------------
+
+update_bonus:   .block
+                dec bonus_chars+1
+                lda bonus_chars+1
+                cmp #229
+                bne L15FE
+                lda #239
+                sta bonus_chars+1
+                dec bonus_chars
+                lda bonus_chars
+                cmp #229
+                bne L15FE
+                pla
+                pla
+                jmp kill_player_and_drop_caller
+
+;-------------------------------------------------------------------------
+
+L15FE:
+                ldy #1
+                lda bonus_chars
+                cmp #230
+                bne L1617
+                lda #$95
+                sta L0AD0+4  ;pitch
+                lda #7
+; TODO:$ad0
+                ldx #$D0
+                ldy #$A
+                jsr osword
+                ldy #1
+
+L1617:
+                lda #31
+                jsr oswrch
+                tya
+                clc
+                adc #18
+                jsr oswrch
+                lda #1
+                jsr oswrch
+                lda bonus_chars,y
+                jsr oswrch
+                dey
+                cpy #$FF
+                bne L1617
+                rts
+                .endblock
+
+;-------------------------------------------------------------------------
+
+add_X_to_score: .block
+                ldy #4
+
+L1636:
+                lda score_chars,y
+                clc
+                adc #1
+                sta score_chars,y
+                cmp #240
+                bne L164C
+                lda #230
+                sta score_chars,y
+                dey
+                jmp L1636
+
+;-------------------------------------------------------------------------
+
+L164C:
+                dex
+                bne add_X_to_score
+                ldy #4
+
+L1651:
+                lda #$1F
+                jsr oswrch
+                tya
+                jsr oswrch
+                lda #1
+                jsr oswrch
+                lda score_chars,y
+                jsr oswrch
+                dey
+                cpy #$FF
+                bne L1651
+                rts
+                .endblock
+
+;-------------------------------------------------------------------------
+
+L166B:       .block
+                ldx #5
+
+L166D:
+                ldy #4
+
+L166F:
+                lda score_chars,y
+                sec
+                sbc #1
+                sta score_chars,y
+                cmp #229
+                bne L1695
+                lda #239
+                sta score_chars,y
+                dey
+                cpy #$FF
+                bne L166F
+                ldy #4
+                lda #230
+
+L168A:
+                sta score_chars,y
+                dey
+                cpy #$FF
+                bne L168A
+                jmp L1698
+
+;-------------------------------------------------------------------------
+
+L1695:
+                dex
+                bne L166D
+
+L1698:
+                ldy #4
+
+L169A:
+                lda #$1F
+                jsr oswrch
+                tya
+                jsr oswrch
+                lda #1
+                jsr oswrch
+                lda score_chars,y
+                jsr oswrch
+                dey
+                cpy #$FF
+                bne L169A
+                rts
+                .endblock
+
+;-------------------------------------------------------------------------
+
+L16B4:
+                lda #150
+                sta L0AD0+4  ;pitch
+                lda L0070
+                sec
+                sbc #$40
+                sta L0070
+                lda L0071
+                sbc #1
+                sta L0071
+
+L16C6:
+                lda L0070
+                clc
+                adc #$40
+                sta L0072
+                lda L0071
+                adc #1
+                sta L0073
+                dec L0AD0+4  ;pitch
+                lda #7
+; TODO: $ad0
+                ldx #$D0
+                ldy #$A
+                jsr osword
+                jsr L166B
+                ldy #$F
+
+L16E4:
+                lda L0DDE,y  ; copy of what was under player, row 0?
+                sta (L0070),y
+                lda L0DEE,y  ; copy of what was under player, row 1?
+                sta (L0072),y
+                dey
+                cpy #$FF
+                bne L16E4
+                lda L0070
+                clc
+                adc #$40
+                sta L0070
+                lda L0071
+                adc #1
+                sta L0071
+                lda L0070
+                clc
+                adc #$40
+                sta L0072
+                lda L0071
+                adc #1
+                sta L0073
+                ldy #$F
+
+L170F:
+                lda (L0070),y
+                sta L0DDE,y  ; copy of what was under player, row 0?
+                lda (L0072),y
+                sta L0DEE,y  ; copy of what was under player, row 1?
+                dey
+                cpy #$FF
+                bne L170F
+                lda L0DEE    ; copy of what was under player, row 1?
+                cmp #$FF
+                beq draw_pl_splat
+                lda L0DEE+8  ; copy of what was under player, row 1?
+                cmp #$FF
+                beq draw_pl_splat
+                lda L0078
+                clc
+                adc #$10
+                sta L0074
+                lda L0079
+                adc #0
+                sta L0075
+                ldy #$F
+
+L173B:
+                lda (L0078),y
+                sta (L0070),y
+                lda (L0074),y
+                sta (L0072),y
+                dey
+                cpy #$FF
+                bne L173B
+                ldx #70
+
+L174A:
+                ldy #0
+
+L174C:
+                dey
+                bne L174C
+                dex
+                bne L174A
+                jmp L16C6
+
+;-------------------------------------------------------------------------
+
+draw_pl_splat:
+                ldy #$F
+
+L1757:
+                lda sprite_pl_splat,y
+                sta (L0070),y
+                dey
+                cpy #$FF
+                bne L1757
+                lda #0
+                sta L0AD0+4  ;pitch
+                pla
+                pla
+                rts
+
+;-------------------------------------------------------------------------
+
+kill_player_and_drop_caller:
+                pla
+                pla
+                lda L0070
+                clc
+                adc #$40
+                sta L0072
+                lda L0071
+                adc #1
+                sta L0073
+                ldy #$F
+
+L177A:
+                lda L0DDE,y  ; copy of what was under player, row 0?
+                sta (L0070),y
+                lda sprite_pl_splat,y
+                sta (L0072),y
+                dey
+                cpy #$FF
+                bne L177A
+                rts
+
+;-------------------------------------------------------------------------
+
+                .byte 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0; 0
+                .byte 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0; 16
+                .byte 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0; 32
+                .byte 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0; 48
+                .byte 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,$FF,$FF, 0, 0, 0, 0; 64
+                .byte 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0  ; 80
+                .byte 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0  ; 96
+                .byte 0, 0, 0, 0, 0, 0                                ; 112
+level_data_0:   .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20,$E2,$E0,$E0; 0
+                .byte $E0,$E0,$E3, $20, $20,$E2,$E0,$E0,$E0, $20, $20, $20, $20,$E0, $20, $20, $20, $20, $20, $20; 20
+                .byte $20, $20, $20, $20, $20, $20, $20, $20,$E0, $20, $20, $20, $20, $20, $20,$E0, $20, $20, $20, $20; 40
+                .byte $20, $20, $20, $20, $20, $20, $20, $20, $20,$E0,$E0,$E3, $20, $20, $20, $20, $20, $20, $20, $20 ; 60
+                .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20,$E0, $20, $20, $20, $20, $20, $20; 80
+                .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20; 100
+                .byte $20, $20,$E2,$E0,$E0,$E0,$E0,$E0,$E3, $20, $20,$E2,$E0,$E0,$E0,$E0,$E0,$E3, $20, $20              ; 120
+                .byte $E0, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20; 140
+                .byte $E0,$E0, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20 ; 160
+                .byte $20, $20,$E0, $20,$E0, $20, $20, $20, $20, $20, $20, $20, $20, $20,$E0, $20, $20, $20, $20, $20   ; 180
+                .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20,$E0,$E0, $20, $20, $20, $20  ; 200
+                .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20; 220
+                .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20,$E0,$E0,$E0   ; 240
+                .byte $20, $20, $20, $20, $20,$E0,$E0, $20, $20, $20, $20, $20, $20, $20,$E0,$E0,$E0,$E0,$E0,$E0        ; 260
+                .byte $20, $20, $20, $20, $20, $20, $20, $20, $20,$E2,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0           ; 280
+                .byte $20, $20,$E0,$E0, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20  ; 300
+                .byte $E0, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20; 320
+                .byte $E0,$E0, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20 ; 340
+                .byte $E0,$E0,$E0, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20  ; 360
+                .byte $E0,$E0,$E0,$E0,$E3, $20,$E2,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E3, $20, $20, $20, $20              ; 380
+                .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20; 400
+                .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20,$E0,$E0,$E0   ; 420
+                .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20,$E0,$E0,$E0,$E0    ; 440
+                .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20,$E0,$E0,$E0,$E0,$E0,$E0      ; 460
+                .byte $E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0                   ; 480
+                .byte $E2,$E0,$E3, $20,$E0,$E0, 0, 0, 0, 0, 0, 0                                                        ; 500
+level_data_1:   .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20,$E2,$E0,$E0; 0
+                .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20; 20
+                .byte $E0, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20,$E0 ; 40
+                .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20; 60
+                .byte $20, $20, $20, $20,$E2,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0, $20, $20, $20             ; 80
+                .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20,$E0, $20, $20 ; 100
+                .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20; 120
+                .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20,$E0,$E0  ; 140
+                .byte $20, $20, $20, $20, $20,$E0, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20,$E0  ; 160
+                .byte $20, $20, $20,$E0,$E0, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20  ; 180
+                .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20; 200
+                .byte $E0,$E0, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20 ; 220
+                .byte $E0,$E0,$E0, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20  ; 240
+                .byte $E0,$E0,$E0,$E0,$E0,$E0,$E0,$E3, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20       ; 260
+                .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20,$E2,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0          ; 280
+                .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20; 300
+                .byte $20, $20, $20, $20, $20, $20,$E0,$E0,$E3, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20   ; 320
+                .byte $20, $20, $20, $20, $20,$E0,$E0, $20, $20, $20, $20, $20, $20, $20,$E0,$E0, $20, $20, $20, $20    ; 340
+                .byte $20, $20, $20, $20,$E0,$E0, $20, $20, $20, $20,$E2,$E0,$E0,$E0,$E0, $20, $20, $20, $20, $20       ; 360
+                .byte $20, $20, $20,$E0,$E0, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20  ; 380
+                .byte $E0,$E0,$E0,$E0, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20   ; 400
+                .byte $20, $20, $20, $20, $20, $20, $20, $20,$E0,$E0, $20, $20, $20, $20,$E0,$E0,$E0,$E0,$E0,$E0        ; 420
+                .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20,$E0,$E0,$E0,$E0,$E0,$E0,$E0       ; 440
+                .byte $20, $20, $20, $20, $20,$E0,$E0, $20, $20, $20, $20, $20,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0          ; 460
+                .byte $E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0                   ; 480
+                .byte $E0,$E0,$E0,$E0,$E0,$E0, $3D, $32, $33, $36, $3A, $3F                                             ; 500
+level_data_2:   .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20,$E2,$E0,$E0; 0
+                .byte $20, $20, $20, $20, $20, $20,$E2,$E0,$E0,$E3, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20; 20
+                .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20; 40
+                .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20,$E0,$E0,$E0,$E0, $20, $20, $20    ; 60
+                .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20; 80
+                .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20,$E0, $20, $20, $20, $20, $20, $20, $20, $20 ; 100
+                .byte $20, $20,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0                  ; 120
+                .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20; 140
+                .byte $E0, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20; 160
+                .byte $E0, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20,$E0,$E0, $20, $20, $20  ; 180
+                .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20; 200
+                .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20,$E0,$E0  ; 220
+                .byte $20, $20, $20, $20, $20, $20,$E0, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20,$E0  ; 240
+                .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20; 260
+                .byte $20, $20, $20,$E0,$E0, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20  ; 280
+                .byte $20, $20, $20, $20, $20,$E0, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20 ; 300
+                .byte $20, $20, $20, $20, $20, $20,$E0,$E0, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20  ; 320
+                .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20; 340
+                .byte $20, $20, $20, $20, $20, $20, $20, $20, $20,$E0,$E0, $20, $20, $20, $20, $20, $20, $20, $20, $20  ; 360
+                .byte $E0,$E0,$E0,$E0, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20,$E0,$E0, $20, $20     ; 380
+                .byte $20, $20, $20, $20,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0, $20, $20, $20, $20            ; 400
+                .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20,$E0 ; 420
+                .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20,$E0,$E0  ; 440
+                .byte $20, $20, $20, $20, $20, $20, $20, $20, $20,$E0,$E0, $20, $20, $20, $20, $20, $20,$E0,$E0,$E0     ; 460
+                .byte $E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0                   ; 480
+                .byte $E2,$E0,$E3, $20,$E0,$E0, $12,$F4, $20, $2A, $2A, $2A                                             ; 500
+level_data_3:   .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20,$E0,$E0,$E0; 0
+                .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20; 20
+                .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20,$E0, $20, $20, $20, $20 ; 40
+                .byte $20, $20,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0, $20, $20, $20,$E0,$E0, $20, $20, $20, $20           ; 60
+                .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20,$E0, $20, $20,$E0, $20, $20, $20  ; 80
+                .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20,$E0, $20, $20, $20, $20,$E0, $20, $20  ; 100
+                .byte $E0,$E0, $20,$E0, $20, $20,$E0, $20, $20,$E0, $20,$E0, $20, $20, $20, $20, $20, $20, $20, $20     ; 120
+                .byte $20,$E0,$E0, $20,$E0,$E0, $20,$E0,$E0, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20,$E0       ; 140
+                .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20,$E0,$E0, $20, $20,$E0, $20   ; 160
+                .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20,$E0, $20, $20,$E0,$E0, $20, $20   ; 180
+                .byte $E0, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20,$E0,$E0, $20, $20, $20, $20, $20, $20, $20  ; 200
+                .byte $20,$E0,$E0, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20  ; 220
+                .byte $20, $20, $20, $20, $20,$E0, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20 ; 240
+                .byte $20, $20, $20, $20, $20, $20,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0, $20, $20            ; 260
+                .byte $20, $20,$E0, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20 ; 280
+                .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20,$E0 ; 300
+                .byte $E0, $20, $20, $20, $20,$E0, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20,$E0  ; 320
+                .byte $20,$E0, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20 ; 340
+                .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20; 360
+                .byte $20, $20, $20,$E0,$E0,$E0,$E0,$E0,$E0,$E0, $20, $20, $20,$E0,$E0, $20, $20, $20, $20, $20         ; 380
+                .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20,$E0, $20, $20, $20, $20, $20, $20, $20, $20, $20 ; 400
+                .byte $E0, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20; 420
+                .byte $E0,$E0, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20,$E0, $20,$E0, $20, $20   ; 440
+                .byte $E0,$E0,$E0, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20,$E0,$E0, $20,$E0,$E0, $20      ; 460
+                .byte $E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0                   ; 480
+                .byte $E2,$E0,$E3, $20,$E0,$E0, $7C, 2,$D0, $F,$AC, $57                                                 ; 500
+sprite_ghost_angry_row0:.byte 3, 7, 7, $69, $49, $49, $F, $F, $C, $E, $E, $69, $29, $29, $F, $F; 0
+sprite_ghost_angry_row1:.byte $E, 4, 4, 5, 3, 3, 3, $F, 7, 3, 2, $A, $E, $C, $C, 0; 0
+sprite_ghost_happy_row0:.byte 3, 7, 7, $49, $49, $69, $F, $F, $C, $E, $E, $29, $29, $69, $F, $F; 0
+sprite_ghost_happy_row1:.byte $D, 5, 4, 6, 3, $B, $F, 7, $B, $B, 2, 6, $E, $C, $C, 8; 0
+sprite_pl_die_0:.byte $10, $30, $30, $70, $70, $30, $30, $10, $80,$C0,$C0,$E0,$E0,$C0,$C0, $80; 0
+sprite_pl_die_1:.byte 0, $20, $20, $60, $70, $30, $30, $10, 0, $40, $40, $60,$E0,$C0,$C0, $80; 0
+sprite_pl_die_2:.byte 0, 0, $40, $60, $70, $30, $30, $10, 0, 0, $20, $60,$E0,$C0,$C0, $80; 0
+sprite_pl_die_3:.byte 0, 0, 0, 0, $70, $30, $30, $10, 0, 0, 0, 0,$E0,$C0,$C0, $80; 0
+sprite_pl_die_4:.byte 0, 0, 0, 0, $30, $70, $30, $10, 0, 0, 0, 0,$C0,$E0,$C0, $80; 0
+sprite_pl_die_5:.byte 0, 0, 0, 0, $10, $10, $10, $10, 0, 0, 0, 0, $80, $80, $80, $80; 0
+sprite_pl_die_6:.byte 0, 0, 0, 0, $10, $10, 0, 0, 0, 0, 0, 0, $80, $80, 0, 0; 0
+sprite_pl_die_7:.byte 0, 0, $20, $10, $10, $20, 0, 0, 0, 0, $40, $80, $80, $40, 0, 0; 0
+sprite_alt_goal_row1:.byte $69, $3C, $3C, $69, $F, $F, 7, 0, $3E, $2F, $2F, $3F, $3E, $2F, $2D, $F,$C7, $4F, $4F,$CB, $87, $F, $F, $F, $69,$C3,$C3, $69, $F, $F, $E, 0; 0
+                .byte 2
+                .byte $FD
+                .byte $D8
+                .byte 2
+                .byte $B0
+                .byte 4
+                .byte '8'
+; same as at 21ee...
+                .byte $FD
+                .byte $47
+                .byte $E4
+                .byte $28
+                .byte $90
+                .byte 6
+                .byte $18
+                .byte $7D
+                .text "G:BNET1:.lap DECR"
+
+;-------------------------------------------------------------------------
+
+entry_slide_off:
+                lda #$38
+; TODO: $5938
+; (address of rightmost character cell on row 0)
+                sta L0070
+                lda #$59
+                sta L0071
+                lda #1
+                sta L0072
+
+slide_off_loop:
+                lda #$81
+; OS 0.10 check?
+                ldx #1
+                ldy #$FF
+                jsr osbyte
+                tya
+                bne wait_for_vsync
+                ldx #$19
+
+L211A:
+                ldy #$FB
+
+L211C:
+                dey
+                bne L211C
+                dex
+                bne L211A
+                jmp L212C
+
+;-------------------------------------------------------------------------
+
+wait_for_vsync:
+                lda #19
+                ldx #0
+                jsr osbyte
+
+L212C:
+                lda #23
+                jsr oswrch
+                lda #0
+                jsr oswrch
+                lda #13
+                jsr oswrch
+                lda L0072
+                jsr oswrch
+                lda #0
+                jsr oswrch
+                jsr oswrch
+                jsr oswrch
+                jsr oswrch
+                jsr oswrch
+                jsr oswrch
+                lda L0070
+                clc
+                adc #8
+                sta L0070
+                lda L0071
+                adc #0
+                sta L0071
+                lda L0070
+                pha
+                lda L0071
+                pha
+; clear portion of screen just scrolled off
+                ldx #32
+
+fill_rows_loop:
+                ldy #7
+                lda #0
+
+fill_row_loop:
+                sta (L0070),y
+                dey
+                cpy #$FF
+                bne fill_row_loop
+                lda L0070
+                clc
+                adc #$40
+                sta L0070
+                lda L0071
+                adc #1
+                sta L0071
+                dex
+                bne fill_rows_loop
+                pla
+                sta L0071
+                pla
+                sta L0070
+                inc L0072
+                lda L0072
+                cmp #41
+                beq L2195
+                jmp slide_off_loop
+
+;-------------------------------------------------------------------------
+
+L2195:
+                rts
+
+;-------------------------------------------------------------------------
+
+                .text "A(DU),Y:"
+                .text "CMP#255:"
+                .text "BEQa5:"
+                .text "DEY:"
+                .text "CPY#255:"
+                .text "BNEB2:"
+                .text "JMPA5A:"
+                .text ".a5 LDAPA:"
+                .text "SEC:"
+                .text "SBC#64:"
+                .text "STAPA:"
+                .text "LDAPA+1:"
+                .text "SBC#1:"
+                .byte $FD
+                .byte $47
+                .byte $E4
+                .byte $28
+                .byte $90
+                .byte 6
+                .byte $18
+                .byte $7D
+                .text "G:BNET1:.l"

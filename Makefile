@@ -23,6 +23,9 @@ SHELLCMD:=$(PYTHON) $(shell $(PYTHON) submodules/shellcmd.py/shellcmd.py realpat
 # submodules/beeb/bin (absolute path).
 BEEB_BIN:=$(shell $(SHELLCMD) realpath submodules/beeb/bin)
 
+# bin (absolute path)
+BIN:=$(shell $(SHELLCMD) realpath bin)
+
 # How to run ssd_extract.py from any folder.
 SSD_EXTRACT:=$(PYTHON) $(BEEB_BIN)/ssd_extract.py
 
@@ -59,7 +62,8 @@ ifneq ($(OS),Windows_NT)
 endif
 
 # Create GBAS
-	$(_V)$(BASICTOOL) --tokenise --basic-2 --output-binary src/ghouls.bas $(BEEB_OUTPUT)/$$.GBAS
+	$(_V)$(PYTHON) $(BIN)/bbpp.py -o $(BUILD)/ghouls.bas src/ghouls.bas
+	$(_V)$(BASICTOOL) --tokenise --basic-2 --output-binary $(BUILD)/ghouls.bas $(BEEB_OUTPUT)/$$.GBAS
 
 # Convert !BOOT
 	$(_V)$(SHELLCMD) copy-file src/boot.txt $(BEEB_OUTPUT)/$$.!BOOT
@@ -77,6 +81,8 @@ endif
 	$(_V)echo 3 > $(BEEB_OUTPUT)/.opt4
 
 # Create a .ssd
+#
+# TODO: don't include everything!
 	$(_V)$(SSD_CREATE) -o $(SSD_OUTPUT) --dir $(BEEB_OUTPUT) $(BEEB_OUTPUT)/*
 
 ##########################################################################

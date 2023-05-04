@@ -110,3 +110,10 @@ clean:
 	$(_V)$(SHELLCMD) rm-tree $(BUILD)
 	$(_V)$(SHELLCMD) rm-tree $(BEEB_OUTPUT)
 	$(_V)$(SHELLCMD) rm-file $(SSD_OUTPUT)
+
+##########################################################################
+##########################################################################
+
+.PHONY:_tom_laptop
+_tom_laptop:
+	$(MAKE) build

@@ -43,6 +43,7 @@ sprite_pl_splat:.byte 0, 0, 0, $20, $90, $70,$E0,$F0, 0, 0, 0, $40,$C0,$A0,$D0,$
 sprite_spider_1_row0:.byte $C, $17, $11, 0, $17, $C, $33, $77, 0, 0,$CC, $55,$FF,$FF,$DF,$DF, 0, 0, $33,$AA,$FF,$FF,$BF,$BF, 3, $8E, $88, 0, $8E, 3,$CC,$EE; 0
 sprite_spider_1_row1:.byte $55, $5D, $19, $1B, $A, 2, 2, 2, $57, $77, $77, 2, 2, 4, 4, 0,$AE,$EE,$EE, 4, 4, 2, 2, 0,$AA,$AB, $89, $8D, 5, 4, 4, 4; 0
 sprite_power_pill:.byte 0, 0, $10, $21, $21, $21, $10, 0, 0, 0, $80, $48, $48, $48, $80, 0; 0
+L0AC0:
                 .word $11       ; channel
                 .word $FFF1     ; amplitude
                 .word $FF       ; pitch
@@ -536,10 +537,9 @@ L0EDA:
 ; X pressed
                 lda player_movement
                 bne L0EF8
-; TODO: sprite_pl_left_0
-                lda #0
+                lda #<sprite_pl_right_0
                 sta L0078
-                lda #9
+                lda #>sprite_pl_right_0
                 sta L0079
 
 L0EF8:
@@ -558,10 +558,9 @@ test_z_key:
                 beq L0F1E
                 lda player_movement
                 bne L0F19
-; TODO: sprite_pl_right_0
-                lda #$40
+                lda #<sprite_pl_left_0
                 sta L0078
-                lda #9
+                lda #>sprite_pl_left_0
                 sta L0079
 
 L0F19:
@@ -571,10 +570,9 @@ L0F19:
 L0F1E:
                 lda player_movement
                 bne L0F2E
-; TODO: sprite_pl_facing
-                lda #$80
+                lda #<sprite_pl_facing
                 sta L0078
-                lda #9
+                lda #>sprite_pl_facing
                 sta L0079
                 jmp L1158
 
@@ -594,9 +592,8 @@ L0F2E:
                 adc #0
                 sta L0079
                 lda #7
-; TODO: L0AC0
-                ldx #$C0
-                ldy #$A
+                ldx #<L0AC0
+                ldy #>L0AC0
                 jsr osword
                 jmp L1158
 
@@ -616,10 +613,9 @@ L0F51:
                 lda L0071
                 adc #0
                 sta L0071
-; TODO: sprite_pl_left_0
-                lda #0
+                lda #<sprite_pl_right_0
                 sta L0078
-                lda #9
+                lda #>sprite_pl_right_0
                 sta L0079
                 jmp L0F89
 
@@ -633,10 +629,9 @@ move_player_left:
                 lda L0071
                 sbc #0
                 sta L0071
-; TODO: sprite_pl_right_0
-                lda #$40
+                lda #<sprite_pl_left_0
                 sta L0078
-                lda #9
+                lda #>sprite_pl_left_0
                 sta L0079
 
 L0F89:
@@ -659,9 +654,8 @@ L0F8B:
                 lda #6
                 sta L0AC8+4  ;pitch
                 lda #7
-; TODO: L0AC8
-                ldx #$C8
-                ldy #$A
+                ldx #<L0AC8
+                ldy #>L0AC8
                 jsr osword
                 lda #2
                 sta L0AC8+4  ;pitch
@@ -830,9 +824,8 @@ L10A1:
                 lda L0085
                 sta L0AE0+4  ;pitch
                 lda #7
-; TODO: $ae0
-                ldx #$E0
-                ldy #$A
+                ldx #<L0AE0
+                ldy #>L0AE0
                 jsr osword
                 clc
                 ldx #3
@@ -882,9 +875,8 @@ L1108:
                 lda L0AF8
                 sta L0071
                 lda #7
-; TODO: $ac8
-                ldx #$C8
-                ldy #$A
+                ldx #<L0AC8
+                ldy #>L0AC8
                 jsr osword
                 lda player_anim_frame
                 eor #1
@@ -1078,9 +1070,8 @@ L1210:
                 lda L0AEE
                 sta L0AD8+4  ;pitch
                 lda #7
-; TODO: $ad8
-                ldx #$D8
-                ldy #$A
+                ldx #<L0AD8
+                ldy #>L0AD8
                 jsr osword
                 lda L0AF2
                 sta L0AF1
@@ -1326,9 +1317,8 @@ L1386:
                 adc #1
                 sta L0AD8+4  ;pitch
                 lda #7
-; TODO: $ad8
-                ldx #$D8
-                ldy #$A
+                ldx #<L0AD8
+                ldy #>L0AD8
                 jsr osword
 
 L13A8:
@@ -1532,9 +1522,8 @@ L14AD:
                 lda #1
                 sta L0AC8+4  ;pitch
                 lda #7
-; TODO: $ac8
-                ldx #$C8
-                ldy #$A
+                ldx #<L0AC8
+                ldy #>L0AC8
                 jsr osword
                 lda #2
                 sta L0AC8+4  ;pitch
@@ -1583,9 +1572,8 @@ L14FA:
                 lda #4
                 sta player_jump_state
                 lda #7
-; TODO: $ac8
-                ldx #$C8
-                ldy #$A
+                ldx #<L0AC8
+                ldy #>L0AC8
                 jsr osword
 
 L1519:
@@ -1755,9 +1743,8 @@ L15FE:
                 lda #$95
                 sta L0AD0+4  ;pitch
                 lda #7
-; TODO:$ad0
-                ldx #$D0
-                ldy #$A
+                ldx #<L0AD0
+                ldy #>L0AD0
                 jsr osword
                 ldy #1
 
@@ -1894,9 +1881,8 @@ L16C6:
                 sta L0073
                 dec L0AD0+4  ;pitch
                 lda #7
-; TODO: $ad0
-                ldx #$D0
-                ldy #$A
+                ldx #<L0AD0
+                ldy #>L0AD0
                 jsr osword
                 jsr L166B
                 ldy #$F
@@ -2156,12 +2142,12 @@ sprite_alt_goal_row1:.byte $69, $3C, $3C, $69, $F, $F, 7, 0, $3E, $2F, $2F, $3F,
 
 ;-------------------------------------------------------------------------
 
+top_right_cell=$5800+39*8
+                
 entry_slide_off:
-                lda #$38
-; TODO: $5938
-; (address of rightmost character cell on row 0)
+                lda #<top_right_cell
                 sta L0070
-                lda #$59
+                lda #>top_right_cell
                 sta L0071
                 lda #1
                 sta L0072

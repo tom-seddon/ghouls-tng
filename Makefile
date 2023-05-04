@@ -61,21 +61,21 @@ ifneq ($(OS),Windows_NT)
 	$(_V)cd submodules/basictool/src && make all
 endif
 
-# Create GBAS
-	$(_V)$(PYTHON) $(BIN)/bbpp.py  --asm-labels $(BUILD)/gmc.labels gmc. --asm-labels $(BUILD)/gcode.labels gcode. -o $(BUILD)/ghouls.bas src/ghouls.bas
-	$(_V)$(BASICTOOL) --tokenise --basic-2 --output-binary $(BUILD)/ghouls.bas $(BEEB_OUTPUT)/$$.GBAS
-
 # Convert !BOOT
 	$(_V)$(SHELLCMD) copy-file src/boot.txt $(BEEB_OUTPUT)/$$.!BOOT
 	$(_V)$(PYTHON) $(BEEB_BIN)/text2bbc.py $(BEEB_OUTPUT)/$$.!BOOT
 
-# Copy GMC
+# Create GMC
 	$(_V)$(TASS) $(TASS_ARGS) -L $(BUILD)/gmc.lst -l $(BUILD)/gmc.labels -o $(BUILD)/gmc.prg src/gmc.s65
 	$(_V)$(PYTHON) $(BEEB_BIN)/prg2bbc.py $(BUILD)/gmc.prg $(BEEB_OUTPUT)/$$.GMC
 
 # Create GCODE
 	$(_V)$(TASS) $(TASS_ARGS) -L $(BUILD)/gcode.lst -l $(BUILD)/gcode.labels -o $(BUILD)/gcode.prg src/gcode.s65
 	$(_V)$(PYTHON) $(BEEB_BIN)/prg2bbc.py $(BUILD)/gcode.prg $(BEEB_OUTPUT)/$$.GCODE
+
+# Create GBAS
+	$(_V)$(PYTHON) $(BIN)/bbpp.py  --asm-labels $(BUILD)/gmc.labels "" --asm-labels $(BUILD)/gcode.labels gcode. -o $(BUILD)/ghouls.bas src/ghouls.bas
+	$(_V)$(BASICTOOL) --tokenise --basic-2 --output-binary $(BUILD)/ghouls.bas $(BEEB_OUTPUT)/$$.GBAS
 
 # Set the boot option
 	$(_V)echo 3 > $(BEEB_OUTPUT)/.opt4

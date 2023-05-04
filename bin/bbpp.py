@@ -7,16 +7,22 @@ import sys,argparse,re,collections
 SrcLine=collections.namedtuple('SrcLine','src_path src_number text')
 BasicLine=collections.namedtuple('BasicLine','basic_number labels parts src_line')
 
-RefType=collections.namedtuple('RefType','name begin end')
+ExprType=collections.namedtuple('StrExprType','expr begin end')
+HexExprType=collections.namedtuple('HexExprType','expr begin end')
+HexDigitsExprType=collections.namedtuple('HexExprType','expr begin end')
 TextType=collections.namedtuple('TextType','text')
 
 Label=collections.namedtuple('Label','name src_line src_column')
 
 Value=collections.namedtuple('Value','name value src_line src_column')
 
+class Any: pass
+
 def add_text_part(parts,text):
-    if len(parts)==0 and (len(text)==0 or text.isspace()): return
-    parts.append(TextType(text=text))
+    if len(parts)==0 and (len(text)==0 or text.isspace()): return None
+    part=TextType(text=text)
+    parts.append(part)
+    return part
 
 class OutputWriter:
     def __init__(self,path):
@@ -87,12 +93,11 @@ def main2(options):
 
             name=prefix+parts[0].strip()
             
-            value=parts[1].strip()
-
             # Since these are labels, they are numbers. So fix up
             # non-BBC hex syntax.
-            if value.startswith('$'): value='&%s'%value[1:]
-            value=value.upper()
+            value=parts[1].strip()
+            if value.startswith('$'): value=int(value[1:],16)
+            else: value=int(value)
 
             set_value(name,
                       value,
@@ -109,6 +114,7 @@ def main2(options):
     for src_line in src_lines:
         parts=[]
         begin=0
+        end=None
 
         def syntax_error(begin,msg):
             sys.stderr.write('%s:%d:%d: %s\n'%(options.input_path,
@@ -116,6 +122,11 @@ def main2(options):
                                                begin+1,
                                                msg))
             sys.exit(1)
+
+        def add_expr(expr_type):
+            parts.append(expr_type(expr=src_line.text[begin+1:end],
+                                   begin=begin+1,
+                                   end=end))
         
         while begin<len(src_line.text):
             end=src_line.text.find('{',begin)
@@ -123,7 +134,7 @@ def main2(options):
                 add_text_part(parts,src_line.text[begin:])
                 begin=len(src_line.text)
             else:
-                add_text_part(parts,src_line.text[begin:end])
+                new_part=add_text_part(parts,src_line.text[begin:end])
                 begin=end+1           # start of markup
                 if begin>=len(src_line.text):
                     syntax_error(begin-1,'unterminated markup')
@@ -134,6 +145,14 @@ def main2(options):
                     begin+=1
                 elif src_line.text[begin]=='#':
                     # comment
+                    if new_part is not None:
+                        # Bit of a hack - remove any trailing spaces
+                        # from last added text part.
+                        #
+                        # (This could probably be done more neatly,
+                        # but that would mean I'd have had to actually
+                        # think about it.)
+                        parts[len(parts)-1]=TextType(text=new_part.text.rstrip())
                     break
                 else:
                     end=src_line.text.find('}',begin)
@@ -145,10 +164,9 @@ def main2(options):
                         next_line_labels.append(Label(src_line.text[begin+1:end],
                                                       src_line=src_line,
                                                       src_column=begin+1))
-                    elif src_line.text[begin]=='$':
-                        parts.append(RefType(name=src_line.text[begin+1:end],
-                                             begin=begin+1,
-                                             end=end))
+                    elif src_line.text[begin]=='$': add_expr(ExprType)
+                    elif src_line.text[begin]=='~': add_expr(HexDigitsExprType)
+                    elif src_line.text[begin]=='&': add_expr(HexExprType)
                     else: syntax_error(begin-1,'unknown markup type: %s'%src_line.text[begin])
 
                     begin=end+1
@@ -166,29 +184,62 @@ def main2(options):
     for basic_line in basic_lines:
         for label in basic_line.labels:
             set_value(label.name,
-                      str(basic_line.basic_number),
+                      basic_line.basic_number,
                       label.src_line,
                       label.src_column)
+
+    # generate Python object tree that can be used as the locals dict
+    # for expr.
+    locals_root=Any()
+    locals_root_names=set()
+    for value in values_by_name.values():
+        name_parts=value.name.split('.')
+        assert len(name_parts)>0
+
+        obj=locals_root
+        for i in range(len(name_parts)):
+            if i<len(name_parts)-1:
+                next_obj=getattr(obj,name_parts[i],None)
+                if next_obj is None:
+                    next_obj=Any()
+                    setattr(obj,name_parts[i],next_obj)
+                obj=next_obj
+            else:
+                assert not hasattr(obj,name_parts[i])
+                setattr(obj,name_parts[i],value.value)
+
+            if i==0: locals_root_names.add(name_parts[i])
+
+    locals_dict={}
+    for name in locals_root_names:
+        assert name not in locals_dict
+        locals_dict[name]=getattr(locals_root,name)
+
+    globals_dict={
+        '__builtins__':{},
+    }
 
     # print everything out.
     with OutputWriter(options.output_path) as f:
         for basic_line in basic_lines:
+            def print_expr(f,part,must_be_int,fmt):
+                value=eval(part.expr,globals_dict,locals_dict)
+                if must_be_int and not isinstance(value,int):
+                    sys.stderr.write('%s:%d:%d: not integer expression\n'%(
+                        basic_line.src_line.src_path,
+                        basic_line.src_line.src_number,
+                        part.begin))
+                    sys.exit(1)
+                f.write(fmt%value)
+
             f.write('%d'%basic_line.basic_number)
             for part in basic_line.parts:
                 if type(part) is TextType: f.write(part.text)
-                elif type(part) is RefType:
-                    value=values_by_name.get(part.name)
-                    if value is None:
-                        sys.stderr.write('%s:%d:%d: unknown name: %s\n'%(
-                            options.input_path,
-                            basic_line.src_line.src_number,
-                            part.begin,
-                            part.name))
-                        sys.exit(1)
-                    f.write(value.value)
+                elif type(part) is ExprType: print_expr(f,part,False,'%s')
+                elif type(part) is HexDigitsExprType: print_expr(f,part,True,'%X')
+                elif type(part) is HexExprType: print_expr(f,part,True,'&%X')
                 else: assert False
             f.write('\n')
-                
 
 ##########################################################################
 ##########################################################################
@@ -198,7 +249,7 @@ def main(argv):
 
     parser.add_argument('--strip-trailing-spaces',action='store_true',help='''strip trailing spaces from input lines''')
 
-    parser.add_argument('--asm-labels',dest='asm_labels_files',default=[],metavar='FILE PREFIX',nargs=2,action='append',help='''read asm labels from FILE, creating value namesby prepending PREFIX''')
+    parser.add_argument('--asm-symbols',dest='asm_labels_files',default=[],metavar='FILE PREFIX',nargs=2,action='append',help='''read asm symbols from FILE, creating value names by prepending PREFIX''')
 
     parser.add_argument('-o',dest='output_path',metavar='FILE',help='''write output to %(metavar)s (or stdout if not specified)''')
     

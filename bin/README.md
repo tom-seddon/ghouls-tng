@@ -7,27 +7,61 @@ with line numbers, suitable for use with basictool or similar.
 You can control the preprocessing using the following markup, all
 oriented around the `{` symbol.
 
-Markup available so far: (there is more to come)
+## Markup available
 
-## `{{` - literal
+### `{{` - literal ###
 
 Replaced with a `{` in the output.
 
-## `{#` - comment
+### `{#` - comment ###
 
-The `{#`, and everything following it on the line, is discarded.
+The `{#` is discarded, along with everything following it on the line,
+and any spaces preceding it.
 
-## `{$NAME}` - expand value
+### `{$EXPR}` - expand value as string ###
 
-The `{$...}` is replaced with the value with name `NAME`.
+Replaced with the result of evaluating `EXPR`. If the result is a
+number, it will be output in decimal.
 
-## `{:NAME}` - define line label
+`EXPR` is a Python expression.
+
+### `{&EXPR}` - expand value as hex number ###
+### `{~EXPR}` - expand value as hex digits ###
+
+Replaced with the result of evaluating `EXPR`, which must be numeric
+type. For `{~...}`, the result is BBC BASIC-style hex digits, i.e., in
+upper case, like using the BBC BASIC `~` operator. For `{&...}`, the
+result is a BBC BASIC-style hex value: `&`, followed by upper-case
+alpha digits.
+
+(The symbols are supposed to be vaguely mnemonic, but Don't think too
+hard about them.)
+
+`EXPR` is a Python expression.
+
+### `{:NAME}` - define line label ###
 
 Must be the first thing on a line.
 
-Defines the value with name `NAME` as the decimal number of the next
+Defines the value with name `NAME` as the integer number of the next
 BASIC line produced.
 
-----
+## Expression evaluation
+
+Expressions are Python expressions, evaluated with an empty set of
+globals, and all builtins removed.
+
+## Read symbols from assembler
+
+bbpp will read a `KEY=VALUE`-type symbols file, as output by 64tass
+and (probably) many other assemblers.
+
+Use `--asm-symbols` to do this. Supply two arguments: the name of the
+file to read, and the prefix to prepend to the names (if any - use
+`""` if no prefix is wanted).
+
+The symbols are integer values.
+
+## Example use
 
 The only example use of bbpp is ghouls.bas in this very project.

@@ -4,6 +4,10 @@ There is nothing interesting here, so far.
 
 Play the original in your browser: http://bbcmicro.co.uk/game.php?id=2506
 
+Or build it from the repo, and play it that way.
+
+----
+
 # Build
 
 ## Prerequisites
@@ -35,7 +39,7 @@ the following from inside the working copy:
     git submodule init
 	git submodule update
 
-# Build
+## Build
 
 Run `make` in the working copy. (A `make.bat` is supplied for Windows,
 which will run the supplied copy of GNU Make.)
@@ -47,3 +51,18 @@ The output files can also be found in `beeb/ghouls-tng/y/`. If you use
 [BeebLink](https://github.com/tom-seddon/beeblink/), configure it so
 it can find this folder - the output will be available in drive Y of
 the ghouls-tng volume.
+
+----
+
+# Branches
+
+## `main`
+
+Branch used for active development.
+
+## `unmodified`
+
+Latest version that promises to build to something bit identical to
+the starting point: a minified version of Ghouls, loaders stripped
+out, unmodified machine code parts, BASIC unmodified other than
+replacing embedded control codes with appropriate CHR$.

@@ -167,7 +167,7 @@ def main2(options):
                     elif src_line.text[begin]=='$': add_expr(ExprType)
                     elif src_line.text[begin]=='~': add_expr(HexDigitsExprType)
                     elif src_line.text[begin]=='&': add_expr(HexExprType)
-                    else: syntax_error(begin-1,'unknown markup type: %s'%src_line.text[begin])
+                    else: syntax_error(begin,'unknown markup type: %s'%src_line.text[begin])
 
                     begin=end+1
 
@@ -223,7 +223,16 @@ def main2(options):
     with OutputWriter(options.output_path) as f:
         for basic_line in basic_lines:
             def print_expr(f,part,must_be_int,fmt):
-                value=eval(part.expr,globals_dict,locals_dict)
+                try:
+                    value=eval(part.expr,globals_dict,locals_dict)
+                except NameError as e:
+                    sys.stderr.write('%s:%d:%d: %s\n'%(
+                        basic_line.src_line.src_path,
+                        basic_line.src_line.src_number,
+                        part.begin+1,
+                        e))
+                    sys.exit(1)
+                        
                 if must_be_int and not isinstance(value,int):
                     sys.stderr.write('%s:%d:%d: not integer expression\n'%(
                         basic_line.src_line.src_path,

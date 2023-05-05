@@ -1,3 +1,5 @@
+Folder for any tools run as part of the build.
+
 # bbpp
 
 BBC BASIC preprocessor, deliberately dumb. Reads BBC BASIC code from a

@@ -1,3 +1,5 @@
+#+STARTUP: overview
+
 * Original memory map
 
 As Ghouls is partly BASIC, the BASIC workspace as $400...$7ff is not
@@ -145,3 +147,21 @@ Possibly also available:
 - $50...$70 :: not obviously used by any 6502 version of BBC BASIC, as
   far as I can tell - see
   https://github.com/tom-seddon/basic_editor/blob/0d88b6e3bf0290a4b62fc3ac48730a61e7d12f9b/basiced.s65#L99
+
+* Level stuff
+
+Top left is at (0,5)
+
+228 - spikes
+229 - spring (lower)
+225 - spring (upper)
+243 - dots
+
+** SPECTRES' LAIR
+
+Power pill: $6be0
+
+
+** HORRID HALL
+** SPIDERS PARLOUR
+** DEATH TOWER

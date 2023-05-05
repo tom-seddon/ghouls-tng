@@ -24,7 +24,7 @@ VDU23,0,1,0;0;0;0;:VDU19,1,1;0;19,2,3;0;:IFSC<>2VDU19,3,SC+3;0; ELSEVDU19,3,2;0;
 SOUND&12,4,0,18:SOUND&13,4,1,18:FORF=1TO41STEP.2:VDU23,0,1,F;0;0;0;:NEXT
 !{&L0070}=&7A00:FORF=0TO GO STEP2:G=&6000+(RND(300)*16):F!{&ghosts_table}=G:NEXT:?{&bonus_update_timer}=31
 ?&7D=0:?{&L0084}=0 {# the asm doesn't seem to use &7D...
-CALL{&entry_game}:CALL{&gcode.clear_keyboard_buffer}
+CALL{&entry_game}:*FX15
 IF?{&unknown_update_2_timer}=255GOTO{$L370}
 FORG=0TO4STEP2:N=G?{&ghosts_table+1}*256+G?{&ghosts_table}:IFN>&5800 FORF=0TO15STEP4:F!N=F!{&sprite_ghost_happy_row0}:F!(N+320)=F!{&sprite_ghost_happy_row1}:NEXT
 NEXT:N=?{&L007B}*256+?{&L007A}:FORF=0TO31STEP4:F!N=F!{&sprite_floating_platform}:NEXT:N=?{&L0083}*256+?{&L0082}:IFN>&5800 FORF=0TO31STEP4:F!N=F!{&sprite_spider_1_row0}:F!(N+320)=F!{&sprite_spider_1_row1}:NEXT
@@ -45,7 +45,7 @@ SOUND&11,1,P,4:SOUND&12,1,P+1,4:SOUND&13,1,P-1,4:FORK=1TO200:NEXT
 NEXT:FORF=1TO4000:NEXT:ENVELOPE1,1,0,0,0,0,0,200,0,0,0,-2,126,0
 ?{&L0AF2}=?{&L0AF2}-5:IF?{&L0AF2}<20?{&L0AF2}=20
 SC=SC+1:IFSC=5:PROCtower:GOTO{$L100}
-CALL{&gcode.clear_keyboard_buffer}
+*FX15
 SOUND&11,2,2,50:SOUND&12,2,130,50:FORF=0TO15STEP4:F!&5CE0=F!{&sprite_ghost_happy_row0}:F!&5CF0=F!{&sprite_ghost_happy_row0}:F!&5E20=F!{&sprite_ghost_happy_row1}:F!&5E30=F!{&sprite_ghost_happy_row1}:NEXT
 FORF=1TO1000:NEXT:SOUND&10,1,2,2:FORF=0TO15STEP4:F!&5CD0=0:F!&5E10=0:NEXT:FORF=0TO15STEP4:F!&5A50=F!{&sprite_pl_facing}:F!&5B90=F!{&sprite_pl_facing+16}:NEXT:FORF=1TO500:NEXT:FORF=0TO15STEP4:F!&5A50=0:F!&5B90=0:NEXT
 GCOL0,2:MOVE0,952:PLOT21,1279,952:COLOUR2:PRINTTAB(1,14);"                  ";TAB(1,16);"                  ";TAB(1,15);"ESCAPE TO LEVEL ";SC;"."
@@ -120,7 +120,7 @@ PROCPRNT(7,4,CHR$131+"YOU ARE IN THE TOP TEN",45,1):PROCPRNT(7,6,CHR$130+"PLEASE
 IFSC=0A$=" st" ELSEIFSC=1A$=" nd" ELSEIFSC=2A$=" rd" ELSEIFSC>2A$=" th"
 FORF=15TO16:PRINTTAB(13,F)CHR$141CHR$129CHR$136;SC+1;A$:NEXT
 PRINTTAB(7,10)CHR$134CHR$157CHR$132"                    "CHR$156
-CALL{&gcode.clear_keyboard_buffer}
+*FX15
 L$="":K=10:P=0:L=0:F=.1:RESTORE{$L2020}
 {:L1150}
 IFINKEY(-74)=-1GOTO{$L1250}
@@ -151,7 +151,7 @@ GOTO{$L70}
 {:L1350}
 REM*** INSTRUCTIONS **
 MODE7:VDU23,0,11;0;0;0;
-CALL{&gcode.clear_keyboard_buffer}
+*FX15
 FORF=1TO2:PRINTTAB(10,F);CHR$141;CHR$(131-F);"G H O U L S":NEXT:PRINTTAB(10,3)CHR$147"``,,,ppp,,,``"
 SOUND&11,2,5,50:SOUND&12,2,5,50:SOUND&13,2,6,50:FORF=1TO2500:NEXT 
 IFINKEY(-255)=0GOTO{$L1470}
@@ -169,7 +169,7 @@ PRINTCHR$130"platforms, springs, and deadly spikes."
 PRINTCHR$130"There is also a nasty spider that jumps"CHR$130"up and down ready to catch you!!"
 PRINT" "CHR$131"By eating one of the stray power"'CHR$131"jewels you can over power and paralyse"'CHR$131"the ghosts for a few seconds helping"'CHR$131"you in your quest...."
 FORF=21TO22:PRINTTAB(4,F);CHR$141CHR$133"Press SPACE BAR to continue":NEXT
-CALL{&gcode.clear_keyboard_buffer}
+*FX15
 {:L1540}
 I=GET:IFI<>32GOTO{$L1540}
 PROCCLR
@@ -178,7 +178,7 @@ PRINT'TAB(8)CHR$131"""Z"""CHR$132"-"CHR$135"MOVES YOU LEFT"''TAB(8)CHR$131"""X""
 PRINT'TAB(8)CHR$131"""P"""CHR$132"-"CHR$135"PAUSES GAME"''TAB(8)CHR$131"""O"""CHR$132"-"CHR$135"CANCELS PAUSE"
 PRINT'"   "CHR$131"""ESCAPE"""CHR$132"-"CHR$135"RETURNS TO SOUND OPTION                 AND INSTRUCTIONS"
 FORF=20TO21:PRINTTAB(1,F)CHR$141CHR$133"DO YOU WANT TO SEE GAME OBJECTS?";TAB(13,F+2)CHR$141CHR$130"(Y/N)":NEXT
-CALL{&gcode.clear_keyboard_buffer}
+*FX15
 I$=GET$:IFI$="Y" ORI$="y"MODE5:VDU23,0,11;0;0;0;:PROCSHOW
 GOTO{$L70}
 DEFPROCSHOW
@@ -195,11 +195,11 @@ COLOUR2:PRINTTAB(0,24);CHR$243;CHR$243:COLOUR1:PRINTTAB(2,24);" = STRAY EDIBLES!
 N=N+1280:FORF=0TO31STEP4:F!N=F!{&sprite_goal_row0}:F!(N+320)=F!{&sprite_goal_row1}:NEXT:COLOUR1:PRINTTAB(2,27);" = STOLEN JEWELS"
 COLOUR2:PRINTTAB(0,29);"PRESS SPACE TO PLAY."
 VDU19,1,1;0;19,2,3;0;19,3,4;0;
-CALL{&gcode.clear_keyboard_buffer}
+*FX15
 {:L1790}
 I=GET:IFI<>32GOTO{$L1790}
 CALL{&entry_slide_off}:ENDPROC
-CALL{&gcode.clear_keyboard_buffer}
+*FX15
 PRINT:PRINT:END
 {:L1830}
 DATA41,69,89,101,117,137,117,101,89,69

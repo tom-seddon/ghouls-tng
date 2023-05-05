@@ -1,0 +1,147 @@
+* Original memory map
+
+As Ghouls is partly BASIC, the BASIC workspace as $400...$7ff is not
+available.
+
+26 pages GMC; 39 pages GBAS; 3 pages variables; 1 page BASIC stack.
+
+UseOK indicates whether this region is OK for Ghouls to use in
+practice.
+
+Regarding pages marked as maybe useable, OS workspace:
+
+- 0b :: F key definitions on B/B+, Econet stuff on Master
+- 0c :: UDGs on B/B+, Econet stuff on Master
+
+B/B+ DFS workspace:
+
+- 11-16 :: DFS random access workspace on B/B+
+- 17-18 :: DFS private workspace on B/B+
+
+If not using random access files or changing FS, on B/B+ with DFS,
+pages 11-18 are useable.
+
+Not worth supporting non-DFS setups on B/B+.
+
+On Master, PAGE is always $e00, so only page 0d is unusable.
+
+| Page | What   | UseOK | Notes                                       |
+|------+--------+-------+---------------------------------------------|
+|   09 | GMC    | Yes   |                                             |
+|   0a | GMC    |       |                                             |
+|------+--------+-------+---------------------------------------------|
+|   0b | GMC    | Maybe | Apparently unused                           |
+|   0c | GMC    |       | OS 1.20 UDGs - read on startup              |
+|------+--------+-------+---------------------------------------------|
+|   0d | GMC    | No    |                                             |
+|   0e | GMC    |       |                                             |
+|   0f | GMC    |       |                                             |
+|   10 | GMC    |       |                                             |
+|------+--------+-------+---------------------------------------------|
+|   11 | GMC    | Maybe |                                             |
+|   12 | GMC    |       |                                             |
+|   13 | GMC    |       |                                             |
+|   14 | GMC    |       |                                             |
+|   15 | GMC    |       |                                             |
+|   16 | GMC    |       |                                             |
+|   17 | GMC    |       |                                             |
+|   18 | GMC    |       |                                             |
+|------+--------+-------+---------------------------------------------|
+|   19 | GMC    | Yes   |                                             |
+|   1a | GMC    |       |                                             |
+|   1b | GMC    |       |                                             |
+|   1c | GMC    |       |                                             |
+|   1d | GMC    |       |                                             |
+|   1e | GMC    |       |                                             |
+|   1f | GMC    |       |                                             |
+|   20 | GMC    |       |                                             |
+|   21 | GMC    |       |                                             |
+|------+--------+-------+---------------------------------------------|
+|   22 | GBAS   | Yes   |                                             |
+|   23 | GBAS   |       |                                             |
+|   24 | GBAS   |       |                                             |
+|   25 | GBAS   |       |                                             |
+|   26 | GBAS   |       |                                             |
+|   27 | GBAS   |       |                                             |
+|   28 | GBAS   |       |                                             |
+|   29 | GBAS   |       |                                             |
+|   2a | GBAS   |       |                                             |
+|   2b | GBAS   |       |                                             |
+|   2c | GBAS   |       |                                             |
+|   2d | GBAS   |       |                                             |
+|   2e | GBAS   |       |                                             |
+|   2f | GBAS   |       |                                             |
+|   30 | GBAS   |       |                                             |
+|   31 | GBAS   |       |                                             |
+|   32 | GBAS   |       |                                             |
+|   33 | GBAS   |       |                                             |
+|   34 | GBAS   |       |                                             |
+|   35 | GBAS   |       |                                             |
+|   36 | GBAS   |       |                                             |
+|   37 | GBAS   |       |                                             |
+|   38 | GBAS   |       |                                             |
+|   39 | GBAS   |       |                                             |
+|   3a | GBAS   |       |                                             |
+|   3b | GBAS   |       |                                             |
+|   3c | GBAS   |       |                                             |
+|   3d | GBAS   |       |                                             |
+|   3e | GBAS   |       |                                             |
+|   3f | GBAS   |       |                                             |
+|   40 | GBAS   |       |                                             |
+|   41 | GBAS   |       |                                             |
+|   42 | GBAS   |       |                                             |
+|   43 | GBAS   |       |                                             |
+|   44 | GBAS   |       |                                             |
+|   45 | GBAS   |       |                                             |
+|   46 | GBAS   |       |                                             |
+|   47 | GBAS   |       |                                             |
+|   48 | GBAS   |       |                                             |
+|   49 | GBAS   |       |                                             |
+|------+--------+-------+---------------------------------------------|
+|   4a | BVars  | Yes   | Includes some slack space                   |
+|   4b | BVars  |       |                                             |
+|   4c | BVars  |       |                                             |
+|------+--------+-------+---------------------------------------------|
+|   4d | Spare  | Yes   |                                             |
+|   4e | Spare  |       |                                             |
+|   4f | Spare  |       |                                             |
+|   50 | Spare  |       |                                             |
+|   51 | Spare  |       |                                             |
+|   52 | Spare  |       |                                             |
+|   53 | Spare  |       |                                             |
+|   54 | Spare  |       |                                             |
+|   55 | Spare  |       |                                             |
+|   56 | Spare  |       |                                             |
+|------+--------+-------+---------------------------------------------|
+|   57 | BStack | Yes   | Hopefully won't grow into the page below... |
+|------+--------+-------+---------------------------------------------|
+|   58 | Screen |       |                                             |
+|  ... |        |       |                                             |
+|   7f |        |       |                                             |
+|------+--------+-------+---------------------------------------------|
+
+Some notes:
+
+- End of BASIC variables can be seen at $02/$03 (see
+  http://8bs.com/basic/memory.htm)
+
+- There's a few places now where strings are built up using `CHR$`,
+  rather than just being a literal with embedded control codes. But I
+  think such operations are performed in the string work area in page
+  6? - so it's only the final length of the string that influences how
+  much BASIC heap space is used. So the end result should be the same
+  (or near enough)
+
+* Available zero page
+
+- $70...$8f :: BASIC workspace left free for user programs
+- $a8...$af :: available between * commands (any * command might
+  overwrite)
+- $b0...$bf :: available between FS calls (any FS call might
+  overwrite)
+
+Possibly also available:
+
+- $50...$70 :: not obviously used by any 6502 version of BBC BASIC, as
+  far as I can tell - see
+  https://github.com/tom-seddon/basic_editor/blob/0d88b6e3bf0290a4b62fc3ac48730a61e7d12f9b/basiced.s65#L99

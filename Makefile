@@ -69,12 +69,8 @@ endif
 	$(_V)$(TASS) $(TASS_ARGS) -L $(BUILD)/gmc.lst -l $(BUILD)/gmc.symbols -o $(BUILD)/gmc.prg src/gmc.s65
 	$(_V)$(PYTHON) $(BEEB_BIN)/prg2bbc.py $(BUILD)/gmc.prg $(BEEB_OUTPUT)/$$.GMC
 
-# Create GCODE
-	$(_V)$(TASS) $(TASS_ARGS) -L $(BUILD)/gcode.lst -l $(BUILD)/gcode.symbols -o $(BUILD)/gcode.prg src/gcode.s65
-	$(_V)$(PYTHON) $(BEEB_BIN)/prg2bbc.py $(BUILD)/gcode.prg $(BEEB_OUTPUT)/$$.GCODE
-
 # Create GBAS
-	$(_V)$(PYTHON) $(BIN)/bbpp.py  --asm-symbols $(BUILD)/gmc.symbols "" --asm-symbols $(BUILD)/gcode.symbols gcode. -o $(BUILD)/ghouls.bas src/ghouls.bas
+	$(_V)$(PYTHON) $(BIN)/bbpp.py  --asm-symbols $(BUILD)/gmc.symbols "" -o $(BUILD)/ghouls.bas src/ghouls.bas
 	$(_V)$(BASICTOOL) --tokenise --basic-2 --output-binary $(BUILD)/ghouls.bas $(BEEB_OUTPUT)/$$.GBAS
 
 # Set the boot option
@@ -84,15 +80,6 @@ endif
 #
 # TODO: don't include everything!
 	$(_V)$(SSD_CREATE) -o $(SSD_OUTPUT) --dir $(BEEB_OUTPUT) $(BEEB_OUTPUT)/*
-
-# Some stuff while I'm trying to ensure the output matches.
-	@$(SHELLCMD) blank-line
-	@$(SHELLCMD) sha1 beeb/ghouls-tng/0/$$.GCODE
-	@$(SHELLCMD) sha1 beeb/ghouls-tng/y/$$.GCODE
-	@$(SHELLCMD) sha1 beeb/ghouls-tng/0/$$.GMC
-	@$(SHELLCMD) sha1 beeb/ghouls-tng/y/$$.GMC
-	@$(SHELLCMD) sha1 beeb/ghouls-tng/0/$$.GBAS
-	@$(SHELLCMD) sha1 beeb/ghouls-tng/y/$$.GBAS
 
 ##########################################################################
 ##########################################################################

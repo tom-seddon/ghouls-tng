@@ -73,6 +73,9 @@ endif
 	$(_V)$(PYTHON) $(BIN)/bbpp.py  --asm-symbols $(BUILD)/gmc.symbols "" -o $(BUILD)/ghouls.bas src/ghouls.bas
 	$(_V)$(BASICTOOL) --tokenise --basic-2 --output-binary $(BUILD)/ghouls.bas $(BEEB_OUTPUT)/$$.GBAS
 
+# Create GLOADER
+	$(_V)$(BASICTOOL) --tokenise --basic-2 --output-binary src/gloader.bas $(BEEB_OUTPUT)/$$.GLOADER
+
 # Set the boot option
 	$(_V)echo 3 > $(BEEB_OUTPUT)/.opt4
 
@@ -102,7 +105,8 @@ clean:
 ##########################################################################
 
 .PHONY:_tom_laptop
-_tom_laptop: CONFIG=Master 128 (MOS 3.20)
+# _tom_laptop: CONFIG=Master 128 (MOS 3.20)
+_tom_laptop: CONFIG=B/Acorn 1770
 _tom_laptop:
 	$(MAKE) build
 	-curl --connect-timeout 0.25 --silent -G 'http://localhost:48075/reset/b2' --data-urlencode "config=$(CONFIG)"

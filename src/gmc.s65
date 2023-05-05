@@ -5,22 +5,19 @@
 L0070=$70
 L0071=$71
 L0072=$72
-L0073=$73
 L0074=$74
 L0075=$75
 L0076=$76
 L0077=$77
 L0078=$78
 L0079=$79
-L007A=$7a
-L007B=$7b
+platform_addr=$7a
 L007C=$7c
 L007E=$7e
 L007F=$7f
-L0080=$80
-L0081=$81
-L0082=$82
-L0083=$83
+conveyer_addr=$80
+spider_addr=$82
+level_draw_ptr=$84
 L0084=$84
 L0085=$85
 
@@ -71,22 +68,22 @@ L0AE0:
                 .byte 0
                 .byte 0
 bonus_update_timer:.byte 2
-L0AEB: .byte $C
-L0AEC: .byte $4D
+spider_speed: .byte $C
+spider_update_timer: .byte $4D
 L0AED: .byte 1
 L0AEE: .byte 0
-L0AEF: .byte 1
+conveyer_direction: .byte 1
 L0AF0: .byte $4D
 L0AF1: .byte 1
 L0AF2: .byte $3C
 L0AF3: .byte 0
 L0AF4: .byte $85
-unknown_update_2_timer_reset_value:.byte 6
+platform_speed:.byte 6
              .byte 1
 L0AF7: .byte $B0
 L0AF8: .byte $72
-unknown_update_2_timer:.byte 1
-L0AFA: .byte 0
+platform_update_timer:.byte 1
+platform_direction: .byte 0
 unknown_update_1_timer:.byte 2
 L0AFC: .byte 0
 player_movement:.byte 2
@@ -292,17 +289,17 @@ L0D14:
                 tya
                 pha
                 ldy #0
-                lda (L0084),y
+                lda (level_draw_ptr),y
                 jsr oswrch
-                lda L0084
+                lda level_draw_ptr+0
                 clc
                 adc #1
-                sta L0084
-                lda L0085
+                sta level_draw_ptr+0
+                lda level_draw_ptr+1
                 adc #0
 
 L0D28:
-                sta L0085
+                sta level_draw_ptr+1
                 pla
                 tay
                 dey
@@ -415,27 +412,27 @@ L0E1E:       .byte ' '
 entry_game:
                 lda #1
                 sta L0AED
-                sta L0AEF
+                sta conveyer_direction
                 sta player_anim_frame
                 lda #0
                 sta L0AEE
                 sta player_jump_state
-                sta L0AFA
+                sta platform_direction
                 sta L0AF3
                 lda #2
                 sta player_movement
                 sta unknown_update_1_timer
-                sta unknown_update_2_timer
+                sta platform_update_timer
                 sta L0AF1
                 sta L0AF0
-                sta L0AEC
+                sta spider_update_timer
                 lda #$1F
                 sta bonus_update_timer
 
 main_loop:
                 lda L0AF4
                 adc L0070
-                adc L007A
+                adc platform_addr
                 adc L007C
                 sta L0AF4
                 jsr L0E9F
@@ -511,7 +508,7 @@ L0EBD:
                 adc #$40
                 sta L0074
                 lda L0071
-                sta L0073
+                sta L0072+1
                 sta L0AF8
                 adc #1
                 sta L0075
@@ -679,14 +676,14 @@ erase_ghosts_loop:
                 lda ghosts_table,y
                 sta L0072
                 lda ghosts_table+1,y
-                sta L0073
+                sta L0072+1
                 beq erase_ghosts_next; taken if no ghost
                 lda L0072
 ; form screen address for ghost row 1
                 clc
                 adc #$40
                 sta L0074
-                lda L0073
+                lda L0072+1
                 adc #1
                 sta L0075
                 ldy #$F
@@ -724,7 +721,7 @@ L101C:
                 sta L0072
                 lda L0071
                 adc #1
-                sta L0073
+                sta L0072+1
                 lda player_jump_state
                 bne L1060
                 lda L0070
@@ -733,7 +730,7 @@ L101C:
                 sta L0072
                 lda L0071
                 adc #1
-                sta L0073
+                sta L0072+1
                 ldy #$F
 
 L103D:
@@ -766,9 +763,9 @@ L1060:
                 clc
                 adc #$40
                 sta L0072
-                lda L0073
+                lda L0072+1
                 adc #1
-                sta L0073
+                sta L0072+1
                 ldy #0
                 lda (L0072),y
                 cmp #$FF
@@ -800,7 +797,7 @@ L1092:
                 sta L0072
                 lda L0071
                 adc #1
-                sta L0073
+                sta L0072+1
                 ldy #$F
 
 L10A1:
@@ -931,7 +928,7 @@ L1158:
                 sta L0072
                 lda L0071
                 adc #1
-                sta L0073
+                sta L0072+1
                 ldy #$F
 
 L1174:
@@ -970,12 +967,10 @@ L118E:
 ;-------------------------------------------------------------------------
 
 L119C:       .block
-                lda L007B
-                beq L11A9
-                dec unknown_update_2_timer
-                beq L11AA
-                lda L007B
-                beq L11AA
+                lda platform_addr+1
+                beq L11A9       ;skip if no platform
+                dec platform_update_timer
+                beq L11AA       ;taken if time to update platform
 
 L11A9:
                 rts
@@ -983,58 +978,56 @@ L11A9:
 ;-------------------------------------------------------------------------
 
 L11AA:
-                lda unknown_update_2_timer_reset_value
-                sta unknown_update_2_timer
+                lda platform_speed
+                sta platform_update_timer
                 ldy #$1F
                 lda #0
 
 L11B4:
-                sta (L007A),y
+                sta (platform_addr),y
                 dey
-                cpy #$FF
-                bne L11B4
+                bpl L11B4
 
 L11BB:
-                lda L0AFA
-                beq L11D0
-                lda L007A
+                lda platform_direction
+                beq move_platform_left
+                lda platform_addr
                 clc
                 adc #8
-                sta L007A
-                lda L007B
+                sta platform_addr
+                lda platform_addr+1
                 adc #0
-                sta L007B
+                sta platform_addr+1
                 jmp L11DD
 
 ;-------------------------------------------------------------------------
 
-L11D0:
-                lda L007A
+move_platform_left:
+                lda platform_addr
                 sec
                 sbc #8
-                sta L007A
-                lda L007B
+                sta platform_addr
+                lda platform_addr+1
                 sbc #0
-                sta L007B
+                sta platform_addr+1
 
 L11DD:
                 ldy #$1F
 
 L11DF:
-                lda (L007A),y
+                lda (platform_addr),y
                 cmp #$FF
-                beq L11ED
+                beq change_platform_direction ;taken if it bumped into a wall
                 dey
-                cpy #$FF
-                bne L11DF
+                bpl L11DF
                 jmp L11F8
 
 ;-------------------------------------------------------------------------
 
-L11ED:
-                lda L0AFA
+change_platform_direction:
+                lda platform_direction
                 eor #1
-                sta L0AFA
+                sta platform_direction
                 jmp L11BB
 
 ;-------------------------------------------------------------------------
@@ -1044,10 +1037,9 @@ L11F8:
 
 L11FA:
                 lda sprite_floating_platform,y
-                sta (L007A),y
+                sta (platform_addr),y
                 dey
-                cpy #$FF
-                bne L11FA
+                bpl L11FA
                 rts
                 .endblock
 
@@ -1094,7 +1086,7 @@ L123C:
                 lda L007E
                 sta L0072
                 lda L007F
-                sta L0073
+                sta L0072+1
                 bne L1256
                 jmp L1370
 
@@ -1221,7 +1213,7 @@ L1301:
                 clc
                 adc #$40
                 sta L0074
-                lda L0073
+                lda L0072+1
                 adc #1
                 sta L0075
                 ldy #$F
@@ -1337,15 +1329,15 @@ L13AE:
 ;-------------------------------------------------------------------------
 
 L13AF:
-                lda L0081
-                beq L13AE
+                lda conveyer_addr+1
+                beq L13AE       ;taken if no conveyer on this level
                 lda #4
                 sta L0AF0
                 jsr L156B
                 ldy #$F
 
 L13BD:
-                lda (L0080),y
+                lda (conveyer_addr),y
                 cmp #$66
                 beq L13CB
                 dey
@@ -1356,9 +1348,9 @@ L13BD:
 ;-------------------------------------------------------------------------
 
 L13CB:
-                lda L0AEF
+                lda conveyer_direction
                 eor #1
-                sta L0AEF
+                sta conveyer_direction
                 jsr L156B
 
 L13D6:
@@ -1366,7 +1358,7 @@ L13D6:
 
 L13D8:
                 lda sprite_half_platform_QQQ,y
-                sta (L0080),y
+                sta (conveyer_addr),y
                 dey
                 cpy #$FF
                 bne L13D8
@@ -1376,8 +1368,8 @@ L13D8:
 ;-------------------------------------------------------------------------
 
 L13E3:       .block
-                dec L0AEC
-                lda L0AEC
+                dec spider_update_timer
+                lda spider_update_timer
                 beq L13EE
 
 L13EB:
@@ -1386,22 +1378,22 @@ L13EB:
 ;-------------------------------------------------------------------------
 
 L13EE:
-                lda L0083
+                lda spider_addr+1
                 beq L13EB
-                lda L0AEB
-                sta L0AEC
-                lda L0082
+                lda spider_speed
+                sta spider_update_timer
+                lda spider_addr
                 clc
                 adc #$40
                 sta L0072
-                lda L0083
+                lda spider_addr+1
                 adc #1
-                sta L0073
+                sta L0072+1
                 lda #0
                 ldy #$1F
 
 L1409:
-                sta (L0082),y
+                sta (spider_addr),y
                 sta (L0072),y
                 dey
                 cpy #$FF
@@ -1410,41 +1402,41 @@ L1409:
 L1412:
                 lda L0AED
                 beq L1427
-                lda L0082
+                lda spider_addr
                 clc
                 adc #$40
-                sta L0082
-                lda L0083
+                sta spider_addr
+                lda spider_addr+1
                 adc #1
-                sta L0083
+                sta spider_addr+1
                 jmp L1434
 
 ;-------------------------------------------------------------------------
 
 L1427:
-                lda L0082
+                lda spider_addr
                 sec
                 sbc #$40
-                sta L0082
-                lda L0083
+                sta spider_addr
+                lda spider_addr+1
                 sbc #1
-                sta L0083
+                sta spider_addr+1
 
 L1434:
-                lda L0082
+                lda spider_addr
                 clc
                 adc #$40
                 sta L0072
-                lda L0083
+                lda spider_addr+1
                 adc #1
-                sta L0073
+                sta L0072+1
                 ldy #$1F
 
 L1443:
                 lda (L0072),y
                 cmp #$FF
                 beq L1457
-                lda (L0082),y
+                lda (spider_addr),y
                 cmp #$FF
                 beq L1457
                 dey
@@ -1471,7 +1463,7 @@ L1462:
 
 L146C:
                 lda sprite_spider_0_row0,y
-                sta (L0082),y
+                sta (spider_addr),y
                 lda sprite_spider_0_row1,y
                 sta (L0072),y
                 dey
@@ -1486,7 +1478,7 @@ L147E:
 
 L1480:
                 lda sprite_spider_1_row0,y
-                sta (L0082),y
+                sta (spider_addr),y
                 lda sprite_spider_1_row1,y
                 sta (L0072),y
                 dey
@@ -1637,27 +1629,27 @@ L1565:
 ;-------------------------------------------------------------------------
 
 L156B:       .block
-                lda L0AEF
+                lda conveyer_direction
                 beq L1580
-                lda L0080
+                lda conveyer_addr
                 clc
                 adc #8
-                sta L0080
-                lda L0081
+                sta conveyer_addr
+                lda conveyer_addr+1
                 adc #0
-                sta L0081
+                sta conveyer_addr+1
                 jmp L158D
 
 ;-------------------------------------------------------------------------
 
 L1580:
-                lda L0080
+                lda conveyer_addr
                 sec
                 sbc #8
-                sta L0080
-                lda L0081
+                sta conveyer_addr
+                lda conveyer_addr+1
                 sbc #0
-                sta L0081
+                sta conveyer_addr+1
 
 L158D:
                 rts
@@ -1667,7 +1659,7 @@ L158D:
 
 L158E:
                 lda #$FF
-                sta unknown_update_2_timer
+                sta platform_update_timer
                 lda L0070
                 clc
                 adc #$40
@@ -1878,7 +1870,7 @@ L16C6:
                 sta L0072
                 lda L0071
                 adc #1
-                sta L0073
+                sta L0072+1
                 dec L0AD0+4  ;pitch
                 lda #7
                 ldx #<L0AD0
@@ -1908,7 +1900,7 @@ L16E4:
                 sta L0072
                 lda L0071
                 adc #1
-                sta L0073
+                sta L0072+1
                 ldy #$F
 
 L170F:
@@ -1982,7 +1974,7 @@ kill_player_and_drop_caller:
                 sta L0072
                 lda L0071
                 adc #1
-                sta L0073
+                sta L0072+1
                 ldy #$F
 
 L177A:

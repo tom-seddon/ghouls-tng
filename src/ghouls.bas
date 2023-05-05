@@ -25,9 +25,9 @@ SOUND&12,4,0,18:SOUND&13,4,1,18:FORF=1TO41STEP.2:VDU23,0,1,F;0;0;0;:NEXT
 !{&L0070}=&7A00:FORF=0TO GO STEP2:G=&6000+(RND(300)*16):F!{&ghosts_table}=G:NEXT:?{&bonus_update_timer}=31
 ?&7D=0:?{&L0084}=0 {# the asm doesn't seem to use &7D...
 CALL{&entry_game}:*FX15
-IF?{&unknown_update_2_timer}=255GOTO{$L370}
+IF?{&platform_update_timer}=255GOTO{$L370}
 FORG=0TO4STEP2:N=G?{&ghosts_table+1}*256+G?{&ghosts_table}:IFN>&5800 FORF=0TO15STEP4:F!N=F!{&sprite_ghost_happy_row0}:F!(N+320)=F!{&sprite_ghost_happy_row1}:NEXT
-NEXT:N=?{&L007B}*256+?{&L007A}:FORF=0TO31STEP4:F!N=F!{&sprite_floating_platform}:NEXT:N=?{&L0083}*256+?{&L0082}:IFN>&5800 FORF=0TO31STEP4:F!N=F!{&sprite_spider_1_row0}:F!(N+320)=F!{&sprite_spider_1_row1}:NEXT
+NEXT:N=?{&platform_addr+1}*256+?{&platform_addr}:FORF=0TO31STEP4:F!N=F!{&sprite_floating_platform}:NEXT:N=?{&spider_addr+1}*256+?{&spider_addr}:IFN>&5800 FORF=0TO31STEP4:F!N=F!{&sprite_spider_1_row0}:F!(N+320)=F!{&sprite_spider_1_row1}:NEXT
 SOUND&10,-15,3,18:FORF=200TO0STEP-.6:SOUND&11,0,F,1:NEXT:N=?{&L0071}*256+?{&L0070}:IF?(N+326)=224N=N+320 ELSEIF?(N-314)=224N=N-320
 K=110:FORG={&sprite_pl_die_0} TO {&sprite_pl_die_7} STEP16:FORF=0TO15STEP4:F!N=F!G:NEXT
 FORJ=K TO K+5STEP.3:SOUND&11,-12,J,1:SOUND&12,-12,J-12,1:NEXT:FORJ=K+5 TO K-10STEP-.8:SOUND&11,-12,J,1:SOUND&12,-12,J-12,1:NEXT:K=K-8:NEXT
@@ -58,33 +58,33 @@ CLS:GOTO{$L100}
 END
 {:L540}
 REM ***SCENE1*** 
-!{&L0084}={&level_data_0}:CALL{&entry_draw_level}:VDU5:MOVE364,28:PRINT"SPECTRES' LAIR":VDU4
+!{&level_draw_ptr}={&level_data_0}:CALL{&entry_draw_level}:VDU5:MOVE364,28:PRINT"SPECTRES' LAIR":VDU4
 COLOUR1:PRINTTAB(7,23);CHR$228:FORF=0TO15STEP4:F!&6BE0=F!{&sprite_power_pill}:NEXT
 COLOUR2:FORF=7TO12:PRINTTAB(F,27);CHR$243;TAB(F+2,22);CHR$243:NEXT:FORF=1TO2:PRINTTAB(F,4);CHR$243;TAB(F+5,4);CHR$243:NEXT
-!{&L007A}=&6A00:?{&unknown_update_2_timer_reset_value}=6:?{&L0081}=0:!{&L0083}=0:IFGO>0!{&L0082}=&6A10:?{&L0AEB}=8
+!{&platform_addr}=&6A00:?{&platform_speed}=6:?{&conveyer_addr+1}=0:!{&spider_addr+1}=0:IFGO>0!{&spider_addr}=&6A10:?{&spider_speed}=8
 RETURN
 {:L600}
 REM ***SCENE2***
-!{&L0084}={&level_data_1}:CALL{&entry_draw_level}:VDU5:MOVE400,28:PRINT"HORRID HALL":VDU4
+!{&level_draw_ptr}={&level_data_1}:CALL{&entry_draw_level}:VDU5:MOVE400,28:PRINT"HORRID HALL":VDU4
 COLOUR1:PRINTTAB(4,17);CHR$228;TAB(17,26);CHR$225;TAB(17,27);CHR$229;TAB(17,12);CHR$228
 COLOUR2:FORF=6TO15:PRINTTAB(F,11);CHR$243;TAB(F/1.5+7,17);CHR$243:NEXT
-!{&L007A}=&61A0:?{&unknown_update_2_timer_reset_value}=14:!{&L0080}=&6960:!{&L0083}=0
-IFGO>0!{&L0082}=&6708:?{&L0AEB}=4
+!{&platform_addr}=&61A0:?{&platform_speed}=14:!{&conveyer_addr}=&6960:!{&spider_addr+1}=0
+IFGO>0!{&spider_addr}=&6708:?{&spider_speed}=4
 FORF=0TO15STEP4:F!&74D0=F!{&sprite_power_pill}:NEXT
 RETURN
 {:L680}
 REM ***SCENE3***
-!{&L0084}={&level_data_2}:CALL{&entry_draw_level}:VDU5:MOVE332,28:PRINT"SPIDERS PARLOUR":VDU4
+!{&level_draw_ptr}={&level_data_2}:CALL{&entry_draw_level}:VDU5:MOVE332,28:PRINT"SPIDERS PARLOUR":VDU4
 COLOUR1:PRINTTAB(14,8);CHR$225;TAB(1,13);CHR$228;TAB(17,16);CHR$228;TAB(8,24);CHR$228;"  ";CHR$228;TAB(7,28);CHR$228
 COLOUR2:FORF=13TO18:PRINTTAB(F,9);CHR$243;TAB(F-4,15);CHR$243:NEXT
-!{&L007A}=&6A50:?{&unknown_update_2_timer_reset_value}=5:!{&L0080}=&6E60:!{&L0082}=&6130:?{&L0AEB}=12:FORF=0TO15STEP4:F!&7390=F!{&sprite_power_pill}:NEXT 
+!{&platform_addr}=&6A50:?{&platform_speed}=5:!{&conveyer_addr}=&6E60:!{&spider_addr}=&6130:?{&spider_speed}=12:FORF=0TO15STEP4:F!&7390=F!{&sprite_power_pill}:NEXT 
 RETURN
 {:L740}
 REM ***SCENE4***
-!{&L0084}={&level_data_3}:CALL{&entry_draw_level}:VDU5:MOVE400,28:PRINT"DEATH TOWER":VDU4
+!{&level_draw_ptr}={&level_data_3}:CALL{&entry_draw_level}:VDU5:MOVE400,28:PRINT"DEATH TOWER":VDU4
 COLOUR1:PRINTTAB(2,7);CHR$228;"  ";CHR$228;"  ";CHR$228;TAB(9,17);CHR$228;"     ";CHR$228;TAB(16,27);CHR$225TAB(16,28);CHR$229
 COLOUR2:FORF=3TO8:PRINTTAB(F,22);CHR$243;TAB(F-1,9);CHR$243;TAB(F/2+9,16);CHR$243;:NEXT 
-!{&L007A}=&6B50:?{&unknown_update_2_timer_reset_value}=8:!{&L0080}=&7360:!{&L0082}=&77A0:?{&L0AEB}=12:FORF=0TO15STEP4:F!&6D60=F!{&sprite_power_pill}:F!&5F90=F!{&sprite_power_pill}:NEXT
+!{&platform_addr}=&6B50:?{&platform_speed}=8:!{&conveyer_addr}=&7360:!{&spider_addr}=&77A0:?{&spider_speed}=12:FORF=0TO15STEP4:F!&6D60=F!{&sprite_power_pill}:F!&5F90=F!{&sprite_power_pill}:NEXT
 RETURN
 DEFPROCtower:G=6:F=16:GO=GO+2:IFGO=6GO=4
 FORG=0TO4STEP2:N=G?{&ghosts_table+1}*256+G?{&ghosts_table}:IFN>&5800 FORF=0TO15STEP4:F!N=0:F!(N+320)=0:NEXT, ELSENEXT

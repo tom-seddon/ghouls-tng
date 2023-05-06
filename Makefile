@@ -70,7 +70,7 @@ endif
 	$(_V)$(MAKE) _asm PC=gudgs BEEB=GUDGS
 
 # Create GBAS
-	$(_V)$(PYTHON) $(BIN)/bbpp.py  --asm-symbols $(BUILD)/gmc.symbols "" -o $(BUILD)/ghouls.bas src/ghouls.bas
+	$(_V)$(PYTHON) $(BIN)/bbpp.py -Dcheat=True --asm-symbols $(BUILD)/gmc.symbols "" -o $(BUILD)/ghouls.bas src/ghouls.bas
 	$(_V)$(BASICTOOL) --tokenise --basic-2 --output-binary $(BUILD)/ghouls.bas $(BEEB_OUTPUT)/$$.GBAS
 
 # Create GLOADER

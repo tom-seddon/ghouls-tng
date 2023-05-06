@@ -18,11 +18,21 @@ char_loop:
                 inx
                 dey
                 bne char_loop
+                inc ch
                 cpx #udgs_end-udgs
                 bcc chars_loop
                 rts
                 
-                
+; 224       = platform ==
+; 225       = spring, row 0
+; 226       = platform \=
+; 227       = platform =/
+; 228       = spikes
+; 229       = spring, row 1
+; 230...239 = fancy digits
+; 240...242 = "BONUS"
+; 243       = 2 dots
+
 udgs:           .byte %11111111 ;224
                 .byte %00011000 
                 .byte %11111111 

@@ -66,8 +66,8 @@ endif
 	$(_V)$(PYTHON) $(BEEB_BIN)/text2bbc.py $(BEEB_OUTPUT)/$$.!BOOT
 
 # Create GMC
-	$(_V)$(TASS) $(TASS_ARGS) -L $(BUILD)/gmc.lst -l $(BUILD)/gmc.symbols -o $(BUILD)/gmc.prg src/gmc.s65
-	$(_V)$(PYTHON) $(BEEB_BIN)/prg2bbc.py $(BUILD)/gmc.prg $(BEEB_OUTPUT)/$$.GMC
+	$(_V)$(MAKE) _asm PC=gmc BEEB=GMC
+	$(_V)$(MAKE) _asm PC=gudgs BEEB=GUDGS
 
 # Create GBAS
 	$(_V)$(PYTHON) $(BIN)/bbpp.py  --asm-symbols $(BUILD)/gmc.symbols "" -o $(BUILD)/ghouls.bas src/ghouls.bas
@@ -83,6 +83,14 @@ endif
 #
 # TODO: don't include everything!
 	$(_V)$(SSD_CREATE) -o $(SSD_OUTPUT) --dir $(BEEB_OUTPUT) $(BEEB_OUTPUT)/*
+
+##########################################################################
+##########################################################################
+
+.PHONY:_asm
+_asm:
+	$(_V)$(TASS) $(TASS_ARGS) -L $(BUILD)/$(PC).lst -l $(BUILD)/$(PC).symbols -o $(BUILD)/$(PC).prg src/$(PC).s65
+	$(_V)$(PYTHON) $(BEEB_BIN)/prg2bbc.py $(BUILD)/$(PC).prg $(BEEB_OUTPUT)/$$.$(BEEB)
 
 ##########################################################################
 ##########################################################################

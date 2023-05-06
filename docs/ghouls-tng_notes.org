@@ -174,7 +174,7 @@ Things that a level can contain:
 | Springs    |     2 | -            |
 | Spider     |     1 | 1            |
 | Platform   |     1 | 1            |
-| Conveyer   |     1 | 1            |
+| Conveyor   |     1 | 1            |
 | Power pill |     1 | -            |
 
 
@@ -185,7 +185,7 @@ Start and end positions are currently fixed.
 
 Coordinates are given as per PRINT TAB.
 
-Fractional coordinates are possible for spiders, platforms, conveyers
+Fractional coordinates are possible for spiders, platforms, conveyors
 and power pills, as they are positioned by screen address.
 
 ** SPECTRES' LAIR
@@ -193,7 +193,7 @@ and power pills, as they are positioned by screen address.
 | What     |  X |  Y | Condition |
 |----------+----+----+-----------|
 | Spike    |  7 | 23 |           |
-| Pill     | 18 | 25 |           |
+| Pill     | 18 | 15 |           |
 | Dots     |  7 | 27 |           |
 | Dots     |  8 | 27 |           |
 | Dots     |  9 | 27 |           |
@@ -273,7 +273,7 @@ and power pills, as they are positioned by screen address.
 | Dots     |  17 | 17 |           |
 | Platform |  14 |  7 |           |
 | PSpeed   |  14 |    |           |
-| Conveyer |  18 | 13 |           |
+| Conveyor |  18 | 13 |           |
 | Spider   | 0.5 | 12 | GO>0      |
 | SSpeed   |   4 |    | GO>0      |
 | Pill     |   1 | 23 |           |
@@ -332,7 +332,7 @@ and power pills, as they are positioned by screen address.
 | Dots     | 14 | 15 |           |
 | Platform | 13 | 14 |           |
 | PSpeed   |  5 |    |           |
-| Conveyer | 18 | 17 |           |
+| Conveyor | 18 | 17 |           |
 | Spider   |  7 |  7 |           |
 | SSpeed   | 12 |    |           |
 | Pil      |  1 | 22 |           |
@@ -396,7 +396,7 @@ and power pills, as they are positioned by screen address.
 | Dots     | 13 | 16 |           |
 | Platform |  9 | 15 |           |
 | PSpeed   |  8 |    |           |
-| Conveyer | 18 | 21 |           |
+| Conveyor | 18 | 21 |           |
 | Spider   |  6 | 25 |           |
 | SSpeed   | 12 |    |           |
 | Pill     |  2 | 17 |           |

@@ -1,14 +1,15 @@
 DIMHI(10),N$(10):FORF=0TO9:N$(F)=CHR$132+"Ghoul Basher "+STR$(F+1):HI(F)=(20-F)*10:NEXT
-ONERRORGOTO{$L1920}
+{?not debug}ONERRORGOTO{$L1920}
+{?debug}ONERROR:MODE7:REPORT:PRINT" at line ";ERL:END
 IFINKEY(-255)=-1 ?&220=166:?&221=255 ELSE GOTO{$L50}
 {:L50}
-ONERRORGOTO{$L1350}
-SC1=1
-PROCASS:ERROR
+{?not debug}ONERRORGOTO{$L1350}
+SC1=1:GO1=0
+PROCASS:GOTO{$L1350}
 {:L70}
 REM***** GHOULS *****
 MODE5:VDU23;11;0;0;0;
-FORF=0TO4:F?{&score_chars}=230:NEXT:LI=4:SC=SC1:?{&L0AF2}=60:GO=0 
+FORF=0TO4:F?{&score_chars}=230:NEXT:LI=4:SC=SC1:?{&L0AF2}=60:GO=GO1
 {:L100}
 FORF=1TO3:VDU19,F,0;0;:NEXT
 PRINTTAB(0,5);:COLOUR3:GCOL0,1::ON SC GOSUB{$L540},{$L600},{$L680},{$L740}
@@ -58,33 +59,19 @@ CLS:GOTO{$L100}
 END
 {:L540}
 REM ***SCENE1*** 
-!{&level_draw_ptr}={&level_data_0}:CALL{&entry_draw_level}:VDU5:MOVE364,28:PRINT"SPECTRES' LAIR":VDU4
-COLOUR1:PRINTTAB(7,23);CHR$228:FORF=0TO15STEP4:F!&6BE0=F!{&sprite_power_pill}:NEXT
-COLOUR2:FORF=7TO12:PRINTTAB(F,27);CHR$243;TAB(F+2,22);CHR$243:NEXT:FORF=1TO2:PRINTTAB(F,4);CHR$243;TAB(F+5,4);CHR$243:NEXT
-!{&platform_addr}=&6A00:?{&platform_speed}=6:?{&conveyer_addr+1}=0:!{&spider_addr+1}=0:IFGO>0!{&spider_addr}=&6A10:?{&spider_speed}=8
+!{&level_draw_ptr}={&level_data_0}:X%=GO:CALL{&entry_draw_level}:VDU5:MOVE364,28:PRINT"SPECTRES' LAIR":VDU4
 RETURN
 {:L600}
 REM ***SCENE2***
-!{&level_draw_ptr}={&level_data_1}:CALL{&entry_draw_level}:VDU5:MOVE400,28:PRINT"HORRID HALL":VDU4
-COLOUR1:PRINTTAB(4,17);CHR$228;TAB(17,26);CHR$225;TAB(17,27);CHR$229;TAB(17,12);CHR$228
-COLOUR2:FORF=6TO15:PRINTTAB(F,11);CHR$243;TAB(F/1.5+7,17);CHR$243:NEXT
-!{&platform_addr}=&61A0:?{&platform_speed}=14:!{&conveyer_addr}=&6960:!{&spider_addr+1}=0
-IFGO>0!{&spider_addr}=&6708:?{&spider_speed}=4
-FORF=0TO15STEP4:F!&74D0=F!{&sprite_power_pill}:NEXT
+!{&level_draw_ptr}={&level_data_1}:X%=GO:CALL{&entry_draw_level}:VDU5:MOVE400,28:PRINT"HORRID HALL":VDU4
 RETURN
 {:L680}
 REM ***SCENE3***
-!{&level_draw_ptr}={&level_data_2}:CALL{&entry_draw_level}:VDU5:MOVE332,28:PRINT"SPIDERS PARLOUR":VDU4
-COLOUR1:PRINTTAB(14,8);CHR$225;TAB(1,13);CHR$228;TAB(17,16);CHR$228;TAB(8,24);CHR$228;"  ";CHR$228;TAB(7,28);CHR$228
-COLOUR2:FORF=13TO18:PRINTTAB(F,9);CHR$243;TAB(F-4,15);CHR$243:NEXT
-!{&platform_addr}=&6A50:?{&platform_speed}=5:!{&conveyer_addr}=&6E60:!{&spider_addr}=&6130:?{&spider_speed}=12:FORF=0TO15STEP4:F!&7390=F!{&sprite_power_pill}:NEXT 
+!{&level_draw_ptr}={&level_data_2}:X%=GO:CALL{&entry_draw_level}:VDU5:MOVE332,28:PRINT"SPIDERS PARLOUR":VDU4
 RETURN
 {:L740}
 REM ***SCENE4***
-!{&level_draw_ptr}={&level_data_3}:CALL{&entry_draw_level}:VDU5:MOVE400,28:PRINT"DEATH TOWER":VDU4
-COLOUR1:PRINTTAB(2,7);CHR$228;"  ";CHR$228;"  ";CHR$228;TAB(9,17);CHR$228;"     ";CHR$228;TAB(16,27);CHR$225TAB(16,28);CHR$229
-COLOUR2:FORF=3TO8:PRINTTAB(F,22);CHR$243;TAB(F-1,9);CHR$243;TAB(F/2+9,16);CHR$243;:NEXT 
-!{&platform_addr}=&6B50:?{&platform_speed}=8:!{&conveyer_addr}=&7360:!{&spider_addr}=&77A0:?{&spider_speed}=12:FORF=0TO15STEP4:F!&6D60=F!{&sprite_power_pill}:F!&5F90=F!{&sprite_power_pill}:NEXT
+!{&level_draw_ptr}={&level_data_3}:X%=GO:CALL{&entry_draw_level}:VDU5:MOVE400,28:PRINT"DEATH TOWER":VDU4
 RETURN
 DEFPROCtower:G=6:F=16:GO=GO+2:IFGO=6GO=4
 FORG=0TO4STEP2:N=G?{&ghosts_table+1}*256+G?{&ghosts_table}:IFN>&5800 FORF=0TO15STEP4:F!N=0:F!(N+320)=0:NEXT, ELSENEXT
@@ -178,9 +165,11 @@ PRINT'TAB(8)CHR$131"""Z"""CHR$132"-"CHR$135"MOVES YOU LEFT"''TAB(8)CHR$131"""X""
 PRINT'TAB(8)CHR$131"""P"""CHR$132"-"CHR$135"PAUSES GAME"''TAB(8)CHR$131"""O"""CHR$132"-"CHR$135"CANCELS PAUSE"
 PRINT'"   "CHR$131"""ESCAPE"""CHR$132"-"CHR$135"RETURNS TO SOUND OPTION                 AND INSTRUCTIONS"
 FORF=20TO21:PRINTTAB(1,F)CHR$141CHR$133"DO YOU WANT TO SEE GAME OBJECTS?";TAB(13,F+2)CHR$141CHR$130"(Y/N)":NEXT
-*FX15
+{:instructions_yn}
+*FX15,1
 I$=GET$:IFI$="Y" ORI$="y"MODE5:VDU23,0,11;0;0;0;:PROCSHOW
-{?cheat}SC1=1:IFI$>="1"ANDI$<="4":SC1=VALI$
+{?debug}IFI$="G"ORI$="g":GO1=GO1+2:PRINTTAB(0,24)"GO=";GO1;:GOTO{$instructions_yn}
+{?debug}SC1=1:IFI$>="1"ANDI$<="4":SC1=VALI$
 GOTO{$L70}
 DEFPROCSHOW
 FORF=1TO3:VDU19,F,0;0;:NEXT

@@ -100,8 +100,6 @@ def main2(options):
 
         set_value(name,value,None,None)
 
-        print('%s: %s (%s)'%(name,value,type(value)))
-
     for path,prefix in options.asm_labels_files:
         with open(path,'rt') as f: src_lines=read_src_file(path,True)
 
@@ -118,12 +116,16 @@ def main2(options):
             # non-BBC hex syntax.
             value=parts[1].strip()
             if value.startswith('$'): value=int(value[1:],16)
-            else: value=int(value)
-
-            set_value(name,
-                      value,
-                      src_line,
-                      0)
+            else:
+                try: value=int(value)
+                except:
+                    # Just ignore this case.
+                    value=None
+                    
+            if value is not None: set_value(name,
+                                            value,
+                                            src_line,
+                                            0)
 
     src_lines=read_src_file(options.input_path,
                             options.strip_trailing_spaces)

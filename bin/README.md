@@ -25,8 +25,6 @@ and any spaces preceding it.
 Replaced with the result of evaluating `EXPR`. If the result is a
 number, it will be output in decimal.
 
-`EXPR` is a Python expression.
-
 ### `{&EXPR}` - expand value as hex number ###
 ### `{~EXPR}` - expand value as hex digits ###
 
@@ -39,8 +37,6 @@ alpha digits.
 (The symbols are supposed to be vaguely mnemonic, but Don't think too
 hard about them.)
 
-`EXPR` is a Python expression.
-
 ### `{:NAME}` - define line label ###
 
 Must be the first thing on a line.
@@ -48,10 +44,15 @@ Must be the first thing on a line.
 Defines the value with name `NAME` as the integer number of the next
 BASIC line produced.
 
+### `{?EXPR}` - conditionally include remainder of line ###
+
+If `EXPR` is false, discard the remainder of the line.
+
 ## Expression evaluation
 
 Expressions are Python expressions, evaluated with an empty set of
-globals, and all builtins removed.
+globals, and all builtins removed, and local variables set up to match
+the symbols defined.
 
 ## Read symbols from assembler
 
@@ -63,6 +64,20 @@ file to read, and the prefix to prepend to the names (if any - use
 `""` if no prefix is wanted).
 
 The symbols are integer values.
+
+## Set values on command line
+
+Use the `-D` option.
+
+Along the lines of the C preprocessor, use `-DNAME` to define a value
+called `NAME`. Its value is implicitly `True`.
+
+Use `-DNAME=VALUE` to define a value called `NAME`, with value
+`VALUE`.
+
+If the value looks like a Python-style int, or float, or bool (`True`
+or `False`), it will be interpreted that way. Otherwise, it will be a
+string.
 
 ## Example use
 

@@ -11,6 +11,7 @@ ExprType=collections.namedtuple('StrExprType','expr begin end')
 HexExprType=collections.namedtuple('HexExprType','expr begin end')
 HexDigitsExprType=collections.namedtuple('HexExprType','expr begin end')
 TextType=collections.namedtuple('TextType','text')
+ConditionalType=collections.namedtuple('ConditionalType','expr begin end')
 
 Label=collections.namedtuple('Label','name src_line src_column')
 
@@ -56,22 +57,24 @@ def read_src_file(path,strip_trailing_spaces):
 
     return src_lines
 
+def loc_str(src_line,src_column):
+    if src_line is None: return '<<command line>>'
+    else: return '%s:%d:%d'%(src_line.src_path,
+                             src_line.src_number,
+                             src_column)
+
 def main2(options):
     values_by_name={}
-
+    
     def set_value(name,value,src_line,src_column):
         if name in values_by_name:
             sys.stderr.write('%s:%d:%d: already defined: %s\n'%(
-                src_line.src_path,
-                src_line.src_number,
-                src_column,
+                loc_str(src_line,src_column),
                 name))
             value=values_by_name[name]
             if value.src_line is not None:
-                sys.stderr.write('  %s:%d:%d: a previous definition of: %s\n'%(
-                    value.src_line.src_path,
-                    value.src_line.src_number,
-                    value.src_column,
+                sys.stderr.write('  %s: a previous definition of: %s\n'%(
+                    loc_str(value.src_line,value.src_column),
                     name))
             
             sys.exit(1)
@@ -80,6 +83,24 @@ def main2(options):
                                    value=value,
                                    src_line=src_line,
                                    src_column=src_column)
+
+    for definition in options.definitions:
+        parts=definition.split('=',1)
+        name=parts[0]
+        value=True if len(parts)==1 else parts[1]
+
+        # try to turn it into something more useful...
+        try: value=int(value,0)
+        except:
+            try: value=float(value)
+            except:
+                # how do you do this properly??
+                if value=='True': value=True
+                elif value=='False': value=False
+
+        set_value(name,value,None,None)
+
+        print('%s: %s (%s)'%(name,value,type(value)))
 
     for path,prefix in options.asm_labels_files:
         with open(path,'rt') as f: src_lines=read_src_file(path,True)
@@ -167,6 +188,7 @@ def main2(options):
                     elif src_line.text[begin]=='$': add_expr(ExprType)
                     elif src_line.text[begin]=='~': add_expr(HexDigitsExprType)
                     elif src_line.text[begin]=='&': add_expr(HexExprType)
+                    elif src_line.text[begin]=='?': add_expr(ConditionalType)
                     else: syntax_error(begin,'unknown markup type: %s'%src_line.text[begin])
 
                     begin=end+1
@@ -222,22 +244,19 @@ def main2(options):
     # print everything out.
     with OutputWriter(options.output_path) as f:
         for basic_line in basic_lines:
-            def print_expr(f,part,must_be_int,fmt):
-                try:
-                    value=eval(part.expr,globals_dict,locals_dict)
+            def eval_expr(f,part):
+                try: return eval(part.expr,globals_dict,locals_dict)
                 except NameError as e:
-                    sys.stderr.write('%s:%d:%d: %s\n'%(
-                        basic_line.src_line.src_path,
-                        basic_line.src_line.src_number,
-                        part.begin+1,
+                    sys.stderr.write('%s: %s\n'%(
+                        loc_str(basic_line.src_line,part.begin+1),
                         e))
                     sys.exit(1)
-                        
+                
+            def print_expr(f,part,must_be_int,fmt):
+                value=eval_expr(f,part)
                 if must_be_int and not isinstance(value,int):
-                    sys.stderr.write('%s:%d:%d: not integer expression\n'%(
-                        basic_line.src_line.src_path,
-                        basic_line.src_line.src_number,
-                        part.begin))
+                    sys.stderr.write('%s: not integer expression\n'%(
+                        loc_str(basic_line.src_line,part.begin+1)))
                     sys.exit(1)
                 f.write(fmt%value)
 
@@ -247,6 +266,13 @@ def main2(options):
                 elif type(part) is ExprType: print_expr(f,part,False,'%s')
                 elif type(part) is HexDigitsExprType: print_expr(f,part,True,'%X')
                 elif type(part) is HexExprType: print_expr(f,part,True,'&%X')
+                elif type(part) is ConditionalType:
+                    value=eval_expr(f,part)
+                    if not isinstance(value,bool):
+                        sys.stderr.write('%s: not bool expression\n'%(
+                            loc_str(basic_line.src_line,part.begin+1)))
+                        sys.exit(1)
+                    if not value: break
                 else: assert False
             f.write('\n')
 
@@ -259,6 +285,8 @@ def main(argv):
     parser.add_argument('--strip-trailing-spaces',action='store_true',help='''strip trailing spaces from input lines''')
 
     parser.add_argument('--asm-symbols',dest='asm_labels_files',default=[],metavar='FILE PREFIX',nargs=2,action='append',help='''read asm symbols from FILE, creating value names by prepending PREFIX''')
+
+    parser.add_argument('-D',metavar='DEFINE',action='append',dest='definitions',default=[],help='''define value. %(metavar)s can be NAME (value is True), or NAME=VALUE to assign a specific value''')
 
     parser.add_argument('-o',dest='output_path',metavar='FILE',help='''write output to %(metavar)s (or stdout if not specified)''')
     

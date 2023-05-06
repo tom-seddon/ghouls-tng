@@ -22,7 +22,8 @@ Additional dependencies are provided as EXEs in the repo.
 
 - GNU Make (`make`)
 - Python 3.x (`/usr/bin/python3`)
-- [64tass](https://sourceforge.net/projects/tass64/) (`64tass`)
+- [64tass](https://sourceforge.net/projects/tass64/) (`64tass`) -
+  version 2974 works
 - Working C compiler
   ([basictool](https://github.com/ZornsLemma/basictool) is compiled
   automatically as part of the build)

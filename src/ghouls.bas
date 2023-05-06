@@ -59,19 +59,19 @@ CLS:GOTO{$L100}
 END
 {:L540}
 REM ***SCENE1*** 
-!{&level_draw_ptr}={&level_data_0}:X%=GO:CALL{&entry_draw_level}:VDU5:MOVE364,28:PRINT"SPECTRES' LAIR":VDU4
+!{&level_draw_ptr}={&level_data_0}:X%=GO:CALL{&entry_draw_level}
 RETURN
 {:L600}
 REM ***SCENE2***
-!{&level_draw_ptr}={&level_data_1}:X%=GO:CALL{&entry_draw_level}:VDU5:MOVE400,28:PRINT"HORRID HALL":VDU4
+!{&level_draw_ptr}={&level_data_1}:X%=GO:CALL{&entry_draw_level}
 RETURN
 {:L680}
 REM ***SCENE3***
-!{&level_draw_ptr}={&level_data_2}:X%=GO:CALL{&entry_draw_level}:VDU5:MOVE332,28:PRINT"SPIDERS PARLOUR":VDU4
+!{&level_draw_ptr}={&level_data_2}:X%=GO:CALL{&entry_draw_level}
 RETURN
 {:L740}
 REM ***SCENE4***
-!{&level_draw_ptr}={&level_data_3}:X%=GO:CALL{&entry_draw_level}:VDU5:MOVE400,28:PRINT"DEATH TOWER":VDU4
+!{&level_draw_ptr}={&level_data_3}:X%=GO:CALL{&entry_draw_level}
 RETURN
 DEFPROCtower:G=6:F=16:GO=GO+2:IFGO=6GO=4
 FORG=0TO4STEP2:N=G?{&ghosts_table+1}*256+G?{&ghosts_table}:IFN>&5800 FORF=0TO15STEP4:F!N=0:F!(N+320)=0:NEXT, ELSENEXT

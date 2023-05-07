@@ -431,3 +431,71 @@ and power pills, as they are positioned by screen address.
   29||||||||||||||||||||||||||||||||||||||||29
   --0001020304050607080910111213141516171819--
 #+end_example
+
+* Level data format
+
+** Header
+
+| Offset | Type    | Name   | What                            |
+|--------+---------+--------+---------------------------------|
+|     +0 | byte[4] | ident  | bf d7 73 0e - file magic number |
+|     +4 | dword   | level1 | offset of level 1 data          |
+|     +8 | dword   | level2 | offset of level 2 data          |
+|    +12 | dword   | level3 | offset of level 3 data          |
+|   +116 | dword   | level4 | offset of level 4 data          |
+
+The magic number is `&0e73d7bf` when read with BBC BASIC's `!`
+operator.
+
+Offsets are relative to the start of the file.
+
+** Level data
+
+| Offset | Type         | Name   | What                            |
+|--------+--------------+--------+---------------------------------|
+|     +0 | byte[26][20] | level  | Map data                        |
+|   +520 | word         | name_x | Graphics X coord for level name |
+|   +522 | char[16]     | name   | Level name                      |
+
+The logic behind the name's X coordinate is a bit unclear. So if it
+goes in the level data, original levels can match the originals for
+now, and the editor can do something sensible for any new levels. It's
+only 2 bytes.
+
+** Map data
+
+A 20 wide x 26 high grid of bytes. Bytes as follows:
+
+| Value | What              | Flags? |
+|-------+-------------------+--------|
+|     0 | Blank             |        |
+|     1 | Left Block        |        |
+|     2 | Right Block       |        |
+|     3 | Block             |        |
+|     4 | Spikes            |        |
+|     5 | Spring (upper)    |        |
+|     6 | Spring (lower)    |        |
+|     7 | Dots              |        |
+|     8 | Pill              |        |
+|     9 | Floating platform | y      |
+|    10 | Conveyor          |        |
+|    11 | Spider            | y      |
+
+If the thing has flags, they are stored in the next byte. (Things with
+flags are 16 pixels wide, so they'd occupy 2 bytes anyway.) The flag
+bits are as follows:
+
+:   7   6   5   4   3   2   1   0
+: +---+---+---+---+---+---+---+---+
+: | G | H |   | Speed             |
+: +---+---+---+---+---+---+---+---+
+
+~G~, if set, means the object only appears when there are multiple
+ghosts.
+
+~H~, if set, means the object has a half column offset applied -
+moving it effectively 4 pixels to the left.
+
+~Speed~ is the object's speed.
+
+The unused bit is unused.

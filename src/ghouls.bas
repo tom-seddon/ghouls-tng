@@ -12,7 +12,8 @@ MODE5:VDU23;11;0;0;0;
 FORF=0TO4:F?{&score_chars}=230:NEXT:LI=4:SC=SC1:?{&L0AF2}=60:GO=GO1
 {:L100}
 FORF=1TO3:VDU19,F,0;0;:NEXT
-PRINTTAB(0,5);:COLOUR3:GCOL0,1::ON SC GOSUB{$L540},{$L600},{$L680},{$L740}
+PRINTTAB(0,5);:COLOUR3:GCOL0,1
+!{&level_draw_ptr}={&levels_data}+!({&levels_data}+SC*4):X%=GO:CALL{&entry_draw_level}
 !{&ghosts_table}=0:!{&ghosts_table+3}=0:COLOUR1:PRINTTAB(14,1);:VDU240,241,242{# TODO: ghosts_table+3 should probably be ghosts_table+4...
 GCOL0,1:MOVE0,60:DRAW0,952:MOVE1279,60:DRAW1279,860:MOVE1080,800:DRAW1080,860:GCOL0,2:MOVE0,952:PLOT21,1279,952:GCOL0,2:MOVE1092,864:DRAW1270,864
 IFLI=1GOTO{$L160}
@@ -57,22 +58,6 @@ IFINKEY(-255)=0I=INKEY(2)
 NEXT:CLS
 CLS:GOTO{$L100}
 END
-{:L540}
-REM ***SCENE1*** 
-!{&level_draw_ptr}={&level_data_0}:X%=GO:CALL{&entry_draw_level}
-RETURN
-{:L600}
-REM ***SCENE2***
-!{&level_draw_ptr}={&level_data_1}:X%=GO:CALL{&entry_draw_level}
-RETURN
-{:L680}
-REM ***SCENE3***
-!{&level_draw_ptr}={&level_data_2}:X%=GO:CALL{&entry_draw_level}
-RETURN
-{:L740}
-REM ***SCENE4***
-!{&level_draw_ptr}={&level_data_3}:X%=GO:CALL{&entry_draw_level}
-RETURN
 DEFPROCtower:G=6:F=16:GO=GO+2:IFGO=6GO=4
 FORG=0TO4STEP2:N=G?{&ghosts_table+1}*256+G?{&ghosts_table}:IFN>&5800 FORF=0TO15STEP4:F!N=0:F!(N+320)=0:NEXT, ELSENEXT
 SOUND&10,-15,7,255:FORJ=7TO0STEP-1:SOUND&11,-8,J*16,1:FORH=1TO200:NEXT

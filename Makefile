@@ -17,26 +17,25 @@ TASS_ARGS:=--case-sensitive -Wall --cbm-prg
 ##########################################################################
 ##########################################################################
 
+PWD:=$(shell $(PYTHON) submodules/shellcmd.py/shellcmd.py realpath .)
+
 # How to run shellcmd.py from any folder.
-SHELLCMD:=$(PYTHON) $(shell $(PYTHON) submodules/shellcmd.py/shellcmd.py realpath submodules/shellcmd.py/shellcmd.py)
+SHELLCMD:=$(PYTHON) $(PWD)/submodules/shellcmd.py/shellcmd.py
 
 # submodules/beeb/bin (absolute path).
-BEEB_BIN:=$(shell $(SHELLCMD) realpath submodules/beeb/bin)
+BEEB_BIN:=$(PWD)/submodules/beeb/bin
 
 # bin (absolute path)
-BIN:=$(shell $(SHELLCMD) realpath bin)
-
-# How to run ssd_extract.py from any folder.
-SSD_EXTRACT:=$(PYTHON) $(BEEB_BIN)/ssd_extract.py
+BIN:=$(PWD)/bin
 
 # How to run ssd_create.py from any folder.
 SSD_CREATE:=$(PYTHON) $(BEEB_BIN)/ssd_create.py
 
 # Where intermediate build output goes (absolute path).
-BUILD:=$(shell $(SHELLCMD) realpath build)
+BUILD:=$(PWD)/build
 
 # Where the BeebLink volume is (absolute path).
-BEEB_VOLUME:=$(shell $(SHELLCMD) realpath beeb/ghouls-tng/)
+BEEB_VOLUME:=$(PWD)/beeb/ghouls-tng/
 
 # Where final Beeb-visible build output goes (absolute path).
 BEEB_OUTPUT:=$(BEEB_VOLUME)/y
@@ -45,10 +44,10 @@ BEEB_OUTPUT:=$(BEEB_VOLUME)/y
 SSD_OUTPUT:=ghouls-tng.ssd
 
 ifeq ($(OS),Windows_NT)
-TASS:=$(shell $(SHELLCMD) realpath bin/64tass.exe)
-BASICTOOL:=$(shell $(SHELLCMD) realpath bin/basictool.exe)
+TASS:=$(PWD)/bin/64tass.exe
+BASICTOOL:=$(PWD)/bin/basictool.exe
 else
-BASICTOOL:=$(shell $(SHELLCMD) realpath submodules/basictool/basictool)
+BASICTOOL:=$(PWD)/submodules/basictool/basictool
 endif
 
 ##########################################################################

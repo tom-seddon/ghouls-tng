@@ -2,10 +2,16 @@
 
 ;-------------------------------------------------------------------------
 
+; Feels like a bit too much manual work here.
 level_width=20
 level_height=26
 level_data_size=level_width*level_height
-level_total_data_size=level_data_size+16+2
+level_name_x_offset=level_data_size
+level_name_offset=level_name_x_offset+2
+level_colour3_offset=level_name_offset+16
+level_total_data_size=level_colour3_offset+1
+                
+;-------------------------------------------------------------------------
 
 _:=[]
 _..=[{.index:len(_),.char:' ',.colour:3,.edef:'__'}]
@@ -50,7 +56,6 @@ type_spider=_[-1]
                 
 types=_
 
-                ; 
                 .cerror type_blank.index!=0,'oops'
                 .cerror type_lblock.index!=1,'oops'
                 .cerror type_rblock.index!=2,'oops'
@@ -2082,6 +2087,7 @@ level_data_0:
                 .word 364
                 ;      0123456789abcdef
                 .text "SPECTRES' LAIR  "
+                .byte 4
                 .cerror *-level_data_0!=level_total_data_size,'oops'
 level_data_1:
                 .encode ghouls_level_enc
@@ -2116,6 +2122,7 @@ level_data_1:
                 .word 400
                 ;      0123456789abcdef
                 .text "HORRID HALL     "
+                .byte 2
                 .cerror *-level_data_1!=level_total_data_size,'oops'
 
 level_data_2:
@@ -2151,6 +2158,7 @@ level_data_2:
                 .word 332
                 ;      0123456789abcdef
                 .text "SPIDERS PARLOUR "
+                .byte 6
                 .cerror *-level_data_2!=level_total_data_size,'oops'
 
 level_data_3:
@@ -2186,6 +2194,7 @@ level_data_3:
                 .word 400
                 ;      0123456789abcdef
                 .text "DEATH TOWER     "
+                .byte 7
                 .cerror *-level_data_3!=level_total_data_size,'oops'
 
 ;-------------------------------------------------------------------------

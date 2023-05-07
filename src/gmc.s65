@@ -1981,55 +1981,21 @@ entry_slide_off:
                 sta L0072
 
 slide_off_loop:
-                lda #$81
-; OS 0.10 check?
-                ldx #1
-                ldy #$FF
-                jsr osbyte
-                tya
-                bne wait_for_vsync
-                ldx #$19
-
-L211A:
-                ldy #$FB
-
-L211C:
-                dey
-                bne L211C
-                dex
-                bne L211A
-                jmp L212C
-
-;-------------------------------------------------------------------------
-
-wait_for_vsync:
                 lda #19
-                ldx #0
                 jsr osbyte
 
-L212C:
-                lda #23
-                jsr oswrch
-                lda #0
-                jsr oswrch
                 lda #13
-                jsr oswrch
+                sta $fe00
                 lda L0072
-                jsr oswrch
-                lda #0
-                jsr oswrch
-                jsr oswrch
-                jsr oswrch
-                jsr oswrch
-                jsr oswrch
-                jsr oswrch
+                sta $fe01
+                
                 lda L0070
                 clc
                 adc #8
                 sta L0070
-                lda L0071
-                adc #0
-                sta L0071
+                bcc +
+                inc L0071
++
                 lda L0070
                 pha
                 lda L0071
@@ -2062,12 +2028,7 @@ fill_row_loop:
                 inc L0072
                 lda L0072
                 cmp #41
-                beq L2195
-                jmp slide_off_loop
-
-;-------------------------------------------------------------------------
-
-L2195:
+                bne slide_off_loop
                 rts
 
 ;-------------------------------------------------------------------------

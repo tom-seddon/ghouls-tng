@@ -81,7 +81,7 @@ endif
 
 # Print some info
 	$(_V)$(SHELLCMD) blank-line
-	$(_V)$(SHELLCMD) stat --basename --hex-size $(BEEB_OUTPUT)/$$.GBAS $(BEEB_OUTPUT)/$$.GUDGS $(BEEB_OUTPUT)/$$.GMC $(BEEB_OUTPUT)/$$.GLEVELS
+	$(_V)$(PYTHON) $(BIN)/budgets.py $(BEEB_OUTPUT) $(BUILD)/gmc.symbols
 	$(_V)$(SHELLCMD) blank-line
 
 # Create a .ssd

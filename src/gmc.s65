@@ -8,7 +8,7 @@ level_height=26
 level_data_size=level_width*level_height
 level_name_x_offset=level_data_size
 level_name_offset=level_name_x_offset+2
-level_colour3_offset=level_name_offset+16
+level_colour3_offset=level_name_offset+17
 level_total_data_size=level_colour3_offset+1
                 
 ;-------------------------------------------------------------------------
@@ -296,7 +296,7 @@ next:
                 bne loop
                 
 done:
-                jsr print_title
+                ; jsr print_title
                 
 ; The BASIC code ends up clearing a bunch of extra stuff due to
 ; slightly careless-looking use of !.
@@ -373,41 +373,41 @@ flags_done:
                 and #flags_speed_mask
                 rts
 
-print_title:
-                lda #5
-                jsr oswrch
+; print_title:
+;                 lda #5
+;                 jsr oswrch
 
-                lda #25         ;PLOT
-                jsr oswrch
+;                 lda #25         ;PLOT
+;                 jsr oswrch
 
-                lda #4          ;MOVE
-                jsr oswrch
+;                 lda #4          ;MOVE
+;                 jsr oswrch
 
-                ; X coordinate
-                ldy #0
-                lda (level_draw_ptr),y
-                jsr oswrch
-                iny
-                lda (level_draw_ptr),y
-                jsr oswrch
+;                 ; X coordinate
+;                 ldy #0
+;                 lda (level_draw_ptr),y
+;                 jsr oswrch
+;                 iny
+;                 lda (level_draw_ptr),y
+;                 jsr oswrch
 
-                ; Y coordinate
-                lda #<level_name_y
-                jsr oswrch
-                lda #>level_name_y
-                jsr oswrch
+;                 ; Y coordinate
+;                 lda #<level_name_y
+;                 jsr oswrch
+;                 lda #>level_name_y
+;                 jsr oswrch
 
-                ; Text
-                ldx #16
-print_title_loop:
-                iny
-                lda (level_draw_ptr),y
-                jsr oswrch
-                dex
-                bne print_title_loop
+;                 ; Text
+;                 ldx #16
+; print_title_loop:
+;                 iny
+;                 lda (level_draw_ptr),y
+;                 jsr oswrch
+;                 dex
+;                 bne print_title_loop
 
-                lda #4
-                jmp oswrch
+;                 lda #4
+;                 jmp oswrch
 
 go:
                 .byte 0
@@ -2086,7 +2086,7 @@ level_data_0:
                 .endencode
                 .word 364
                 ;      0123456789abcdef
-                .text "SPECTRES' LAIR  "
+                .text "SPECTRES' LAIR",13,13,13
                 .byte 4
                 .cerror *-level_data_0!=level_total_data_size,'oops'
 level_data_1:
@@ -2121,7 +2121,7 @@ level_data_1:
                 .endencode
                 .word 400
                 ;      0123456789abcdef
-                .text "HORRID HALL     "
+                .text "HORRID HALL",13,13,13,13,13,13
                 .byte 2
                 .cerror *-level_data_1!=level_total_data_size,'oops'
 
@@ -2157,7 +2157,7 @@ level_data_2:
                 .endencode
                 .word 332
                 ;      0123456789abcdef
-                .text "SPIDERS PARLOUR "
+                .text "SPIDERS PARLOUR",13,13
                 .byte 6
                 .cerror *-level_data_2!=level_total_data_size,'oops'
 
@@ -2193,7 +2193,7 @@ level_data_3:
                 .endencode
                 .word 400
                 ;      0123456789abcdef
-                .text "DEATH TOWER     "
+                .text "DEATH TOWER",13,13,13,13,13,13
                 .byte 7
                 .cerror *-level_data_3!=level_total_data_size,'oops'
 

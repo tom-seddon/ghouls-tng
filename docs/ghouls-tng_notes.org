@@ -455,8 +455,8 @@ Offsets are relative to the start of the file.
 |--------+--------------+---------+--------------------------------------|
 |     +0 | byte[26][20] | level   | Map data                             |
 |   +520 | word         | name_x  | Graphics X coord for level name      |
-|   +522 | char[16]     | name    | Level name                           |
-|   +538 | byte         | colour3 | Physical colour for logical colour 3 |
+|   +522 | char[17]    | name    | Level name, CR-terminated            |
+|   +539 | byte         | colour3 | Physical colour for logical colour 3 |
 
 The logic behind the name's X coordinate is a bit unclear. So if it
 goes in the level data, original levels can match the originals for

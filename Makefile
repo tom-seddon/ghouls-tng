@@ -12,7 +12,7 @@ endif
 ##########################################################################
 
 _V:=$(if $(VERBOSE),,@)
-TASS_ARGS:=--case-sensitive -Wall --cbm-prg
+TASS_ARGS:=--case-sensitive -Wall --cbm-prg --quiet
 
 ##########################################################################
 ##########################################################################
@@ -35,7 +35,7 @@ SSD_CREATE:=$(PYTHON) $(BEEB_BIN)/ssd_create.py
 BUILD:=$(PWD)/build
 
 # Where the BeebLink volume is (absolute path).
-BEEB_VOLUME:=$(PWD)/beeb/ghouls-tng/
+BEEB_VOLUME:=$(PWD)/beeb/ghouls-tng
 
 # Where final Beeb-visible build output goes (absolute path).
 BEEB_OUTPUT:=$(BEEB_VOLUME)/y
@@ -78,6 +78,11 @@ endif
 
 # Set the boot option
 	$(_V)echo 3 > $(BEEB_OUTPUT)/.opt4
+
+# Print some info
+	$(_V)$(SHELLCMD) blank-line
+	$(_V)$(SHELLCMD) stat --basename --hex-size $(BEEB_OUTPUT)/$$.GBAS $(BEEB_OUTPUT)/$$.GUDGS $(BEEB_OUTPUT)/$$.GMC $(BEEB_OUTPUT)/$$.GLEVELS
+	$(_V)$(SHELLCMD) blank-line
 
 # Create a .ssd
 #

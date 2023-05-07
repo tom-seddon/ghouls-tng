@@ -1,0 +1,93 @@
+                .include "../submodules/beeb/include/beeb.s65"
+
+;-------------------------------------------------------------------------
+
+max_gmc_pages=16
+max_levels_pages=10
+
+himem=$5800
+levels_org=himem-max_levels_pages*256
+gmc_org=levels_org-max_gmc_pages*256
+                
+;-------------------------------------------------------------------------
+
+level_width=20
+level_height=26
+level_data_size=level_width*level_height
+level_name_x_offset=level_data_size
+level_name_offset=level_name_x_offset+2
+level_colour3_offset=level_name_offset+17
+level_total_data_size=level_colour3_offset+1
+                
+;-------------------------------------------------------------------------
+
+_:=[]
+_..=[{.index:len(_),.char:' ',.colour:3,.edef:'__'}]
+type_blank=_[-1]
+                
+_..=[{.index:len(_),.char:$e2,.colour:3,.edef:'\\'}]
+type_lblock=_[-1]
+
+_..=[{.index:len(_),.char:$e3,.colour:3,.edef:'//'}]
+type_rblock=_[-1]
+
+_..=[{.index:len(_),.char:$e0,.colour:3,.edef:'||'}]
+type_block=_[-1]
+
+_..=[{.index:len(_),.char:$e4,.colour:1,.edef:'XX'}]
+type_spikes=_[-1]
+
+_..=[{.index:len(_),.char:$e1,.colour:1,.edef:'SU'}]
+type_spring_upper=_[-1]
+
+_..=[{.index:len(_),.char:$e5,.colour:1,.edef:'SL'}]
+type_spring_lower=_[-1]
+
+_..=[{.index:len(_),.char:$f3,.colour:2,.edef:'..'}]
+type_dots=_[-1]
+
+; colour is irrelevant.
+_..=[{.index:len(_),.char:' ',.colour:3,.edef:'()'}]
+type_pill=_[-1]
+
+; colour is irrelevant.
+_..=[{.index:len(_),.char:' ',.colour:3,.edef:'=='}]
+type_platform=_[-1]
+
+; colour is irrelevant.
+_..=[{.index:len(_),.char:' ',.colour:3,.edef:'<<'}]
+type_conveyor=_[-1]
+
+; colour is irrelevant
+_..=[{.index:len(_),.char:' ',.colour:3,.edef:'SS'}]
+type_spider=_[-1]
+                
+types=_
+
+                .cerror type_blank.index!=0,'oops'
+                .cerror type_lblock.index!=1,'oops'
+                .cerror type_rblock.index!=2,'oops'
+                .cerror type_block.index!=3,'oops'
+                .cerror type_spikes.index!=4,'oops'
+                .cerror type_spring_upper.index!=5,'oops'
+                .cerror type_spring_lower.index!=6,'oops'
+                .cerror type_dots.index!=7,'oops'
+                .cerror type_pill.index!=8,'oops'
+                .cerror type_platform.index!=9,'oops'
+                .cerror type_conveyor.index!=10,'oops'
+                .cerror type_spider.index!=11,'oops'
+
+ghouls_level_enc: .encode
+                .for _i:=0,_i<len(types),_i+=1
+                .edef types[_i].edef,types[_i].index
+                .endfor
+                .for _i:=0,_i<256,_i+=1
+                .edef format('%02x',_i),_i
+                .endfor
+                .endencode
+
+flags_ghosts=$80                ;shown when GO>0
+flags_add8=$40                  ;add 8 to screen address
+flags_speed_mask=$1f
+                
+;-------------------------------------------------------------------------

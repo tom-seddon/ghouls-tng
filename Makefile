@@ -67,6 +67,7 @@ endif
 # Create GMC
 	$(_V)$(MAKE) _asm PC=gmc BEEB=GMC
 	$(_V)$(MAKE) _asm PC=gudgs BEEB=GUDGS
+	$(_V)$(MAKE) _asm PC=glevels BEEB=GLEVELS
 
 # Create GBAS
 	$(_V)$(PYTHON) $(BIN)/bbpp.py -Ddebug=True --asm-symbols $(BUILD)/gmc.symbols "" -o $(BUILD)/ghouls.bas src/ghouls.bas
@@ -89,7 +90,7 @@ endif
 .PHONY:_asm
 _asm:
 	$(_V)$(TASS) $(TASS_ARGS) -L $(BUILD)/$(PC).lst -l $(BUILD)/$(PC).symbols -o $(BUILD)/$(PC).prg src/$(PC).s65
-	$(_V)$(PYTHON) $(BEEB_BIN)/prg2bbc.py $(BUILD)/$(PC).prg $(BEEB_OUTPUT)/$$.$(BEEB)
+	$(_V)$(PYTHON) $(BEEB_BIN)/prg2bbc.py --io $(BUILD)/$(PC).prg $(BEEB_OUTPUT)/$$.$(BEEB)
 
 ##########################################################################
 ##########################################################################

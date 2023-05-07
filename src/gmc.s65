@@ -60,6 +60,21 @@ sprite_pl_die_6:.byte 0, 0, 0, 0, $10, $10, 0, 0, 0, 0, 0, 0, $80, $80, 0, 0; 0
 sprite_pl_die_7:.byte 0, 0, $20, $10, $10, $20, 0, 0, 0, 0, $40, $80, $80, $40, 0, 0; 0
 sprite_alt_goal_row1:.byte $69, $3C, $3C, $69, $F, $F, 7, 0, $3E, $2F, $2F, $3F, $3E, $2F, $2D, $F,$C7, $4F, $4F,$CB, $87, $F, $F, $F, $69,$C3,$C3, $69, $F, $F, $E, 0; 0
 
+envelope: .macro n,len,pcr1,pcr2,pcr3,pl1,pl2,pl3,aacr,dacr,sacr,racr,atl,dtl
+                .byte \n
+                .char \len
+                .char \pcr1,\pcr2,\pcr3
+                .byte \pl1,\pl2,\pl3
+                .char \aacr,\dacr,\sacr,\racr
+                .char \atl,\dtl
+                .endmacro
+                
+envelopes:
+                .envelope 1,1,0,0,0,0,0,200,0,0,0,-2,126,0
+                .envelope 2,2,1,-1,1,2,4,2,1,0,0,-1,100,0
+                .envelope 3,3,20,-20,8,5,5,5,0,0,0,-1,110,0
+                .envelope 4,2,0,0,0,0,0,255,3,0,0,-126,127,0 
+                
 ; footstep
 L0AC0:
                 .word $11       ; channel
@@ -130,6 +145,42 @@ ghosts_table:   .word $6A28
 ;                 .byte $e3       ;rblock
 ;                 .byte $e0       ;block
 ;                 .byte 
+
+;-------------------------------------------------------------------------
+
+reset_envelopes: .block
+                ; level_draw_ptr safe to reuse
+                lda #<envelopes
+                sta level_draw_ptr
+                lda #>envelopes
+                sta level_draw_ptr+1
+
+                ldx #4
+
+loop:
+                txa
+                pha
+                
+                ldx level_draw_ptr+0
+                ldy level_draw_ptr+1
+                lda #8          ;define envelope
+                jsr osword
+
+                clc
+                lda level_draw_ptr+0
+                adc #14
+                sta level_draw_ptr+0
+                bcc +
+                inc level_draw_ptr+1
++
+
+                pla
+                tax
+                dex
+                bne loop
+                
+                rts
+                .endblock
                 
 ;-------------------------------------------------------------------------
 

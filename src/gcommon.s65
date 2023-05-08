@@ -3,11 +3,13 @@
 ;-------------------------------------------------------------------------
 
 max_gmc_pages=16
+max_gedmc_pages=24
 max_levels_pages=10
 
 himem=$5800
 levels_org=himem-max_levels_pages*256
 gmc_org=levels_org-max_gmc_pages*256
+gedmc_org=levels_org-max_gedmc_pages*256
                 
 ;-------------------------------------------------------------------------
 
@@ -66,3 +68,21 @@ flags_add8=$40                  ;add 8 to screen address
 flags_speed_mask=$1f
                 
 ;-------------------------------------------------------------------------
+
+ed_flags1_width2=$80             ;width=1 if clear
+ed_flags1_height2=$40            ;height=1 if clear
+ed_flags1_masked=$20
+ed_flags1_speed_mask=$1f
+
+ed_flags2_repeat=$80
+
+; ed_get_flags1: .function width,height,masked,speed
+;                 .cerror !(width==1||width==2),'bad width'
+;                 .cerror !(height==1||height==2),'bad height'
+;                 .cerror !(speed>=-1&&speed<num_speeds),'bad speed'
+;                 .endfunction (width==2?ed_flags1_width2:0)|(height==2?ed_flags1_height2:0)|(masked?ed_flags1_masked:0)|(1+speed)
+                
+; ed_flags2_repeat_add=$80
+; ed_get_flags2: .function repeat
+;                 .endfunction (repeat?ed_flags2_repeat:0)
+

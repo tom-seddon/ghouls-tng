@@ -33,7 +33,7 @@ def main2(options):
     # vars.
     budget('$.GBAS',PAGE,symbols.gmc_org-1024)
     budget('$.GMC',symbols.gmc_org,symbols.levels_org)
-    budget('$.GEDMC',symbols.gmc_org,symbols.levels_org)
+    budget('$.GEDMC',symbols.gedmc_org,symbols.levels_org)
     budget('$.GLEVELS',symbols.levels_org,symbols.himem)
     budget('$.GUDGS',0x900,0xb00)
 

@@ -12,7 +12,7 @@ endif
 ##########################################################################
 
 _V:=$(if $(VERBOSE),,@)
-TASS_ARGS:=--case-sensitive -Wall --cbm-prg --quiet
+TASS_ARGS:=--case-sensitive -Wall --cbm-prg --quiet --long-branch
 
 ##########################################################################
 ##########################################################################
@@ -96,7 +96,7 @@ endif
 .PHONY:_asm
 _asm:
 	$(_V)$(TASS) $(TASS_ARGS) $(TASS_EXTRA_ARGS) -L $(BUILD)/$(BEEB).lst -l $(BUILD)/$(BEEB).symbols -o $(BUILD)/$(BEEB).prg src/$(PC).s65
-	$(_V)$(PYTHON) $(BEEB_BIN)/prg2bbc.py --io $(BUILD)/$(PC).prg $(BEEB_OUTPUT)/$$.$(BEEB)
+	$(_V)$(PYTHON) $(BEEB_BIN)/prg2bbc.py --io $(BUILD)/$(BEEB).prg $(BEEB_OUTPUT)/$$.$(BEEB)
 
 ##########################################################################
 ##########################################################################

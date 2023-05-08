@@ -21,10 +21,17 @@ level_draw_ptr=$84
 L0084=$84
 L0085=$85
 level_draw_screen_addr=$86
+ed_read_addr=$88
+ed_level_addr=$8a
+ed_write_addr=$8c
 
 ;-------------------------------------------------------------------------
 
+                .if editor
+*=gedmc_org
+                .else
 *=gmc_org
+                .endif
 
 ;-------------------------------------------------------------------------
 
@@ -34,23 +41,141 @@ gmc_start:
                 ; For use from BASIC. These are absolutely not in any
                 ; rational order.
                 .dword reset_envelopes          ;+0
-                .dword entry_draw_level         ;+4
-                .dword sprite_pl_facing         ;+8
-                .dword sprite_spider_0_row0     ;+12
-                .dword sprite_floating_platform ;+16
-                .dword sprite_half_platform_QQQ ;+20
-                .dword sprite_power_pill        ;+24
-                .dword 0;entry_draw_level.chars   ;+28
-                .dword 0;entry_draw_level.colours ;+32
-                .dword 0;len(types)               ;+36
-                .dword sprite_spider_0_row1     ;+40
-                .dword level_draw_ptr           ;+44
-                .dword ghosts_table             ;+48
-                .dword entry_game               ;+52
-                .dword L0070                    ;+56
-                .dword L0084                    ;+60
-                .dword L0DDE                    ;+64
+                .dword ed_test                  ;+4
+                .dword ed_read_level            ;+8
+                .dword ed_read_addr             ;+12
+                .dword ed_level_addr            ;+16
+                .dword ed_write_addr            ;+20
+                .dword ed_get_screen_write_addr ;+24
+                .dword ed_draw_level            ;+28
+                .dword ed_place_item            ;+32
+                .dword ed_draw_item             ;+36
+                .dword ed_erase_item            ;+40
+                .dword ed_get_item_speed        ;+44
+                .dword ed_get_item_index        ;+48
                 .endif
+
+sprite_blank:
+                .fill 16,0
+sprite_block:
+                .byte %11111111
+                .byte %00010001
+                .byte %11111111
+                .byte %01100110
+                .byte %01100110
+                .byte %11111111
+                .byte %00010001
+                .byte %11111111
+                .byte %11111111
+                .byte %10001000
+                .byte %11111111
+                .byte %01100110
+                .byte %01100110
+                .byte %11111111
+                .byte %10001000
+                .byte %11111111
+sprite_spring_row0:
+                .byte %00001010
+                .byte %00001111
+                .byte %00000000
+                .byte %00000111
+                .byte %00001000
+                .byte %00000111
+                .byte %00000000
+                .byte %00000111
+                .byte %00001010
+                .byte %00001100
+                .byte %00000010
+                .byte %00001001
+                .byte %00000101
+                .byte %00001110
+                .byte %00000010
+                .byte %00001001
+sprite_lblock:
+                .byte %11111111
+                .byte %10011001
+                .byte %01110111
+                .byte %01100110
+                .byte %00100010
+                .byte %00110011
+                .byte %00010001
+                .byte %00000000
+                .byte %11111111
+                .byte %10001000
+                .byte %11111111
+                .byte %01100110
+                .byte %01100110
+                .byte %11111111
+                .byte %10001000
+                .byte %01110111
+sprite_rblock:
+                .byte %11111111
+                .byte %00010001
+                .byte %11111111
+                .byte %01100110
+                .byte %01100110
+                .byte %11111111
+                .byte %00010001
+                .byte %11111111
+                .byte %11111111
+                .byte %10011001
+                .byte %11101110
+                .byte %01100110
+                .byte %01000100
+                .byte %11001100
+                .byte %10001000
+                .byte %00000000
+sprite_spikes:
+                .byte %00001001
+                .byte %00001001
+                .byte %00001001
+                .byte %00001101
+                .byte %00001101
+                .byte %00000101
+                .byte %00000101
+                .byte %00001111
+                .byte %00001001
+                .byte %00001001
+                .byte %00001001
+                .byte %00001011
+                .byte %00001011
+                .byte %00001010
+                .byte %00001010
+                .byte %00001111
+sprite_spring_row1:
+                .byte %00001000
+                .byte %00000111
+                .byte %00000000
+                .byte %00000111
+                .byte %00001000
+                .byte %00000111
+                .byte %00001000
+                .byte %00000111
+                .byte %00000101
+                .byte %00001110
+                .byte %00000010
+                .byte %00001001
+                .byte %00000101
+                .byte %00001110
+                .byte %00000001
+                .byte %00001110
+sprite_dots:
+                .byte %00000000
+                .byte %00000000
+                .byte %00000000
+                .byte %00000000
+                .byte %00110000
+                .byte %00110000
+                .byte %00000000
+                .byte %00000000
+                .byte %00000000
+                .byte %00000000
+                .byte %00000000
+                .byte %00000000
+                .byte %00110000
+                .byte %00110000
+                .byte %00000000
+                .byte %00000000
                 
 sprite_pl_right_0:.byte 0, $30, $70, $50,$F0,$E0,$F0, $70, 0, 0, $80,$C0, $80, 0, 0,$C0, $70, $30, $30, $20, $20,$C0, $80, 0, $80, 0, $80, $80,$C0, $80, 0, 0; 0
 sprite_pl_right_1:.byte 0, 0, $10, $10, $30, $30, $30, $10, 0,$C0,$E0, $60,$F0, $80,$F0,$E0, $10, 0, 0, 0, 0, 0, 0, 0,$E0,$C0,$C0,$C0,$C0, $80, $80,$C0; 0
@@ -62,7 +187,7 @@ sprite_spider_0_row1:.byte $33, $13, $17, $15, 5, 1, 0, 0, $57, $77, $77, 2, 2, 
 sprite_floating_platform:.byte $FF,$FF, $9E, $9E, $56, 7, 8, 8,$FF,$CF,$C3,$CF,$DE, $2C, $1E, 3,$FF, $3F, $3C, $3F,$B7, $43, $87, $C,$FF,$FF, $97, $97,$A6, $E, 1, 1; 0
 sprite_goal_row0:.byte $D,$FF, $60,$F0, $58, $1E, $F, $F, $20,$D0,$F0,$A0, $70,$D0, $F, $3C, $50,$E0,$B0,$D0, $70,$A0, $F, $87, 0,$C0,$A0, $70,$C1, $87, $F, $F; 0
 sprite_goal_row1:.byte $3F, $5C, $6C, $5C, $3F, $F, 7, 1, $3C,$BD,$BD,$BC, $3C, $2D, $2D, $F,$C3,$DB,$DB,$D3, $87, $F, $F, $F,$CF,$A3, $63,$A3,$CF, $F, $E, 8; 0
-sprite_half_platform_QQQ:.byte 0, 0, 0, 0, 0, 0, 0, 0,$FF,$AA, $55, $55,$AA,$AA,$FF, 0; 0
+sprite_conveyor:.byte 0, 0, 0, 0, 0, 0, 0, 0,$FF,$AA, $55, $55,$AA,$AA,$FF, 0; 0
 sprite_pl_die_8:.byte 0, $40, $20,$C0, 0, $20, $50, $10, $80,$A0, $40, 0, $30, $40, $20, 0; 0
 sprite_pl_splat:.byte 0, 0, 0, $20, $90, $70,$E0,$F0, 0, 0, 0, $40,$C0,$A0,$D0,$F0; 0
 sprite_spider_1_row0:.byte $C, $17, $11, 0, $17, $C, $33, $77, 0, 0,$CC, $55,$FF,$FF,$DF,$DF, 0, 0, $33,$AA,$FF,$FF,$BF,$BF, 3, $8E, $88, 0, $8E, 3,$CC,$EE; 0
@@ -203,13 +328,578 @@ loop:
                 
                 rts
                 .endblock
+
+;-------------------------------------------------------------------------
+
+ed_item: .function sprite_data,width,height,masked,speed,repeat
+                .cerror !(width==1||width==2),'bad width'
+                .cerror !(height==1||height==2),'bad height'
+                .cerror !(speed>=-1&&speed<num_speeds),'bad speed'
+                .endfunction {.sprite_data:sprite_data,.width:width,.height:height,.masked:masked,.speed:speed,.repeat:repeat,}
                 
+ed_ordinary_item: .function sprite_data,repeat
+                .endfunction ed_item(sprite_data,1,1,false,-1,repeat)
+
+ed_speeds_items: .function sprite_data,width,height,masked
+_list:=[]
+                .for _i:=0,_i<num_speeds,_i+=1
+_list..=[ed_item(sprite_data,width,height,masked,_i,false)]
+                .endfor
+                .endfunction _list
+
+_:=[]
+_..=[ed_ordinary_item(0,true)] ;blank
+_..=[ed_ordinary_item(sprite_lblock,true)] ;lblock
+_..=[ed_ordinary_item(sprite_rblock,true)]  ;rblock
+_..=[ed_ordinary_item(sprite_block,true)]   ;block
+_..=[ed_ordinary_item(sprite_spikes,false)] ;spikes
+_..=[ed_ordinary_item(sprite_spring_row0,false)] ;spring u
+_..=[ed_ordinary_item(sprite_spring_row1,false)] ;spring l
+_..=[ed_ordinary_item(sprite_dots,true)]        ;dots
+_..=[ed_ordinary_item(sprite_power_pill,false)]  ;pill
+_..=[ed_item(sprite_conveyor,1,1,false,-1,false)]    ;conveyor
+_..=ed_speeds_items(sprite_floating_platform,2,1,false)      ;platform
+_..=ed_speeds_items(sprite_spider_0_row0,2,2,false) ;spider
+_..=ed_speeds_items(sprite_spider_0_row0,2,2,true) ;spider2
+ed_types=_
+
+ed_item_sprite_addrs_lo: .proc
+                .for _i=0,_i<len(ed_types),_i+=1
+                .byte <ed_types[_i].sprite_data
+                .endfor
+                .endproc                
+                
+ed_item_sprite_addrs_hi: .proc
+                .for _i=0,_i<len(ed_types),_i+=1
+                .byte >ed_types[_i].sprite_data
+                .endfor
+                .endproc
+
+ed_item_flags1s: .proc
+                .for _i=0,_i<len(ed_types),_i+=1
+_flags:=0
+                .if ed_types[_i].width==2
+_flags:=_flags|ed_flags1_width2
+                .endif
+                .if ed_types[_i].height==2
+_flags:=_flags|ed_flags1_height2
+                .endif
+                .if ed_types[_i].masked
+_flags:=_flags|ed_flags1_masked
+                .endif
+_flags:=_flags|(1+ed_types[_i].speed)
+                .byte _flags
+                .endfor
+                .endproc
+
+ed_item_flags2s: .proc
+                .for _i=0,_i<len(ed_types),_i+=1
+_flags:=0
+                .if ed_types[_i].repeat
+_flags:=_flags|ed_flags2_repeat
+                .endif
+                .byte _flags
+                .endfor
+                .endproc
+
+;-------------------------------------------------------------------------
+
+ed_test: .proc
+                stx level_draw_ptr+0
+                sty level_draw_ptr+1
+                
+                lda #12
+                jsr oswrch
+
+                ldx #0          ;no ghosts
+                jsr entry_draw_level
+
+                ; Reset ghosts table
+                ldx #7
+-
+                lda #0
+                sta ghosts_table,x
+                dex
+                bpl -
+                
+                ; Player start pos
+                lda #$00
+                sta L0070+0
+                lda #$7A
+                sta L0070+1
+
+                ; ???
+                lda #0
+                sta L0084
+
+                ; Whatever was behind player previously
+                ldy #31
+-
+                lda (L0070),y
+                sta L0DDE,y
+                dey
+                bpl -
+
+                ; Other OSWRCH setup
+                ldx #0
+-
+                lda test_prints,x
+                jsr oswrch
+                inx
+                cpx #test_prints_end-test_prints
+                bne -
+
+                jsr entry_game
+                rts
+
+test_prints:
+                ; GCOL 0,1
+                .byte 18,0,1
+
+                ; MOVE 0,60
+                .byte 25,4
+                .word 0,60
+
+                ; DRAW 0,952
+                .byte 25,5
+                .word 0,952
+
+                ; MOVE 1279,60
+                .byte 25,4
+                .word 1279,60
+
+                ; DRAW 1279,952
+                .byte 25,5
+                .word 1279,952
+
+                ; MOVE 1080,800
+                .byte 25,4
+                .word 1080,800
+                
+                ; DRAW 1080,860
+                .byte 25,5
+                .word 1080,860
+                
+                ; GCOL 0,2
+                .byte 18,0,2
+                
+                ; MOVE 0,952
+                .byte 25,4
+                .word 0,952
+                
+                ; PLOT 21,1279,952
+                .byte 25,21
+                .word 1279,952
+                
+                ; MOVE 1092,864
+                .byte 25,4
+                .word 1092,864
+                
+                ; DRAW 1270,864
+                .byte 25,5
+                .word 1270,864
+
+                ; COLOUR 2
+                .byte 17,2
+test_prints_end:
+                
+                .endproc
+                
+;-------------------------------------------------------------------------
+
+ed_draw_level: .proc
+
+                ldy #0
+y_loop:
+                ldx #0
+x_loop:
+                jsr ed_read_level
+                jsr ed_draw_item
+
+                inx
+                cpx #level_width
+                bne x_loop
+
+                iny
+                cpy #level_height
+                bne y_loop
+
+                rts
+                .endproc
+
+;-------------------------------------------------------------------------
+
+ed_next_write_addr_screen_row: .proc
+                clc
+                lda ed_write_addr+0
+                adc #$40
+                sta ed_write_addr+0
+                lda ed_write_addr+1
+                adc #$01
+                sta ed_write_addr+1
+                rts
+                .endproc
+
+;-------------------------------------------------------------------------
+
+ed_add16z: .proc
+                clc
+                adc 0,x
+                sta 0,x
+                bcc +
+                inc 1,x
++
+                rts
+                .endproc
+
+;-------------------------------------------------------------------------
+
+ed_place_item: .proc
+                pha
+                jsr ed_read_level
+                jsr ed_erase_item
+                pla
+
+                pha
+                jsr ed_write_level
+                pla
+                
+                ; Assume the old item was 2x2 and the new is 1x1.
+                jsr ed_draw_item
+
+                inx
+                jsr ed_read_level
+                dex
+                bcs +           ;taken if (X+1,Y+0) is out of bounds
+                jsr ed_draw_item
++
+
+                iny
+                jsr ed_read_level
+                bcs +           ;taken if (X+0,Y+1) is out of bounds
+                jsr ed_draw_item
+
+                ; since (X+1,Y+0) wasn't out of bounds, and (X+0,Y+1)
+                ; wasn't out of bounds, (X+1,Y+1) isn't out of bounds
+                ; either.
+                inx
+                jsr ed_read_level
+                jsr ed_draw_item
++
+                rts
+                .endproc
+
+;-------------------------------------------------------------------------
+;
+; entry: A = object index
+;        C = 0 to increment
+;            1 to decrement
+;
+; exit: A = new object index
+                
+ed_get_item_index: .proc
+                .cerror len(ed_types)==256,'needs a rethink'
+                
+                bcs sub
+add:
+                adc #1
+                cmp #len(ed_types)
+                bcc +
+                lda #0
++
+                rts
+
+sub:
+                sbc #1
+                cmp #len(ed_types)
+                bcc +
+                lda #len(ed_types)-1
++
+                rts
+                .endproc
+                
+;-------------------------------------------------------------------------
+;
+; entry: A = object index
+;
+; exit: C = 0: A = object speed
+;       C = 1: object has no speed
+;
+ed_get_item_speed: .proc
+                tay
+                ldx #indexes_end-indexes-1
+loop:
+                tya
+                sec
+                sbc indexes,x
+                cmp #num_speeds
+                bcc got
+                dex
+                bpl loop
+                sec
+got:
+                rts
+                
+indexes:
+                .byte type_platform.index
+                .byte type_spider.index
+                .byte type_spider2.index
+indexes_end:
+                .endproc
+                
+;-------------------------------------------------------------------------
+
+ed_draw_item: .proc
+                clc             ;drawing
+                jmp ed_draw_or_erase_item
+                .endproc
+
+;-------------------------------------------------------------------------
+
+ed_erase_item: .proc
+                sec             ;erasing
+                jmp ed_draw_or_erase_item
+                .endproc
+
+;-------------------------------------------------------------------------
+
+; preserves X/Y
+ed_draw_or_erase_item: .proc
+                ror erasing       ;bit 7 set if erasing
+                stx xc
+                sty yc
+                sta itype
+
+                tax
+                lda ed_item_flags1s,x
+                sta flags1
+                lda ed_item_sprite_addrs_lo,x
+                sta ed_read_addr+0
+                lda ed_item_sprite_addrs_hi,x
+                sta ed_read_addr+1
+
+                jsr row
+
+                bit flags1
+                bvc done        ;taken if height=1
+
+                ; lda yc
+                ; cmp #level_height-1
+                ; beq done
+
+                inc yc
+                jsr row
+                dec yc
+
+done:
+                ldx xc
+                ldy yc
+                rts
+                
+row:
+                ldx xc
+                ldy yc
+                jsr ed_get_screen_write_addr
+                
+                jsr do_item_part
+
+                bit flags1
+                bpl row_done
+
+                ; lda xc
+                ; cmp #level_width-1
+                ; beq row_done
+
+do_item_part:
+                ldy #15
+                lda #0
+                bit erasing
+                bmi erase_part_loop ;taken if erasing
+
+                ; The blank item doesn't overwrite. 
+                lda ed_read_addr+0
+                ora ed_read_addr+1
+                beq next_column
+                
+                ldx #0          ;Unmasked mask
+                lda flags1
+                and #ed_flags1_masked
+                beq +           ;taken if unmasked
+                ldx #2          ;Masked mask
++
+part_loop:
+                lda (ed_read_addr),y
+                and masks+0,x
+                sta (ed_write_addr),y
+                dey
+
+                lda (ed_read_addr),y
+                and masks+1,x
+                sta (ed_write_addr),y
+                dey
+
+                bpl part_loop
+
+next_part:
+                lda #16
+                ldx #ed_read_addr
+                jsr ed_add16z
+
+next_column:
+                lda #16
+                ldx #ed_write_addr
+                jsr ed_add16z
+
+row_done:
+                rts
+                
+erase_part_loop:
+                sta (ed_write_addr),y
+                dey
+                bpl erase_part_loop
+                bmi next_part
+
+masks:
+                .byte $ff,$ff   ;unmasked
+                .byte $ff,$00   ;masked
+
+erasing:
+                .byte 0
+itype:
+                .byte 0                
+xc:
+                .byte 0
+yc:
+                .byte 0                
+
+flags1:
+                .byte 0
+                .endproc
+                
+;-------------------------------------------------------------------------
+
+; preserves X/Y
+ed_get_screen_write_addr: .proc
+                lda #0
+                sta ed_write_addr+0
+
+                sty ed_write_addr+1 ;*256
+
+                tya
+                lsr a               ;>*128
+                ror ed_write_addr+0 ;<*128
+                lsr a               ;>*64
+                ror ed_write_addr+0 ;<*64 (C=0)
+                
+                adc ed_write_addr+1
+                sta ed_write_addr+1
+
+                txa
+                asl a           ;*2 (0-38)
+                asl a           ;*4 (0-76)
+                asl a           ;*8 (0-152)
+                asl a           ;*16 (0-304)
+                bcc +
+                inc ed_write_addr+1 ;definitely needed
++
+                clc
+                adc ed_write_addr+0
+                sta ed_write_addr+0
+                bcc +
+                inc ed_write_addr+1
++
+
+                ; The editor screen starts at (0,0).
+                clc
+                lda ed_write_addr+1
+                adc #$58
+                sta ed_write_addr+1
+                rts
+                .endproc
+
+;-------------------------------------------------------------------------
+
+; preserves X/Y
+ed_read_level: .proc
+                sty reload_y+1
+                jsr ed_prepare_for_level_access
+                lda (ed_read_addr),y
+reload_y: ldy #$ff
+                rts
+                .endproc
+
+;-------------------------------------------------------------------------
+
+; preserves A/X/Y
+ed_write_level: .proc
+                sty reload_y+1
+                pha
+                jsr ed_prepare_for_level_access
+                pla
+                sta (ed_read_addr),y ;hmm
+reload_y: ldy #$ff
+                rts
+                .endproc
+
+;-------------------------------------------------------------------------
+
+; sets things up so that (ed_read_addr),Y will access the appropriate
+; value in the level.
+;
+; Returns with C=1 if access out of bounds.
+;
+; preserves X.
+ed_prepare_for_level_access: .proc
+                cpx #level_width
+                bcs done
+                cpy #level_height
+                bcs done
+
+                lda #0
+                sta ed_read_addr+1
+
+                ; Y*16
+                tya
+                asl a           ;*2 - 0-50
+                asl a           ;*4 - 0-100
+                asl a           ;*8 - 0-200
+                rol ed_read_addr+1
+                asl a           ;*16 - 0-400
+                rol ed_read_addr+1
+                sta ed_read_addr+0
+
+                ; Y*16+Y*4 = Y*20
+                tya
+                asl a           ;*2
+                asl a           ;*4 (C=0)
+                adc ed_read_addr+0
+                sta ed_read_addr+0
+                bcc +
+                inc ed_read_addr+1
++
+
+                clc
+                lda ed_read_addr+0
+                adc ed_level_addr+0
+                sta ed_read_addr+0
+                lda ed_read_addr+1
+                adc ed_level_addr+1
+                sta ed_read_addr+1
+
+                ; This is stupid, but it's going to be too confusing
+                ; to call from BASIC otherwise.
+                txa
+                tay
+                clc
+done:
+                rts
+                .endproc
+
 ;-------------------------------------------------------------------------
                 
 entry_draw_level: .block
-start_x=0
-start_y=4
-start_addr=$5800+start_y*320+start_x*16
+game_start_y=4
+game_start_addr=$5800+game_start_y*320
 level_name_y=28
 
                 stx go
@@ -221,14 +911,14 @@ level_name_y=28
                 
                 lda #31
                 jsr oswrch
-                lda #start_x
+                lda #0
                 jsr oswrch
-                lda #start_y
+                lda #game_start_y
                 jsr oswrch
 
-                lda #<start_addr
+                lda #<game_start_addr
                 sta level_draw_screen_addr+0
-                lda #>start_addr
+                lda #>game_start_addr
                 sta level_draw_screen_addr+1
 
                 lda #$ff
@@ -245,11 +935,11 @@ loop:
 
                 ldx #0
 find_loop:
-                ldy info,x
+                ldy item_info,x
                 cpy #$ff
                 beq not_found
                 
-                cmp info,x
+                cmp item_info,x
                 beq found
 
                 inx
@@ -289,9 +979,9 @@ next:
 found:
                 lda #17
                 jsr oswrch
-                lda info+1,x
+                lda item_info+1,x
                 jsr oswrch
-                lda info+2,x
+                lda item_info+2,x
                 jsr oswrch
 
                 inc level_draw_ptr+0
@@ -370,24 +1060,41 @@ colour:
                 .byte 0
 counter:
                 .word 0
+                .endblock
 
-info_entry: .macro item
+item_info_entry: .macro item
                 .byte \item.index,\item.colour,\item.char
                 .endmacro
                 
-info:
-                .info_entry type_blank
-                .info_entry type_lblock
-                .info_entry type_rblock
-                .info_entry type_block
-                .info_entry type_spikes
-                .info_entry type_spring_upper
-                .info_entry type_spring_lower
-                .info_entry type_dots
+item_info:
+                .item_info_entry type_blank
+                .item_info_entry type_lblock
+                .item_info_entry type_rblock
+                .item_info_entry type_block
+                .item_info_entry type_spikes
+                .item_info_entry type_spring_upper
+                .item_info_entry type_spring_lower
+                .item_info_entry type_dots
                 .byte $ff
-                
-                .endblock
-                
+
+; C=0 on exit if found. X refers to item info table entry.
+find_item_info: .proc
+                ldx #0
+loop:
+                ldy item_info,x
+                cpy #$ff
+                beq not_found
+                cmp item_info,x
+                beq found
+                inx
+                inx
+                inx
+                jmp loop
+found:
+                clc
+not_found:
+                rts
+                .endproc           
 ;-------------------------------------------------------------------------
 
 ; TODO: these two buffers probably need to be consecutive?
@@ -1038,7 +1745,7 @@ L11DF:
                 beq change_platform_direction ;taken if it bumped into a wall
                 dey
                 bpl L11DF
-                jmp L11F8
+                jmp draw_floating_platform
 
 ;-------------------------------------------------------------------------
 
@@ -1047,10 +1754,11 @@ change_platform_direction:
                 eor #1
                 sta platform_direction
                 jmp L11BB
+                .endblock
 
 ;-------------------------------------------------------------------------
 
-L11F8:
+draw_floating_platform:
                 ldy #$1F
 
 L11FA:
@@ -1059,7 +1767,6 @@ L11FA:
                 dey
                 bpl L11FA
                 rts
-                .endblock
 
 ;-------------------------------------------------------------------------
 
@@ -1361,7 +2068,7 @@ L13BD:
                 dey
                 cpy #$FF
                 bne L13BD
-                jmp L13D6
+                jmp draw_conveyor
 
 ;-------------------------------------------------------------------------
 
@@ -1371,17 +2078,19 @@ L13CB:
                 sta conveyor_direction
                 jsr L156B
 
-L13D6:
+                ; fall through
+                .endblock
+
+draw_conveyor:
                 ldy #$F
 
 L13D8:
-                lda sprite_half_platform_QQQ,y
+                lda sprite_conveyor,y
                 sta (conveyor_addr),y
                 dey
                 cpy #$FF
                 bne L13D8
                 rts
-                .endblock
 
 ;-------------------------------------------------------------------------
 
@@ -1491,7 +2200,7 @@ L146C:
                 dey
                 cpy #$FF
                 bne L146C
-                jmp L148F
+                rts
 
 ;-------------------------------------------------------------------------
 
@@ -2074,4 +2783,9 @@ fill_row_loop:
 
 ;-------------------------------------------------------------------------
 
+                .if editor
+                .cerror *-gmc_start>max_gedmc_pages*256,"gedmc overflow"
+                .else
                 .cerror *-gmc_start>max_gmc_pages*256,"gmc overflow"
+                .endif
+                

@@ -30,6 +30,28 @@ level_draw_screen_addr=$86
 
 gmc_start:
                 
+                .if editor
+                ; For use from BASIC. These are absolutely not in any
+                ; rational order.
+                .dword reset_envelopes          ;+0
+                .dword entry_draw_level         ;+4
+                .dword sprite_pl_facing         ;+8
+                .dword sprite_spider_0_row0     ;+12
+                .dword sprite_floating_platform ;+16
+                .dword sprite_half_platform_QQQ ;+20
+                .dword sprite_power_pill        ;+24
+                .dword entry_draw_level.chars   ;+28
+                .dword entry_draw_level.colours ;+32
+                .dword len(types)               ;+36
+                .dword sprite_spider_0_row1     ;+40
+                .dword level_draw_ptr           ;+44
+                .dword ghosts_table             ;+48
+                .dword entry_game               ;+52
+                .dword L0070                    ;+56
+                .dword L0084                    ;+60
+                .dword L0DDE                    ;+64
+                .endif
+                
 sprite_pl_right_0:.byte 0, $30, $70, $50,$F0,$E0,$F0, $70, 0, 0, $80,$C0, $80, 0, 0,$C0, $70, $30, $30, $20, $20,$C0, $80, 0, $80, 0, $80, $80,$C0, $80, 0, 0; 0
 sprite_pl_right_1:.byte 0, 0, $10, $10, $30, $30, $30, $10, 0,$C0,$E0, $60,$F0, $80,$F0,$E0, $10, 0, 0, 0, 0, 0, 0, 0,$E0,$C0,$C0,$C0,$C0, $80, $80,$C0; 0
 sprite_pl_left_0:.byte 0, 0, $10, $30, $10, 0, 0, $30, 0,$C0,$E0,$A0,$F0, $70,$F0,$E0, $10, 0, $10, $10, $30, $10, 0, 0,$E0,$C0,$C0, $40, $40, $30, $10, 0; 0
@@ -183,7 +205,7 @@ loop:
                 .endblock
                 
 ;-------------------------------------------------------------------------
-
+                
 entry_draw_level: .block
 start_x=0
 start_y=4
@@ -405,6 +427,7 @@ chars:
                 
 ;-------------------------------------------------------------------------
 
+; TODO: these two buffers probably need to be consecutive?
 L0DDE:       .byte 0, 0, 0, 0, 0, 0, 0, 0, 9, 9, 9, $D, $D, 5, 5, $F; 0
                 ; copy of what was under player, row 0?
 L0DEE:       .byte $FF, $88,$FF, $66, $66,$FF, $88, $77,$FF, $11,$FF, $66, $66,$FF, $11,$FF; 0

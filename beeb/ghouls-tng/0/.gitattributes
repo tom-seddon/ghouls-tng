@@ -1,2 +1,5 @@
 $.GBAS diff=bbcbasic
 $.SPRITES diff=bbcbasic
+$.LEVELS diff=bbcbasic
+$.EDITOR diff=bbcbasic
+$.GED diff=bbcbasic

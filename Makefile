@@ -65,7 +65,8 @@ endif
 	$(_V)$(PYTHON) $(BEEB_BIN)/text2bbc.py $(BEEB_OUTPUT)/$$.!BOOT
 
 # Create GMC
-	$(_V)$(MAKE) _asm PC=gmc BEEB=GMC
+	$(_V)$(MAKE) _asm PC=gmc BEEB=GMC TASS_EXTRA_ARGS=-Deditor=false
+	$(_V)$(MAKE) _asm PC=gmc BEEB=GEDMC TASS_EXTRA_ARGS=-Deditor=true
 	$(_V)$(MAKE) _asm PC=gudgs BEEB=GUDGS
 	$(_V)$(MAKE) _asm PC=glevels BEEB=GLEVELS
 
@@ -94,7 +95,7 @@ endif
 
 .PHONY:_asm
 _asm:
-	$(_V)$(TASS) $(TASS_ARGS) -L $(BUILD)/$(PC).lst -l $(BUILD)/$(PC).symbols -o $(BUILD)/$(PC).prg src/$(PC).s65
+	$(_V)$(TASS) $(TASS_ARGS) $(TASS_EXTRA_ARGS) -L $(BUILD)/$(PC).lst -l $(BUILD)/$(PC).symbols -o $(BUILD)/$(PC).prg src/$(PC).s65
 	$(_V)$(PYTHON) $(BEEB_BIN)/prg2bbc.py --io $(BUILD)/$(PC).prg $(BEEB_OUTPUT)/$$.$(BEEB)
 
 ##########################################################################

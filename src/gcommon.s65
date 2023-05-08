@@ -21,69 +21,44 @@ level_total_data_size=level_colour3_offset+1
                 
 ;-------------------------------------------------------------------------
 
-_:=[]
-_..=[{.index:len(_),.char:' ',.colour:3,.edef:'__'}]
-type_blank=_[-1]
+num_speeds=20
                 
-_..=[{.index:len(_),.char:$e2,.colour:3,.edef:'\\'}]
-type_lblock=_[-1]
+type_blank={.index:0,.char:9,.colour:3}
+type_lblock={.index:1,.char:$e2,.colour:3}
+type_rblock={.index:2,.char:$e3,.colour:3}
+type_block={.index:3,.char:$e0,.colour:3,}
+type_spikes={.index:4,.char:$e4,.colour:1,}
+type_spring_upper={.index:5,.char:$e1,.colour:1,}
+type_spring_lower={.index:6,.char:$e5,.colour:1,}
+type_dots={.index:7,.char:$f3,.colour:2,}
+type_pill={.index:8,}
+type_conveyor={.index:9,}
+type_platform={.index:10}
+type_spider={.index:30}
+type_spider2={.index:50}
 
-_..=[{.index:len(_),.char:$e3,.colour:3,.edef:'//'}]
-type_rblock=_[-1]
-
-_..=[{.index:len(_),.char:$e0,.colour:3,.edef:'||'}]
-type_block=_[-1]
-
-_..=[{.index:len(_),.char:$e4,.colour:1,.edef:'XX'}]
-type_spikes=_[-1]
-
-_..=[{.index:len(_),.char:$e1,.colour:1,.edef:'SU'}]
-type_spring_upper=_[-1]
-
-_..=[{.index:len(_),.char:$e5,.colour:1,.edef:'SL'}]
-type_spring_lower=_[-1]
-
-_..=[{.index:len(_),.char:$f3,.colour:2,.edef:'..'}]
-type_dots=_[-1]
-
-; colour is irrelevant.
-_..=[{.index:len(_),.char:' ',.colour:3,.edef:'()'}]
-type_pill=_[-1]
-
-; colour is irrelevant.
-_..=[{.index:len(_),.char:' ',.colour:3,.edef:'=='}]
-type_platform=_[-1]
-
-; colour is irrelevant.
-_..=[{.index:len(_),.char:' ',.colour:3,.edef:'<<'}]
-type_conveyor=_[-1]
-
-; colour is irrelevant
-_..=[{.index:len(_),.char:' ',.colour:3,.edef:'SS'}]
-type_spider=_[-1]
+speed_edef: .function prefix,speed
+                .cerror !(speed>=0 && speed<num_speeds)
+                .endfunction format('%s%c',prefix,char(speed>=0 && speed<10?'0'+speed:'a'+speed-10))
                 
-types=_
-
-                .cerror type_blank.index!=0,'oops'
-                .cerror type_lblock.index!=1,'oops'
-                .cerror type_rblock.index!=2,'oops'
-                .cerror type_block.index!=3,'oops'
-                .cerror type_spikes.index!=4,'oops'
-                .cerror type_spring_upper.index!=5,'oops'
-                .cerror type_spring_lower.index!=6,'oops'
-                .cerror type_dots.index!=7,'oops'
-                .cerror type_pill.index!=8,'oops'
-                .cerror type_platform.index!=9,'oops'
-                .cerror type_conveyor.index!=10,'oops'
-                .cerror type_spider.index!=11,'oops'
-
 ghouls_level_enc: .encode
-                .for _i:=0,_i<len(types),_i+=1
-                .edef types[_i].edef,types[_i].index
+                .edef '__',type_blank.index
+                .edef '\\',type_lblock.index
+                .edef '//',type_rblock.index
+                .edef '||',type_block.index
+                .edef 'XX',type_spikes.index
+                .edef 'SU',type_spring_upper.index
+                .edef 'SL',type_spring_lower.index
+                .edef '..',type_dots.index
+                .edef '()',type_pill.index
+                .edef '<<',type_conveyor.index
+
+                .for _i:=0,_i<num_speeds,_i+=1
+                .edef speed_edef('=',_i),type_platform.index+_i
+                .edef speed_edef('S',_i),type_spider.index+_i
+                .edef speed_edef('T',_i),type_spider2.index+_i
                 .endfor
-                .for _i:=0,_i<256,_i+=1
-                .edef format('%02x',_i),_i
-                .endfor
+                
                 .endencode
 
 flags_ghosts=$80                ;shown when GO>0

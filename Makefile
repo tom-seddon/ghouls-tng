@@ -95,7 +95,7 @@ endif
 
 .PHONY:_asm
 _asm:
-	$(_V)$(TASS) $(TASS_ARGS) $(TASS_EXTRA_ARGS) -L $(BUILD)/$(PC).lst -l $(BUILD)/$(PC).symbols -o $(BUILD)/$(PC).prg src/$(PC).s65
+	$(_V)$(TASS) $(TASS_ARGS) $(TASS_EXTRA_ARGS) -L $(BUILD)/$(BEEB).lst -l $(BUILD)/$(BEEB).symbols -o $(BUILD)/$(BEEB).prg src/$(PC).s65
 	$(_V)$(PYTHON) $(BEEB_BIN)/prg2bbc.py --io $(BUILD)/$(PC).prg $(BEEB_OUTPUT)/$$.$(BEEB)
 
 ##########################################################################

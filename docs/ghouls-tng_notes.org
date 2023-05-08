@@ -467,20 +467,21 @@ only 2 bytes.
 
 A 20 wide x 26 high grid of bytes. Bytes as follows:
 
-| Value | What              | Flags? |
-|-------+-------------------+--------|
-|     0 | Blank             |        |
-|     1 | Left Block        |        |
-|     2 | Right Block       |        |
-|     3 | Block             |        |
-|     4 | Spikes            |        |
-|     5 | Spring (upper)    |        |
-|     6 | Spring (lower)    |        |
-|     7 | Dots              |        |
-|     8 | Pill              |        |
-|     9 | Floating platform | y      |
-|    10 | Conveyor          |        |
-|    11 | Spider            | y      |
+| Value | What              | Notes                                 |
+|-------+-------------------+---------------------------------------|
+|     0 | Blank             |                                       |
+|     1 | Left Block        |                                       |
+|     2 | Right Block       |                                       |
+|     3 | Block             |                                       |
+|     4 | Spikes            |                                       |
+|     5 | Spring (upper)    |                                       |
+|     6 | Spring (lower)    |                                       |
+|     7 | Dots              |                                       |
+|     8 | Pill              |                                       |
+|     9 | Conveyor          |                                       |
+| 10-29 | Floating platform | 20 speeds                             |
+| 30-49 | Spider            | 20 speeds                             |
+| 50-69 | Extra Spider      | 20 speeds. Appears only when >1 ghost |
 
 If the thing has flags, they are stored in the next byte. (Things with
 flags are 16 pixels wide, so they'd occupy 2 bytes anyway.) The flag

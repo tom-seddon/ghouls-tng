@@ -40,9 +40,9 @@ gmc_start:
                 .dword sprite_floating_platform ;+16
                 .dword sprite_half_platform_QQQ ;+20
                 .dword sprite_power_pill        ;+24
-                .dword entry_draw_level.chars   ;+28
-                .dword entry_draw_level.colours ;+32
-                .dword len(types)               ;+36
+                .dword 0;entry_draw_level.chars   ;+28
+                .dword 0;entry_draw_level.colours ;+32
+                .dword 0;len(types)               ;+36
                 .dword sprite_spider_0_row1     ;+40
                 .dword level_draw_ptr           ;+44
                 .dword ghosts_table             ;+48
@@ -218,7 +218,6 @@ level_name_y=28
                 sta conveyor_addr+1
                 sta spider_addr+1
                 sta platform_addr+1
-                sta skip
                 
                 lda #31
                 jsr oswrch
@@ -241,38 +240,60 @@ level_name_y=28
                 sta counter+1
 
 loop:
-                lda #type_blank.index
                 ldy #0
-                lsr skip
-                bcs +
                 lda (level_draw_ptr),y
+
+                ldx #0
+find_loop:
+                ldy info,x
+                cpy #$ff
+                beq not_found
+                
+                cmp info,x
+                beq found
+
+                inx
+                inx
+                inx
+                jmp find_loop
+
+not_found:
+                cmp #type_pill.index
+                beq pill
+
+                cmp #type_conveyor.index
+                beq conveyor
+
+                cmp #type_platform.index
+                bcc +
+                cmp #type_platform.index+num_speeds
+                bcc platform
 +
-                tax
+                
+                cmp #type_spider.index
+                bcc +
+                cmp #type_spider.index+num_speeds
+                bcc spider
++
 
-                lda colours,x
-                cmp colour
-                beq print_char
-
-                pha
+                cmp #type_spider2.index
+                bcc +
+                cmp #type_spider2.index+num_speeds
+                bcc spider2
++
+                
+next:
+                ; pretend it was blank.
+                ldx #0
+                
+found:
                 lda #17
                 jsr oswrch
-                pla
+                lda info+1,x
                 jsr oswrch
-                
-print_char:
-                lda chars,x
+                lda info+2,x
                 jsr oswrch
 
-                ; Any additional processing.
-                cpx #type_pill.index
-                beq pill
-                cpx #type_platform.index
-                beq platform
-                cpx #type_conveyor.index
-                beq conveyor
-                cpx #type_spider.index
-                beq spider
-next:
                 inc level_draw_ptr+0
                 bne +
                 inc level_draw_ptr+1
@@ -292,8 +313,6 @@ next:
                 bne loop
                 
 done:
-                ; jsr print_title
-                
 ; The BASIC code ends up clearing a bunch of extra stuff due to
 ; slightly careless-looking use of !.
                 lda #0
@@ -305,25 +324,22 @@ done:
                 sta platform_addr+4
                 rts
 
-spider:
-                ldx #spider_addr
-                jsr handle_flags
-                sta spider_speed
+platform:
+                sec
+                sbc #type_platform.index
+                sta platform_speed
+                ldx #platform_addr
+handle_addr:
+                lda level_draw_screen_addr+0
+                sta 0,x
+                lda level_draw_screen_addr+1
+                sta 1,x
                 jmp next
                 
 conveyor:
-                lda level_draw_screen_addr+0
-                sta conveyor_addr+0
-                lda level_draw_screen_addr+1
-                sta conveyor_addr+1
-                jmp next
+                ldx #conveyor_addr
+                jmp handle_addr
                 
-platform:
-                ldx #platform_addr
-                jsr handle_flags
-                sta platform_speed
-                jmp next
-
 pill:
                 ldy #15
 pill_loop:
@@ -333,96 +349,43 @@ pill_loop:
                 bpl pill_loop
                 jmp next
 
-handle_flags:
-                ldy #1
-                sty skip
-                lda (level_draw_ptr),y
+spider2:
+                ldx go
+                beq next
+                sec
+                sbc #type_spider2.index
+                ldx #spider_addr
+                jmp handle_addr
                 
-check_ghosts:
-                pha
-                and #flags_ghosts
-                beq check_add8
-
-                ; this object is only present if GO>0
-                lda go
-                beq flags_done  ;taken if GO=0
-
-check_add8:
-                pla
-                pha
-                ldy #0
-                and #flags_add8
-                beq +
-                ldy #8
-+
-
-                tya                
-                clc
-                adc level_draw_screen_addr+0
-                sta 0,x
-                lda level_draw_screen_addr+1
-                adc #0
-                sta 1,x
-
-flags_done:
-                pla
-                and #flags_speed_mask
-                rts
-
-; print_title:
-;                 lda #5
-;                 jsr oswrch
-
-;                 lda #25         ;PLOT
-;                 jsr oswrch
-
-;                 lda #4          ;MOVE
-;                 jsr oswrch
-
-;                 ; X coordinate
-;                 ldy #0
-;                 lda (level_draw_ptr),y
-;                 jsr oswrch
-;                 iny
-;                 lda (level_draw_ptr),y
-;                 jsr oswrch
-
-;                 ; Y coordinate
-;                 lda #<level_name_y
-;                 jsr oswrch
-;                 lda #>level_name_y
-;                 jsr oswrch
-
-;                 ; Text
-;                 ldx #16
-; print_title_loop:
-;                 iny
-;                 lda (level_draw_ptr),y
-;                 jsr oswrch
-;                 dex
-;                 bne print_title_loop
-
-;                 lda #4
-;                 jmp oswrch
+spider:
+                sec
+                sbc #type_spider.index
+                sta spider_speed
+                ldx #spider_addr
+                jmp handle_addr
 
 go:
-                .byte 0
-skip:
                 .byte 0
 colour:
                 .byte 0
 counter:
                 .word 0
 
-colours:
-                .for _i:=0,_i<len(types),_i+=1
-                .byte types[_i].colour
-                .endfor
-
-chars:
-                .for _i:=0,_i<len(types),_i+=1
-                .byte types[_i].char
-                .endfor
+info_entry: .macro item
+                .byte \item.index,\item.colour,\item.char
+                .endmacro
+                
+info:
+                .info_entry type_blank
+                .info_entry type_lblock
+                .info_entry type_rblock
+                .info_entry type_block
+                .info_entry type_spikes
+                .info_entry type_spring_upper
+                .info_entry type_spring_lower
+                .info_entry type_dots
+                .byte $ff
+                
                 .endblock
                 
 ;-------------------------------------------------------------------------

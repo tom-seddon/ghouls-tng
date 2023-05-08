@@ -1454,8 +1454,12 @@ L1443:
                 lda (L0072),y
                 cmp #$FF
                 beq L1457
+                cmp #$a0
+                beq L1457
                 lda (spider_addr),y
                 cmp #$FF
+                beq L1457
+                cmp #$a0
                 beq L1457
                 dey
                 cpy #$FF

@@ -13,13 +13,31 @@ gedmc_org=levels_org-max_gedmc_pages*256
                 
 ;-------------------------------------------------------------------------
 
+; TODO should be a 64tass struct or something
+
 level_width=20
 level_height=26
-level_data_size=level_width*level_height
-level_name_x_offset=level_data_size
-level_name_offset=level_name_x_offset+2
-level_colour3_offset=level_name_offset+17
-level_total_data_size=level_colour3_offset+1
+
+LevelData: .struct
+name_x: .fill 2
+name: .fill 17
+colour3: .fill 1
+pl_start_x: .fill 1
+pl_start_y: .fill 1
+map: .fill level_width*level_height
+                .endstruct
+
+; for BASIC's benefit. Don't know how to get 64tass to export these.
+LevelData_name_x_offset=LevelData.name_x
+LevelData_name_offset=LevelData.name
+LevelData_colour3_offset=LevelData.colour3
+                
+; level_data_size=level_width*level_height
+; level_name_x_offset=level_data_size
+; level_name_offset=level_name_x_offset+2
+; level_colour3_offset=level_name_offset+17
+; level_pl_start_offset=level_colour3_offset+
+; level_total_data_size=level_data_size+
                 
 ;-------------------------------------------------------------------------
 

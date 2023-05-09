@@ -53,6 +53,7 @@ gmc_start:
                 .dword ed_erase_item            ;+40
                 .dword ed_get_item_speed        ;+44
                 .dword ed_get_item_index        ;+48
+                .dword ed_set_pl_start          ;+52
                 .endif
 
 sprite_blank:
@@ -361,6 +362,7 @@ _..=[ed_item(sprite_conveyor,1,1,false,-1,false)]    ;conveyor
 _..=ed_speeds_items(sprite_floating_platform,2,1,false)      ;platform
 _..=ed_speeds_items(sprite_spider_0_row0,2,2,false) ;spider
 _..=ed_speeds_items(sprite_spider_0_row0,2,2,true) ;spider2
+_..=[ed_ordinary_item(sprite_pl_facing,false)]
 ed_types=_
 
 ed_item_sprite_addrs_lo: .proc
@@ -404,6 +406,32 @@ _flags:=_flags|ed_flags2_repeat
 
 ;-------------------------------------------------------------------------
 
+ed_set_pl_start: .proc
+                tya
+                ldy #LevelData.pl_start_y
+                sta (ed_level_addr),y
+
+                txa
+                ldy #LevelData.pl_start_x
+                sta (ed_level_addr),y
+                rts
+                .endproc
+                
+;-------------------------------------------------------------------------
+
+ed_get_pl_start: .proc
+                ldy #LevelData.pl_start_x
+                lda (ed_level_addr),y
+                tax
+
+                ldy #LevelData.pl_start_y
+                lda (ed_level_addr),y
+                tay
+                rts
+                .endproc
+                
+;-------------------------------------------------------------------------
+                
 ed_test: .proc
                 stx level_draw_ptr+0
                 sty level_draw_ptr+1
@@ -411,8 +439,27 @@ ed_test: .proc
                 lda #12
                 jsr oswrch
 
+                ; Set up player start pos.
+                jsr ed_get_pl_start
+                ; Adjust for editor vs game positioning.
+                iny
+                iny
+                iny
+                iny
+                jsr ed_get_screen_write_addr
+                lda ed_write_addr+0
+                sta L0070+0
+                lda ed_write_addr+1
+                sta L0070+1
+
+                ; ; Default player start pos
+                ; lda #$00
+                ; sta L0070+0
+                ; lda #$7A
+                ; sta L0070+1
+
                 ldx #0          ;no ghosts
-                jsr entry_draw_level
+                jsr entry_init_level
 
                 ; Reset ghosts table
                 ldx #7
@@ -422,12 +469,6 @@ ed_test: .proc
                 dex
                 bpl -
                 
-                ; Player start pos
-                lda #$00
-                sta L0070+0
-                lda #$7A
-                sta L0070+1
-
                 ; ???
                 lda #0
                 sta L0084
@@ -449,6 +490,12 @@ ed_test: .proc
                 cpx #test_prints_end-test_prints
                 bne -
 
+                ; Double jsr, so kill_player_and_drop_caller returns
+                ; here.
+                jsr entry_game_2
+                rts
+                
+entry_game_2:
                 jsr entry_game
                 rts
 
@@ -509,6 +556,18 @@ test_prints_end:
 
 ed_draw_level: .proc
 
+                lda #19
+                jsr oswrch
+                lda #3
+                jsr oswrch
+                ldy #LevelData.colour3
+                lda (ed_level_addr),y
+                jsr oswrch
+                lda #0
+                jsr oswrch
+                jsr oswrch
+                jsr oswrch
+
                 ldy #0
 y_loop:
                 ldx #0
@@ -524,6 +583,23 @@ x_loop:
                 cpy #level_height
                 bne y_loop
 
+                ; Ick. Special case :(
+                jsr ed_get_pl_start
+                jsr ed_get_screen_write_addr
+                
+                ldy #15
+-
+                lda sprite_pl_facing,y
+                sta (ed_write_addr),y
+                dey
+                bpl -
+                jsr ed_next_write_addr_screen_row
+                ldy #15
+-
+                lda sprite_pl_facing+16,y
+                sta (ed_write_addr),y
+                dey
+                bpl -
                 rts
                 .endproc
 
@@ -889,15 +965,16 @@ ed_prepare_for_level_access: .proc
                 ; This is stupid, but it's going to be too confusing
                 ; to call from BASIC otherwise.
                 txa
-                tay
                 clc
+                adc #LevelData.map
+                tay
 done:
                 rts
                 .endproc
 
 ;-------------------------------------------------------------------------
                 
-entry_draw_level: .block
+entry_init_level: .block
 game_start_y=4
 game_start_addr=$5800+game_start_y*320
 level_name_y=28
@@ -924,13 +1001,13 @@ level_name_y=28
                 lda #$ff
                 sta colour
 
-                lda #<-level_data_size
+                lda #<-(level_width*level_height)
                 sta counter+0
-                lda #>-level_data_size
+                lda #>-(level_width*level_height)
                 sta counter+1
 
 loop:
-                ldy #0
+                ldy #LevelData.map ;get the addition for free...
                 lda (level_draw_ptr),y
 
                 ldx #0

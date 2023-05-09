@@ -451,17 +451,24 @@ Offsets are relative to the start of the file.
 
 ** Level data
 
-| Offset | Type         | Name    | What                                 |
-|--------+--------------+---------+--------------------------------------|
-|     +0 | byte[26][20] | level   | Map data                             |
-|   +520 | word         | name_x  | Graphics X coord for level name      |
-|   +522 | char[17]     | name    | Level name, CR-terminated            |
-|   +539 | byte         | colour3 | Physical colour for logical colour 3 |
+| Offset | Type         | Name       | What                                 |
+|--------+--------------+------------+--------------------------------------|
+|     +0 | word         | name_x     | Graphics X coord for level name      |
+|     +2 | char[17]     | name       | Level name, CR-terminated            |
+|    +19 | byte         | colour3    | Physical colour for logical colour 3 |
+|    +20 | byte         | pl_start_x | Player start X                       |
+|    +21 | byte         | pl_start_y | Player start Y                       |
+|    +22 | byte[26][20] | map        | Map data                             |
 
 The logic behind the name's X coordinate is a bit unclear. So if it
 goes in the level data, original levels can match the originals for
 now, and the editor can do something sensible for any new levels. It's
 only 2 bytes.
+
+The player start pos is stored as X/Y, with (0,0) as top left of
+level. as that's how the editor manages everything internally. It's
+easy for the game's BASIC driver to do the address calculation and
+adjust for the game's different top Y.
 
 ** Map data
 
@@ -482,6 +489,7 @@ A 20 wide x 26 high grid of bytes. Bytes as follows:
 | 10-29 | Floating platform | 20 speeds                             |
 | 30-49 | Spider            | 20 speeds                             |
 | 50-69 | Extra Spider      | 20 speeds. Appears only when >1 ghost |
+|    70 | Player start      | Optional ($7a00 if not set)           |
 
 If the thing has flags, they are stored in the next byte. (Things with
 flags are 16 pixels wide, so they'd occupy 2 bytes anyway.) The flag

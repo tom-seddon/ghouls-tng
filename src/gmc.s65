@@ -569,10 +569,10 @@ ed_place_item: .proc
 
                 inx
                 jsr ed_read_level
-                dex
                 bcs +           ;taken if (X+1,Y+0) is out of bounds
                 jsr ed_draw_item
 +
+                dex
 
                 iny
                 jsr ed_read_level

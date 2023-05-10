@@ -1442,8 +1442,7 @@ L0F8B:
                 lda L0DEE,y  ; copy of what was under player, row 1?
                 sta (L0074),y
                 dey
-                cpy #$FF
-                bne L0F8B
+                bpl L0F8B
                 lda L0DDE+5  ; copy of what was under player, row 0?
                 cmp #$21
                 bne L101C
@@ -1506,8 +1505,7 @@ erase_ghost_row1:
 
 erase_ghost_next:
                 dey
-                cpy #$FF
-                bne erase_ghost_loop
+                bpl erase_ghost_loop
 
 erase_ghosts_next:
                 dec L0AF4
@@ -1540,8 +1538,7 @@ L103D:
                 cmp #$FF
                 beq L104B
                 dey
-                cpy #$FF
-                bne L103D
+                bpl L103D
                 jmp L1082
 
 ;-------------------------------------------------------------------------
@@ -1608,8 +1605,7 @@ L10A1:
                 lda (L0072),y
                 sta L0DEE,y  ; copy of what was under player, row 1?
                 dey
-                cpy #$FF
-                bne L10A1
+                bpl L10A1
                 lda L0DDE+4  ; copy of what was under player, row 0?
                 cmp #$30
                 bne L10DD
@@ -1667,8 +1663,7 @@ L1108:
                 sta L0DEE,y  ; copy of what was under player, row 1?
                 sta L0DDE,y  ; copy of what was under player, row 0?
                 dey
-                cpy #$FF
-                bne L1108
+                bpl L1108
                 lda L0AF7
                 sta L0070
                 lda L0AF8
@@ -1713,8 +1708,7 @@ L114B:
 
 L1153:
                 dey
-                cpy #$FF
-                bne L1133
+                bpl L1133
 
 L1158:
                 lda L0078
@@ -1752,8 +1746,7 @@ L117F:
 
 L1187:
                 dey
-                cpy #$FF
-                bne L1174
+                bpl L1174
                 ldy #$F
 
 L118E:
@@ -1762,8 +1755,7 @@ L118E:
                 lda (L0074),y
                 sta (L0072),y
                 dey
-                cpy #$FF
-                bne L118E
+                bpl L118E
                 rts
 
 ;-------------------------------------------------------------------------
@@ -2036,8 +2028,7 @@ L131B:
 
 L1326:
                 dey
-                cpy #$FF
-                bne L1310
+                bpl L1310
                 lda L007E
                 clc
                 adc #$40
@@ -2077,8 +2068,7 @@ L1355:
 
 L135E:
                 dey
-                cpy #$FF
-                bne L133A
+                bpl L133A
                 ldy L0AF1
                 lda L007E
                 sta ghosts_table,y
@@ -2143,8 +2133,7 @@ L13BD:
                 cmp #$66
                 beq L13CB
                 dey
-                cpy #$FF
-                bne L13BD
+                bpl L13BD
                 jmp draw_conveyor
 
 ;-------------------------------------------------------------------------
@@ -2165,8 +2154,7 @@ L13D8:
                 lda sprite_conveyor,y
                 sta (conveyor_addr),y
                 dey
-                cpy #$FF
-                bne L13D8
+                bpl L13D8
                 rts
 
 ;-------------------------------------------------------------------------
@@ -2200,8 +2188,7 @@ L1409:
                 sta (spider_addr),y
                 sta (L0072),y
                 dey
-                cpy #$FF
-                bne L1409
+                bpl L1409
 
 L1412:
                 lda L0AED
@@ -2248,8 +2235,7 @@ L1443:
                 cmp #$a0
                 beq L1457
                 dey
-                cpy #$FF
-                bne L1443
+                bpl L1443
                 jmp L1462
 
 ;-------------------------------------------------------------------------
@@ -2275,8 +2261,7 @@ L146C:
                 lda sprite_spider_0_row1,y
                 sta (L0072),y
                 dey
-                cpy #$FF
-                bne L146C
+                bpl L146C
                 rts
 
 ;-------------------------------------------------------------------------
@@ -2290,8 +2275,7 @@ L1480:
                 lda sprite_spider_1_row1,y
                 sta (L0072),y
                 dey
-                cpy #$FF
-                bne L1480
+                bpl L1480
 
 L148F:
                 rts
@@ -2483,8 +2467,7 @@ L15A2:
                 lda sprite_pl_facing+$10,y
                 sta (L0074),y
                 dey
-                cpy #$FF
-                bne L15A2
+                bpl L15A2
                 lda bonus_chars+1
                 sec
                 sbc #230
@@ -2560,8 +2543,7 @@ L1617:
                 lda bonus_chars,y
                 jsr oswrch
                 dey
-                cpy #$FF
-                bne L1617
+                bpl L1617
                 rts
                 .endblock
 
@@ -2599,8 +2581,7 @@ L1651:
                 lda score_chars,y
                 jsr oswrch
                 dey
-                cpy #$FF
-                bne L1651
+                bpl L1651
                 rts
                 .endblock
 
@@ -2622,16 +2603,14 @@ L166F:
                 lda #239
                 sta score_chars,y
                 dey
-                cpy #$FF
-                bne L166F
+                bpl L166F
                 ldy #4
                 lda #230
 
 L168A:
                 sta score_chars,y
                 dey
-                cpy #$FF
-                bne L168A
+                bpl L168A
                 jmp L1698
 
 ;-------------------------------------------------------------------------
@@ -2653,8 +2632,7 @@ L169A:
                 lda score_chars,y
                 jsr oswrch
                 dey
-                cpy #$FF
-                bne L169A
+                bpl L169A
                 rts
                 .endblock
 
@@ -2693,8 +2671,7 @@ L16E4:
                 lda L0DEE,y  ; copy of what was under player, row 1?
                 sta (L0072),y
                 dey
-                cpy #$FF
-                bne L16E4
+                bpl L16E4
                 lda L0070
                 clc
                 adc #$40
@@ -2717,8 +2694,7 @@ L170F:
                 lda (L0072),y
                 sta L0DEE,y  ; copy of what was under player, row 1?
                 dey
-                cpy #$FF
-                bne L170F
+                bpl L170F
                 lda L0DEE    ; copy of what was under player, row 1?
                 cmp #$FF
                 beq draw_pl_splat
@@ -2740,8 +2716,7 @@ L173B:
                 lda (L0074),y
                 sta (L0072),y
                 dey
-                cpy #$FF
-                bne L173B
+                bpl L173B
                 ldx #70
 
 L174A:
@@ -2763,8 +2738,7 @@ L1757:
                 lda sprite_pl_splat,y
                 sta (L0070),y
                 dey
-                cpy #$FF
-                bne L1757
+                bpl L1757
                 lda #0
                 sta L0AD0+4  ;pitch
                 pla
@@ -2791,8 +2765,7 @@ L177A:
                 lda sprite_pl_splat,y
                 sta (L0072),y
                 dey
-                cpy #$FF
-                bne L177A
+                bpl L177A
                 rts
 
 ;-------------------------------------------------------------------------
@@ -2837,8 +2810,7 @@ fill_rows_loop:
 fill_row_loop:
                 sta (L0070),y
                 dey
-                cpy #$FF
-                bne fill_row_loop
+                bpl fill_row_loop
                 lda L0070
                 clc
                 adc #$40

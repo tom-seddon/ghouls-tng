@@ -1363,28 +1363,16 @@ pause_loop:
                 beq pause_loop
 
 L0E85:
-                ldx #$17
+                lda #19
+                jsr osbyte
 
-L0E87:
-                ldy #0
-
-L0E89:
-                dey
-                bne L0E89
-                dex
-                bne L0E87
                 lda #$81        ; INKEY (AUG p153)
                 ldx #$8F        ; ESCAPE
                 ldy #$FF        ; keyboard scan
                 jsr osbyte
                 tya
-                beq escape_not_pressed
+                beq main_loop
                 rts
-
-;-------------------------------------------------------------------------
-
-escape_not_pressed:
-                jmp main_loop
 
 ;-------------------------------------------------------------------------
 

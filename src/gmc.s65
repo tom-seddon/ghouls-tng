@@ -1876,28 +1876,8 @@ L11B4:
 
 L11BB:
                 lda object_var0s,x;platform_direction
-                beq move_platform_left
-                lda object_addr
-                clc
-                adc #8
-                sta object_addr
-                lda object_addr+1
-                adc #0
-                sta object_addr+1
-                jmp L11DD
-
-;-------------------------------------------------------------------------
-
-move_platform_left:
-                lda object_addr
-                sec
-                sbc #8
-                sta object_addr
-                lda object_addr+1
-                sbc #0
-                sta object_addr+1
-
-L11DD:
+                jsr object_addr_left_or_right
+                
                 ldy #$1F
 
 L11DF:
@@ -2266,29 +2246,7 @@ L13D8:
 
 L156B:       .block
                 lda object_var0s,x;conveyor_direction
-                beq L1580
-                lda object_addr
-                clc
-                adc #8
-                sta object_addr
-                lda object_addr+1
-                adc #0
-                sta object_addr+1
-                jmp L158D
-
-;-------------------------------------------------------------------------
-
-L1580:
-                lda object_addr
-                sec
-                sbc #8
-                sta object_addr
-                lda object_addr+1
-                sbc #0
-                sta object_addr+1
-
-L158D:
-                rts
+                jmp object_addr_left_or_right
                 .endblock
 
 
@@ -2328,28 +2286,8 @@ L1409:
 L1412:
                 lda object_var0s,x;spider_direction
                 and #1
-                beq L1427
-                lda object_addr
-                clc
-                adc #$40
-                sta object_addr
-                lda object_addr+1
-                adc #1
-                sta object_addr+1
-                jmp L1434
-
-;-------------------------------------------------------------------------
-
-L1427:
-                lda object_addr
-                sec
-                sbc #$40
-                sta object_addr
-                lda object_addr+1
-                sbc #1
-                sta object_addr+1
-
-L1434:
+                jsr object_addr_up_or_down
+                
                 lda object_addr
                 clc
                 adc #$40
@@ -2418,6 +2356,56 @@ L148F:
                 rts
                 .endblock
 
+;-------------------------------------------------------------------------
+
+object_addr_left_or_right:
+                cmp #0
+                beq object_addr_right
+                ; fall through
+object_addr_left: 
+                sec
+                lda object_addr+0
+                sbc #8
+                sta object_addr+0
+                bcs +
+                dec object_addr+1
++
+                rts
+
+object_addr_right:
+                clc
+                lda object_addr+0
+                adc #8
+                sta object_addr+0
+                bcc +
+                inc object_addr+1
++
+                rts
+
+object_addr_up_or_down:
+                cmp #0
+                beq object_addr_down
+                ; fall through
+object_addr_up:
+                sec
+                lda object_addr+0
+                sbc #$40
+                sta object_addr+0
+                lda object_addr+1
+                sbc #$01
+                sta object_addr+1
+                rts
+
+object_addr_down:
+                clc
+                lda object_addr+0
+                adc #$40
+                sta object_addr+0
+                lda object_addr+1
+                adc #$01
+                sta object_addr+1
+                rts
+                
 ;-------------------------------------------------------------------------
 
 L1490:

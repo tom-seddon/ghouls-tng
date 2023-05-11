@@ -15,7 +15,10 @@ platform_addr=$7a
 L007C=$7c
 L007E=$7e
 L007F=$7f
-conveyor_addr=$80
+conveyor_addr=$80               ; Crap name, since it doesn't even
+                                ; convey! I njust oticed too late that
+                                ; the objects page calls this the
+                                ; moving floor
 spider_addr=$82
 level_draw_ptr=$84
 L0084=$84
@@ -261,22 +264,21 @@ L0AE0:
 bonus_update_timer:.byte 2
 spider_speed: .byte $C
 spider_update_timer: .byte $4D
-L0AED: .byte 1
-L0AEE: .byte 0
+spider_direction: .byte 1
+L0AEE: .byte 0                  ;some kind of sound timer
 conveyor_direction: .byte 1
-L0AF0: .byte $4D
-L0AF1: .byte 1
+conveyor_update_timer: .byte $4D
+L0AF1: .byte 1                  ;update timer of some kind
 L0AF2: .byte $3C
-L0AF3: .byte 0
+L0AF3: .byte 0                  ;unused???
 L0AF4: .byte $85
 platform_speed:.byte 6
              .byte 1
-L0AF7: .byte $B0
-L0AF8: .byte $72
+L0AF7: .byte $B0,$72            ;backup of player sprite address
 platform_update_timer:.byte 1
 platform_direction: .byte 0
 unknown_update_1_timer:.byte 2
-L0AFC: .byte 0
+L0AFC: .byte 0                  ;???
 player_movement:.byte 2
 player_jump_state:.byte 0
 player_anim_frame:.byte 0
@@ -1174,11 +1176,12 @@ not_found:
                 .endproc           
 ;-------------------------------------------------------------------------
 
-; TODO: these two buffers probably need to be consecutive?
-L0DDE:       .byte 0, 0, 0, 0, 0, 0, 0, 0, 9, 9, 9, $D, $D, 5, 5, $F; 0
-                ; copy of what was under player, row 0?
-L0DEE:       .byte $FF, $88,$FF, $66, $66,$FF, $88, $77,$FF, $11,$FF, $66, $66,$FF, $11,$FF; 0
-                ; copy of what was under player, row 1?
+; copy of what was behind player
+L0DDE:
+                .fill 32
+
+;-------------------------------------------------------------------------
+
                 .byte 0
                 .byte 0
 bonus_chars:    .byte 234, 238; 0
@@ -1213,7 +1216,7 @@ L0E1E:       .byte ' '
 
 entry_game:
                 lda #1
-                sta L0AED
+                sta spider_direction
                 sta conveyor_direction
                 sta player_anim_frame
                 lda #0
@@ -1226,7 +1229,7 @@ entry_game:
                 sta unknown_update_1_timer
                 sta platform_update_timer
                 sta L0AF1
-                sta L0AF0
+                sta conveyor_update_timer
                 sta spider_update_timer
                 lda #$1F
                 sta bonus_update_timer
@@ -1311,7 +1314,7 @@ L0EBD:
                 sta L0074
                 lda L0071
                 sta L0072+1
-                sta L0AF8
+                sta L0AF7+1
                 adc #1
                 sta L0075
                 jmp L1521
@@ -1439,7 +1442,7 @@ L0F89:
 L0F8B:
                 lda L0DDE,y  ; copy of what was under player, row 0?
                 sta (L0072),y
-                lda L0DEE,y  ; copy of what was under player, row 1?
+                lda L0DDE+16,y  ; copy of what was under player, row 1?
                 sta (L0074),y
                 dey
                 bpl L0F8B
@@ -1465,9 +1468,9 @@ L0FBF:
                 sta L0DDE,y  ; copy of what was under player, row 0?
                 dey
                 bne L0FBF
-                lda #$64
+                lda #100
                 sta L0AEE
-                ldx #$64
+                ldx #100
                 jsr add_X_to_score
                 lda #4
                 sta L0AF4    ; ghost index
@@ -1603,7 +1606,7 @@ L10A1:
                 lda (L0070),y
                 sta L0DDE,y  ; copy of what was under player, row 0?
                 lda (L0072),y
-                sta L0DEE,y  ; copy of what was under player, row 1?
+                sta L0DDE+16,y  ; copy of what was under player, row 1?
                 dey
                 bpl L10A1
                 lda L0DDE+4  ; copy of what was under player, row 0?
@@ -1639,7 +1642,7 @@ L10E6:
                 ldy #$F
 
 L10E8:
-                lda L0DEE,y  ; copy of what was under player, row 1?
+                lda L0DDE+16,y  ; copy of what was under player, row 1?
                 cmp #8
                 beq L1104
                 cmp #1
@@ -1660,13 +1663,13 @@ L1104:
                 lda #0
 
 L1108:
-                sta L0DEE,y  ; copy of what was under player, row 1?
+                sta L0DDE+16,y  ; copy of what was under player, row 1?
                 sta L0DDE,y  ; copy of what was under player, row 0?
                 dey
                 bpl L1108
                 lda L0AF7
                 sta L0070
-                lda L0AF8
+                lda L0AF7+1
                 sta L0071
                 lda #7
                 ldx #<L0AC8
@@ -2112,7 +2115,7 @@ L13A8:
 ;-------------------------------------------------------------------------
 
 L13A9:       .block
-                dec L0AF0
+                dec conveyor_update_timer
                 beq L13AF
 
 L13AE:
@@ -2124,7 +2127,7 @@ L13AF:
                 lda conveyor_addr+1
                 beq L13AE       ;taken if no conveyor on this level
                 lda #4
-                sta L0AF0
+                sta conveyor_update_timer
                 jsr L156B
                 ldy #$F
 
@@ -2191,7 +2194,7 @@ L1409:
                 bpl L1409
 
 L1412:
-                lda L0AED
+                lda spider_direction
                 beq L1427
                 lda spider_addr
                 clc
@@ -2241,9 +2244,9 @@ L1443:
 ;-------------------------------------------------------------------------
 
 L1457:
-                lda L0AED
+                lda spider_direction
                 eor #1
-                sta L0AED
+                sta spider_direction
                 jmp L1412
 
 ;-------------------------------------------------------------------------
@@ -2668,7 +2671,7 @@ L16C6:
 L16E4:
                 lda L0DDE,y  ; copy of what was under player, row 0?
                 sta (L0070),y
-                lda L0DEE,y  ; copy of what was under player, row 1?
+                lda L0DDE+16,y  ; copy of what was under player, row 1?
                 sta (L0072),y
                 dey
                 bpl L16E4
@@ -2692,13 +2695,13 @@ L170F:
                 lda (L0070),y
                 sta L0DDE,y  ; copy of what was under player, row 0?
                 lda (L0072),y
-                sta L0DEE,y  ; copy of what was under player, row 1?
+                sta L0DDE+16,y  ; copy of what was under player, row 1?
                 dey
                 bpl L170F
-                lda L0DEE    ; copy of what was under player, row 1?
+                lda L0DDE+16    ; copy of what was under player, row 1?
                 cmp #$FF
                 beq draw_pl_splat
-                lda L0DEE+8  ; copy of what was under player, row 1?
+                lda L0DDE+16+8  ; copy of what was under player, row 1?
                 cmp #$FF
                 beq draw_pl_splat
                 lda L0078

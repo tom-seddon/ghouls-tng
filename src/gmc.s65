@@ -294,7 +294,7 @@ platform_speed:.byte 6
 L0AF7: .byte $B0,$72            ;backup of player sprite address
 ;platform_update_timer:.byte 1
 ;platform_direction: .byte 0
-unknown_update_1_timer:.byte 2
+player_update_timer:.byte 2
 L0AFC: .byte 0                  ;???
 player_movement:.byte 2
 player_jump_state:.byte 0
@@ -1293,7 +1293,7 @@ entry_game:
                 sta L0AF3
                 lda #2
                 sta player_movement
-                sta unknown_update_1_timer
+                sta player_update_timer
                 ; sta platform_update_timer
                 sta L0AF1
                 ; sta conveyor_update_timer
@@ -1308,7 +1308,7 @@ main_loop:
                 adc was_platform_addr
                 adc L007C
                 sta L0AF4
-                jsr L0E9F
+                jsr update_player
                 jsr L1205
 
                 ldx #$ff
@@ -1375,10 +1375,10 @@ L0E85:
 
 ;-------------------------------------------------------------------------
 
-L0E9F: .block
+update_player: .block
 
-                dec unknown_update_1_timer
-                lda unknown_update_1_timer
+                dec player_update_timer
+                lda player_update_timer
                 beq L0EA8
                 rts
 
@@ -1386,7 +1386,7 @@ L0E9F: .block
 
 L0EA8:
                 lda #2
-                sta unknown_update_1_timer
+                sta player_update_timer
                 dec bonus_update_timer
                 lda bonus_update_timer
                 bne L0EBD

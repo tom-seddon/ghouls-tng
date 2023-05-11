@@ -11,23 +11,41 @@ L0076=$76
 L0077=$77
 L0078=$78
 L0079=$79
-platform_addr=$7a
+was_platform_addr=$7a
 L007C=$7c
 L007E=$7e
 L007F=$7f
-conveyor_addr=$80               ; Crap name, since it doesn't even
+was_conveyor_addr=$80               ; Crap name, since it doesn't even
                                 ; convey! I njust oticed too late that
                                 ; the objects page calls this the
                                 ; moving floor
-spider_addr=$82
+object_addr=$82
 level_draw_ptr=$84
-L0084=$84
+;L0084=$84
 L0085=$85
 level_draw_screen_addr=$86
 ed_read_addr=$88
 ed_level_addr=$8a
 ed_write_addr=$8c
+                
+;-------------------------------------------------------------------------
 
+max_num_objects=85
+*=$900
+object_types:
+                .fill max_num_objects
+object_addrs_lo:
+                .fill max_num_objects
+object_addrs_hi:
+                .fill max_num_objects
+object_var0s:
+                .fill max_num_objects
+object_var1s:
+                .fill max_num_objects
+object_var2s:
+                .fill max_num_objects
+                .cerror *>$b00,format('object tables overflow')
+                
 ;-------------------------------------------------------------------------
 
                 .if editor
@@ -262,12 +280,12 @@ L0AE0:
                 .byte 0
                 .byte 0
 bonus_update_timer:.byte 2
-spider_speed: .byte $C
-spider_update_timer: .byte $4D
-spider_direction: .byte 1
+;spider_speed: .byte $C
+;spider_update_timer: .byte $4D
+;spider_direction: .byte 1
 L0AEE: .byte 0                  ;some kind of sound timer
-conveyor_direction: .byte 1
-conveyor_update_timer: .byte $4D
+;conveyor_direction: .byte 1
+;conveyor_update_timer: .byte $4D
 L0AF1: .byte 1                  ;update timer of some kind
 L0AF2: .byte $3C
 L0AF3: .byte 0                  ;unused???
@@ -275,13 +293,17 @@ L0AF4: .byte $85
 platform_speed:.byte 6
              .byte 1
 L0AF7: .byte $B0,$72            ;backup of player sprite address
-platform_update_timer:.byte 1
-platform_direction: .byte 0
+;platform_update_timer:.byte 1
+;platform_direction: .byte 0
 unknown_update_1_timer:.byte 2
 L0AFC: .byte 0                  ;???
 player_movement:.byte 2
 player_jump_state:.byte 0
 player_anim_frame:.byte 0
+
+update_object_index: .byte 0
+
+level_finished: .byte 0
                 
 ghosts_table:   .word $6A28
                 .word 0
@@ -296,6 +318,11 @@ ghosts_table:   .word $6A28
 ;                 .byte $e0       ;block
 ;                 .byte 
 
+;-------------------------------------------------------------------------
+
+num_objects:
+                .byte 0
+                
 ;-------------------------------------------------------------------------
 
 reset_envelopes: .block
@@ -471,9 +498,9 @@ ed_test: .proc
                 dex
                 bpl -
                 
-                ; ???
-                lda #0
-                sta L0084
+                ; ; ???
+                ; lda #0
+                ; sta L0084
 
                 ; Whatever was behind player previously
                 ldy #31
@@ -984,9 +1011,10 @@ level_name_y=28
                 stx go
 
                 lda #0
-                sta conveyor_addr+1
-                sta spider_addr+1
-                sta platform_addr+1
+                sta num_objects
+                ; sta conveyor_addr+1
+                ; sta spider_addr+1
+                ; sta platform_addr+1
                 
                 lda #31
                 jsr oswrch
@@ -1085,29 +1113,33 @@ done:
 ; The BASIC code ends up clearing a bunch of extra stuff due to
 ; slightly careless-looking use of !.
                 lda #0
-                sta spider_addr+2
-                sta spider_addr+3
-                sta spider_addr+4
-                sta platform_addr+2
-                sta platform_addr+3
-                sta platform_addr+4
+                sta object_addr+2
+                sta object_addr+3
+                sta object_addr+4
+                sta was_platform_addr+2
+                sta was_platform_addr+3
+                sta was_platform_addr+4
                 rts
 
 platform:
+                ldy #otype_platform
+                jsr add_object
                 sec
                 sbc #type_platform.index
-                sta platform_speed
-                ldx #platform_addr
-handle_addr:
-                lda level_draw_screen_addr+0
-                sta 0,x
-                lda level_draw_screen_addr+1
-                sta 1,x
+                sta object_var1s,x ;speed
+                sta object_var2s,x ;update timer
+                lda #0
+                sta object_var0s,x ;direction
                 jmp next
                 
 conveyor:
-                ldx #conveyor_addr
-                jmp handle_addr
+                ldy #otype_conveyor
+                jsr add_object
+                lda #2
+                sta object_var2s,x ;update timer
+                lda #1
+                sta object_var0s,x ;direction
+                jmp next
                 
 pill:
                 ldy #15
@@ -1123,16 +1155,43 @@ spider2:
                 beq next
                 sec
                 sbc #type_spider2.index
-                ldx #spider_addr
-                jmp handle_addr
+                jmp spider_common
                 
 spider:
                 sec
                 sbc #type_spider.index
-                sta spider_speed
-                ldx #spider_addr
-                jmp handle_addr
+spider_common:
+                ldy #otype_spider
+                jsr add_object
+                sta object_var1s,x ;speed
+                sta object_var2s,x ;update timer
+                lda #1
+                sta object_var0s,x ;direction
+                jmp next
 
+add_object:
+                pha
+                
+                ldx num_objects
+                cpx #max_num_objects
+                bne +
+                
+                ; oops! maxed out. reuse the last slot.
+                dex
+                stx num_objects
++
+                inc num_objects
+
+                tya
+                sta object_types,x
+                lda level_draw_screen_addr+0
+                sta object_addrs_lo,x
+                lda level_draw_screen_addr+1
+                sta object_addrs_hi,x
+
+                pla
+                rts
+                
 go:
                 .byte 0
 colour:
@@ -1173,7 +1232,8 @@ found:
                 clc
 not_found:
                 rts
-                .endproc           
+                .endproc
+                
 ;-------------------------------------------------------------------------
 
 ; copy of what was behind player
@@ -1214,37 +1274,79 @@ L0E1E:       .byte ' '
 
 ;-------------------------------------------------------------------------
 
+object_update_routines=[update_platform,update_spider,update_conveyor]
+
+object_update_routines_lo: .byte <object_update_routines
+object_update_routines_hi: .byte >object_update_routines
+                
+;-------------------------------------------------------------------------
+
 entry_game:
                 lda #1
-                sta spider_direction
-                sta conveyor_direction
+                ; sta spider_direction
+                ; sta conveyor_direction
                 sta player_anim_frame
                 lda #0
+                sta level_finished
                 sta L0AEE
                 sta player_jump_state
-                sta platform_direction
+                ; sta platform_direction
                 sta L0AF3
                 lda #2
                 sta player_movement
                 sta unknown_update_1_timer
-                sta platform_update_timer
+                ; sta platform_update_timer
                 sta L0AF1
-                sta conveyor_update_timer
-                sta spider_update_timer
+                ; sta conveyor_update_timer
+                ; sta spider_update_timer
                 lda #$1F
                 sta bonus_update_timer
 
 main_loop:
+                ; TODO what is this? random number type of thing?
                 lda L0AF4
                 adc L0070
-                adc platform_addr
+                adc was_platform_addr
                 adc L007C
                 sta L0AF4
                 jsr L0E9F
-                jsr L119C
                 jsr L1205
-                jsr L13A9
-                jsr L13E3
+
+                ldx #$ff
+                
+update_objects_loop:
+                inx
+                cpx num_objects
+                beq update_objects_done
+
+                stx update_object_index
+                
+                lda object_addrs_lo,x
+                sta object_addr+0
+                lda object_addrs_hi,x
+                sta object_addr+1
+                
+                ldy object_types,x
+                
+                lda object_update_routines_lo,y
+                sta jsr_object_update+1
+                lda object_update_routines_hi,y
+                sta jsr_object_update+2
+
+jsr_object_update: jsr $ffff
+
+                ldx update_object_index
+                lda object_addr+0
+                sta object_addrs_lo,x
+                lda object_addr+1
+                sta object_addrs_hi,x
+
+                jmp update_objects_loop
+update_objects_done:
+                ; jsr update_platform
+                ; jsr update_conveyor
+                ; jsr update_spider
+                
                 lda #$81        ; INKEY (AUG p153)
                 ldx #$C8        ; P
                 ldy #$FF        ; keyboard scan
@@ -1763,10 +1865,10 @@ L118E:
 
 ;-------------------------------------------------------------------------
 
-L119C:       .block
-                lda platform_addr+1
-                beq L11A9       ;skip if no platform
-                dec platform_update_timer
+update_platform:       .block
+                ; lda platform_addr+1
+                ; beq L11A9       ;skip if no platform
+                dec object_var2s,x ; platform_update_timer
                 beq L11AA       ;taken if time to update platform
 
 L11A9:
@@ -1775,46 +1877,57 @@ L11A9:
 ;-------------------------------------------------------------------------
 
 L11AA:
-                lda platform_speed
-                sta platform_update_timer
+                lda object_var1s,x;platform_speed
+                sta object_var2s,x;platform_update_timer
                 ldy #$1F
                 lda #0
 
 L11B4:
-                sta (platform_addr),y
+                sta (object_addr),y
                 dey
                 bpl L11B4
 
 L11BB:
-                lda platform_direction
+                lda object_var0s,x;platform_direction
                 beq move_platform_left
-                lda platform_addr
+                lda object_addr
                 clc
                 adc #8
-                sta platform_addr
-                lda platform_addr+1
+                sta object_addr
+                lda object_addr+1
                 adc #0
-                sta platform_addr+1
+                sta object_addr+1
                 jmp L11DD
 
 ;-------------------------------------------------------------------------
 
 move_platform_left:
-                lda platform_addr
+                lda object_addr
                 sec
                 sbc #8
-                sta platform_addr
-                lda platform_addr+1
+                sta object_addr
+                lda object_addr+1
                 sbc #0
-                sta platform_addr+1
+                sta object_addr+1
 
 L11DD:
                 ldy #$1F
 
 L11DF:
-                lda (platform_addr),y
+                lda (object_addr),y
+
+                ; Change dir if bumping into wall
                 cmp #$FF
-                beq change_platform_direction ;taken if it bumped into a wall
+                beq change_platform_direction
+
+                ; Change dir if bumping into left border
+                cmp #$08                      
+                beq change_platform_direction
+
+                ; Change dir if bumping into right border
+                cmp #$01
+                beq change_platform_direction
+                
                 dey
                 bpl L11DF
                 jmp draw_floating_platform
@@ -1822,9 +1935,9 @@ L11DF:
 ;-------------------------------------------------------------------------
 
 change_platform_direction:
-                lda platform_direction
+                lda object_var0s,x
                 eor #1
-                sta platform_direction
+                sta object_var0s,x
                 jmp L11BB
                 .endblock
 
@@ -1835,7 +1948,7 @@ draw_floating_platform:
 
 L11FA:
                 lda sprite_floating_platform,y
-                sta (platform_addr),y
+                sta (object_addr),y
                 dey
                 bpl L11FA
                 rts
@@ -2114,8 +2227,8 @@ L13A8:
 
 ;-------------------------------------------------------------------------
 
-L13A9:       .block
-                dec conveyor_update_timer
+update_conveyor:       .block
+                dec object_var2s,x;conveyor_update_timer
                 beq L13AF
 
 L13AE:
@@ -2124,16 +2237,18 @@ L13AE:
 ;-------------------------------------------------------------------------
 
 L13AF:
-                lda conveyor_addr+1
-                beq L13AE       ;taken if no conveyor on this level
+                ; lda conveyor_addr+1
+                ; beq L13AE       ;taken if no conveyor on this level
                 lda #4
-                sta conveyor_update_timer
+                sta object_var2s,x;conveyor_update_timer
                 jsr L156B
                 ldy #$F
 
 L13BD:
-                lda (conveyor_addr),y
+                lda (object_addr),y
                 cmp #$66
+                beq L13CB
+                cmp #$08        ;left border
                 beq L13CB
                 dey
                 bpl L13BD
@@ -2142,9 +2257,9 @@ L13BD:
 ;-------------------------------------------------------------------------
 
 L13CB:
-                lda conveyor_direction
+                lda object_var0s,x;conveyor_direction
                 eor #1
-                sta conveyor_direction
+                sta object_var0s,x;conveyor_direction
                 jsr L156B
 
                 ; fall through
@@ -2155,16 +2270,46 @@ draw_conveyor:
 
 L13D8:
                 lda sprite_conveyor,y
-                sta (conveyor_addr),y
+                sta (object_addr),y
                 dey
                 bpl L13D8
                 rts
 
 ;-------------------------------------------------------------------------
 
-L13E3:       .block
-                dec spider_update_timer
-                lda spider_update_timer
+L156B:       .block
+                lda object_var0s,x;conveyor_direction
+                beq L1580
+                lda object_addr
+                clc
+                adc #8
+                sta object_addr
+                lda object_addr+1
+                adc #0
+                sta object_addr+1
+                jmp L158D
+
+;-------------------------------------------------------------------------
+
+L1580:
+                lda object_addr
+                sec
+                sbc #8
+                sta object_addr
+                lda object_addr+1
+                sbc #0
+                sta object_addr+1
+
+L158D:
+                rts
+                .endblock
+
+
+;-------------------------------------------------------------------------
+
+update_spider:       .block
+                dec object_var2s,x;spider_update_timer
+                lda object_var2s,x;spider_update_timer
                 beq L13EE
 
 L13EB:
@@ -2173,55 +2318,56 @@ L13EB:
 ;-------------------------------------------------------------------------
 
 L13EE:
-                lda spider_addr+1
-                beq L13EB
-                lda spider_speed
-                sta spider_update_timer
-                lda spider_addr
+                ; lda spider_addr+1
+                ; beq L13EB
+                lda object_var1s,x;spider_speed
+                sta object_var2s,x;spider_update_timer
+                lda object_addr+0
                 clc
                 adc #$40
                 sta L0072
-                lda spider_addr+1
+                lda object_addr+1
                 adc #1
                 sta L0072+1
                 lda #0
                 ldy #$1F
 
 L1409:
-                sta (spider_addr),y
+                sta (object_addr),y
                 sta (L0072),y
                 dey
                 bpl L1409
 
 L1412:
-                lda spider_direction
+                lda object_var0s,x;spider_direction
+                and #1
                 beq L1427
-                lda spider_addr
+                lda object_addr
                 clc
                 adc #$40
-                sta spider_addr
-                lda spider_addr+1
+                sta object_addr
+                lda object_addr+1
                 adc #1
-                sta spider_addr+1
+                sta object_addr+1
                 jmp L1434
 
 ;-------------------------------------------------------------------------
 
 L1427:
-                lda spider_addr
+                lda object_addr
                 sec
                 sbc #$40
-                sta spider_addr
-                lda spider_addr+1
+                sta object_addr
+                lda object_addr+1
                 sbc #1
-                sta spider_addr+1
+                sta object_addr+1
 
 L1434:
-                lda spider_addr
+                lda object_addr
                 clc
                 adc #$40
                 sta L0072
-                lda spider_addr+1
+                lda object_addr+1
                 adc #1
                 sta L0072+1
                 ldy #$1F
@@ -2232,7 +2378,7 @@ L1443:
                 beq L1457
                 cmp #$a0
                 beq L1457
-                lda (spider_addr),y
+                lda (object_addr),y
                 cmp #$FF
                 beq L1457
                 cmp #$a0
@@ -2244,23 +2390,24 @@ L1443:
 ;-------------------------------------------------------------------------
 
 L1457:
-                lda spider_direction
+                lda object_var0s,x;spider_direction
                 eor #1
-                sta spider_direction
+                sta object_var0s,x;spider_direction
                 jmp L1412
 
 ;-------------------------------------------------------------------------
 
 L1462:
-                lda L0084
-                eor #1
-                sta L0084
+                lda object_var0s,x;L0084
+                eor #2
+                sta object_var0s,x;L0084
+                and #2
                 beq L147E
                 ldy #$1F
 
 L146C:
                 lda sprite_spider_0_row0,y
-                sta (spider_addr),y
+                sta (object_addr),y
                 lda sprite_spider_0_row1,y
                 sta (L0072),y
                 dey
@@ -2274,7 +2421,7 @@ L147E:
 
 L1480:
                 lda sprite_spider_1_row0,y
-                sta (spider_addr),y
+                sta (object_addr),y
                 lda sprite_spider_1_row1,y
                 sta (L0072),y
                 dey
@@ -2423,38 +2570,9 @@ L1565:
 
 ;-------------------------------------------------------------------------
 
-L156B:       .block
-                lda conveyor_direction
-                beq L1580
-                lda conveyor_addr
-                clc
-                adc #8
-                sta conveyor_addr
-                lda conveyor_addr+1
-                adc #0
-                sta conveyor_addr+1
-                jmp L158D
-
-;-------------------------------------------------------------------------
-
-L1580:
-                lda conveyor_addr
-                sec
-                sbc #8
-                sta conveyor_addr
-                lda conveyor_addr+1
-                sbc #0
-                sta conveyor_addr+1
-
-L158D:
-                rts
-                .endblock
-
-;-------------------------------------------------------------------------
-
 L158E:
                 lda #$FF
-                sta platform_update_timer
+                sta level_finished
                 lda L0070
                 clc
                 adc #$40

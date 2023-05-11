@@ -27,11 +27,11 @@ VDU23,0,1,0;0;0;0;:VDU19,1,1;0;19,2,3;0;19,3,LDATA?{$LevelData_colour3_offset};0
 SOUND&12,4,0,18:SOUND&13,4,1,18:FORF=1TO40:VDU23,0,1,F;0;0;0;:*FX19
 NEXT
 !{&L0070}=&7A00:FORF=0TO GO STEP2:G=&6000+(RND(300)*16):F!{&ghosts_table}=G:NEXT:?{&bonus_update_timer}=31
-?&7D=0:?{&L0084}=0 {# the asm doesn't seem to use &7D...
+?&7D=0 {# the asm doesn't seem to use &7D...
 CALL{&entry_game}:*FX15
-IF?{&platform_update_timer}=255GOTO{$L370}
+IF?{&level_finished}=255GOTO{$L370}
 FORG=0TO4STEP2:N=G?{&ghosts_table+1}*256+G?{&ghosts_table}:IFN>&5800 FORF=0TO15STEP4:F!N=F!{&sprite_ghost_happy_row0}:F!(N+320)=F!{&sprite_ghost_happy_row1}:NEXT
-NEXT:N=?{&platform_addr+1}*256+?{&platform_addr}:FORF=0TO31STEP4:F!N=F!{&sprite_floating_platform}:NEXT:N=?{&spider_addr+1}*256+?{&spider_addr}:IFN>&5800 FORF=0TO31STEP4:F!N=F!{&sprite_spider_1_row0}:F!(N+320)=F!{&sprite_spider_1_row1}:NEXT
+NEXT:{# TODO N=?{&platform_addr+1}*256+?{&platform_addr}:FORF=0TO31STEP4:F!N=F!{&sprite_floating_platform}:NEXT:N=?{&spider_addr+1}*256+?{&spider_addr}:IFN>&5800 FORF=0TO31STEP4:F!N=F!{&sprite_spider_1_row0}:F!(N+320)=F!{&sprite_spider_1_row1}:NEXT
 SOUND&10,-15,3,18:FORF=200TO0STEP-.6:SOUND&11,0,F,1:NEXT:N=?{&L0071}*256+?{&L0070}:IF?(N+326)=224N=N+320 ELSEIF?(N-314)=224N=N-320
 K=110:FORG={&sprite_pl_die_0} TO {&sprite_pl_die_7} STEP16:FORF=0TO15STEP4:F!N=F!G:NEXT
 FORJ=K TO K+5STEP.3:SOUND&11,-12,J,1:SOUND&12,-12,J-12,1:NEXT:FORJ=K+5 TO K-10STEP-.8:SOUND&11,-12,J,1:SOUND&12,-12,J-12,1:NEXT:K=K-8:NEXT

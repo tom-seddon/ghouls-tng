@@ -104,3 +104,10 @@ ed_flags2_repeat=$80
 ; ed_get_flags2: .function repeat
 ;                 .endfunction (repeat?ed_flags2_repeat:0)
 
+;-------------------------------------------------------------------------
+
+otype_platform=0                ;var0=dir var1=speed var2=update timer
+otype_spider=1                  ;var0=dir var1=speed var2=update timer
+otype_conveyor=2                ;var0=dir/frame var1=N/A var2=update timer
+
+;-------------------------------------------------------------------------

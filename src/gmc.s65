@@ -2,8 +2,7 @@
 
 ;-------------------------------------------------------------------------
 
-L0070=$70
-L0071=$71
+player_addr=$70
 L0072=$72
 L0074=$74
 L0075=$75
@@ -477,15 +476,15 @@ ed_test: .proc
                 iny
                 jsr ed_get_screen_write_addr
                 lda ed_write_addr+0
-                sta L0070+0
+                sta player_addr+0
                 lda ed_write_addr+1
-                sta L0070+1
+                sta player_addr+1
 
                 ; ; Default player start pos
                 ; lda #$00
-                ; sta L0070+0
+                ; sta player_addr+0
                 ; lda #$7A
-                ; sta L0070+1
+                ; sta player_addr+1
 
                 ldx #0          ;no ghosts
                 jsr entry_init_level
@@ -505,7 +504,7 @@ ed_test: .proc
                 ; Whatever was behind player previously
                 ldy #31
 -
-                lda (L0070),y
+                lda (player_addr),y
                 sta L0DDE,y
                 dey
                 bpl -
@@ -1305,7 +1304,7 @@ entry_game:
 main_loop:
                 ; TODO what is this? random number type of thing?
                 lda L0AF4
-                adc L0070
+                adc player_addr
                 adc was_platform_addr
                 adc L007C
                 sta L0AF4
@@ -1396,13 +1395,13 @@ L0EA8:
                 jsr update_bonus
 
 L0EBD:
-                lda L0070
+                lda player_addr
                 sta L0072
                 sta L0AF7
                 clc
                 adc #$40
                 sta L0074
-                lda L0071
+                lda player_addr+1
                 sta L0072+1
                 sta L0AF7+1
                 adc #1
@@ -1498,13 +1497,13 @@ L0F51:
                 cmp #1
                 bne L0F89     ; taken if stationary
 ; moving right
-                lda L0070
+                lda player_addr
                 clc
                 adc #8
-                sta L0070
-                lda L0071
+                sta player_addr
+                lda player_addr+1
                 adc #0
-                sta L0071
+                sta player_addr+1
                 lda #<sprite_pl_right_0
                 sta L0078
                 lda #>sprite_pl_right_0
@@ -1514,13 +1513,13 @@ L0F51:
 ;-------------------------------------------------------------------------
 
 move_player_left:
-                lda L0070
+                lda player_addr
                 sec
                 sbc #8
-                sta L0070
-                lda L0071
+                sta player_addr
+                lda player_addr+1
                 sbc #0
-                sta L0071
+                sta player_addr+1
                 lda #<sprite_pl_left_0
                 sta L0078
                 lda #>sprite_pl_left_0
@@ -1608,20 +1607,20 @@ erase_ghosts_next:
                 bne erase_ghosts_loop
 
 L101C:
-                lda L0070
+                lda player_addr
                 clc
                 adc #$40
                 sta L0072
-                lda L0071
+                lda player_addr+1
                 adc #1
                 sta L0072+1
                 lda player_jump_state
                 bne L1060
-                lda L0070
+                lda player_addr
                 clc
                 adc #$40
                 sta L0072
-                lda L0071
+                lda player_addr+1
                 adc #1
                 sta L0072+1
                 ldy #$F
@@ -1637,13 +1636,13 @@ L103D:
 ;-------------------------------------------------------------------------
 
 L104B:
-                lda L0070
+                lda player_addr
                 sec
                 sbc #$40
-                sta L0070
-                lda L0071
+                sta player_addr
+                lda player_addr+1
                 sbc #1
-                sta L0071
+                sta player_addr+1
                 ldx #5
                 jsr add_X_to_score
                 jmp L1082
@@ -1683,17 +1682,17 @@ L1082:
 ;-------------------------------------------------------------------------
 
 L1092:
-                lda L0070
+                lda player_addr
                 clc
                 adc #$40
                 sta L0072
-                lda L0071
+                lda player_addr+1
                 adc #1
                 sta L0072+1
                 ldy #$F
 
 L10A1:
-                lda (L0070),y
+                lda (player_addr),y
                 sta L0DDE,y  ; copy of what was under player, row 0?
                 lda (L0072),y
                 sta L0DDE+16,y  ; copy of what was under player, row 1?
@@ -1758,9 +1757,9 @@ L1108:
                 dey
                 bpl L1108
                 lda L0AF7
-                sta L0070
+                sta player_addr
                 lda L0AF7+1
-                sta L0071
+                sta player_addr+1
                 lda #7
                 ldx #<L0AC8
                 ldy #>L0AC8
@@ -1776,19 +1775,19 @@ L1131:
                 ldy #$F
 
 L1133:
-                lda (L0070),y
+                lda (player_addr),y
                 beq L114B
                 cmp #$10
                 bcs L114B
 
 L113B:
-                lda L0070
+                lda player_addr
                 clc
                 adc #$40
-                sta L0070
-                lda L0071
+                sta player_addr
+                lda player_addr+1
                 adc #1
-                sta L0071
+                sta player_addr+1
                 jmp L16B4
 
 ;-------------------------------------------------------------------------
@@ -1811,17 +1810,17 @@ L1158:
                 lda L0079
                 adc #0
                 sta L0075
-                lda L0070
+                lda player_addr
                 clc
                 adc #$40
                 sta L0072
-                lda L0071
+                lda player_addr+1
                 adc #1
                 sta L0072+1
                 ldy #$F
 
 L1174:
-                lda (L0070),y
+                lda (player_addr),y
                 beq L117F
                 cmp #$F
                 bcs L117F
@@ -1844,7 +1843,7 @@ L1187:
 
 L118E:
                 lda (L0078),y
-                sta (L0070),y
+                sta (player_addr),y
                 lda (L0074),y
                 sta (L0072),y
                 dey
@@ -1998,11 +1997,11 @@ L1256:
                 lda L007F
                 sbc #0
                 sta L0075
-                lda L0070
+                lda player_addr
                 sec
                 sbc #$80
                 sta L0076
-                lda L0071
+                lda player_addr+1
                 sbc #0
                 sta L0077
 
@@ -2078,13 +2077,13 @@ L12C1:
 
 L12D7:
                 lda L007E
-                cmp L0070
+                cmp player_addr
                 bne L12DE
                 clc
 
 L12DE:
                 lda L007F
-                sbc L0071
+                sbc player_addr+1
                 bcc L12F4
                 lda L007E
                 sec
@@ -2422,11 +2421,11 @@ L148F:
 ;-------------------------------------------------------------------------
 
 L1490:
-                lda L0070
+                lda player_addr
                 clc
                 adc #$80
                 sta L0076
-                lda L0071
+                lda player_addr+1
                 adc #2
                 sta L0077
                 ldy #0
@@ -2461,13 +2460,13 @@ L14CA:
                 lda (L0076),y
                 cmp #$FF
                 beq L14FA
-                lda L0070
+                lda player_addr
                 clc
                 adc #$40
-                sta L0070
-                lda L0071
+                sta player_addr
+                lda player_addr+1
                 adc #1
-                sta L0071
+                sta player_addr+1
                 jsr L166B
                 inc L0AFC
                 lda L0AFC
@@ -2527,13 +2526,13 @@ L1539:
                 cmp #3
                 bcc L154D    ; taken if 0/1/2
 ; player_jump_state>=3 - move player up 1 row
-                lda L0070
+                lda player_addr
                 sec
                 sbc #$40
-                sta L0070
-                lda L0071
+                sta player_addr
+                lda player_addr+1
                 sbc #1
-                sta L0071
+                sta player_addr+1
 
 L154D:
                 lda player_jump_state
@@ -2544,13 +2543,13 @@ L154D:
 ;player_jump_state<3 - move player down 1 row
 
 L1558:
-                lda L0070
+                lda player_addr
                 clc
                 adc #$40
-                sta L0070
-                lda L0071
+                sta player_addr
+                lda player_addr+1
                 adc #1
-                sta L0071
+                sta player_addr+1
 
 L1565:
                 dec player_jump_state
@@ -2561,18 +2560,18 @@ L1565:
 L158E:
                 lda #$FF
                 sta level_finished
-                lda L0070
+                lda player_addr
                 clc
                 adc #$40
                 sta L0074
-                lda L0071
+                lda player_addr+1
                 adc #1
                 sta L0075
                 ldy #$F
 
 L15A2:
                 lda sprite_pl_facing,y
-                sta (L0070),y
+                sta (player_addr),y
                 lda sprite_pl_facing+$10,y
                 sta (L0074),y
                 dey
@@ -2750,20 +2749,20 @@ L169A:
 L16B4:
                 lda #150
                 sta L0AD0+4  ;pitch
-                lda L0070
+                lda player_addr
                 sec
                 sbc #$40
-                sta L0070
-                lda L0071
+                sta player_addr
+                lda player_addr+1
                 sbc #1
-                sta L0071
+                sta player_addr+1
 
 L16C6:
-                lda L0070
+                lda player_addr
                 clc
                 adc #$40
                 sta L0072
-                lda L0071
+                lda player_addr+1
                 adc #1
                 sta L0072+1
                 dec L0AD0+4  ;pitch
@@ -2776,29 +2775,29 @@ L16C6:
 
 L16E4:
                 lda L0DDE,y  ; copy of what was under player, row 0?
-                sta (L0070),y
+                sta (player_addr),y
                 lda L0DDE+16,y  ; copy of what was under player, row 1?
                 sta (L0072),y
                 dey
                 bpl L16E4
-                lda L0070
+                lda player_addr
                 clc
                 adc #$40
-                sta L0070
-                lda L0071
+                sta player_addr
+                lda player_addr+1
                 adc #1
-                sta L0071
-                lda L0070
+                sta player_addr+1
+                lda player_addr
                 clc
                 adc #$40
                 sta L0072
-                lda L0071
+                lda player_addr+1
                 adc #1
                 sta L0072+1
                 ldy #$F
 
 L170F:
-                lda (L0070),y
+                lda (player_addr),y
                 sta L0DDE,y  ; copy of what was under player, row 0?
                 lda (L0072),y
                 sta L0DDE+16,y  ; copy of what was under player, row 1?
@@ -2821,7 +2820,7 @@ L170F:
 
 L173B:
                 lda (L0078),y
-                sta (L0070),y
+                sta (player_addr),y
                 lda (L0074),y
                 sta (L0072),y
                 dey
@@ -2845,7 +2844,7 @@ draw_pl_splat:
 
 L1757:
                 lda sprite_pl_splat,y
-                sta (L0070),y
+                sta (player_addr),y
                 dey
                 bpl L1757
                 lda #0
@@ -2859,18 +2858,18 @@ L1757:
 kill_player_and_drop_caller:
                 pla
                 pla
-                lda L0070
+                lda player_addr
                 clc
                 adc #$40
                 sta L0072
-                lda L0071
+                lda player_addr+1
                 adc #1
                 sta L0072+1
                 ldy #$F
 
 L177A:
                 lda L0DDE,y  ; copy of what was under player, row 0?
-                sta (L0070),y
+                sta (player_addr),y
                 lda sprite_pl_splat,y
                 sta (L0072),y
                 dey
@@ -2883,9 +2882,9 @@ top_right_cell=$5800+39*8
                 
 entry_slide_off:
                 lda #<top_right_cell
-                sta L0070
+                sta player_addr
                 lda #>top_right_cell
-                sta L0071
+                sta player_addr+1
                 lda #1
                 sta L0072
 
@@ -2898,16 +2897,16 @@ slide_off_loop:
                 lda L0072
                 sta $fe01
                 
-                lda L0070
+                lda player_addr
                 clc
                 adc #8
-                sta L0070
+                sta player_addr
                 bcc +
-                inc L0071
+                inc player_addr+1
 +
-                lda L0070
+                lda player_addr
                 pha
-                lda L0071
+                lda player_addr+1
                 pha
 ; clear portion of screen just scrolled off
                 ldx #32
@@ -2917,22 +2916,22 @@ fill_rows_loop:
                 lda #0
 
 fill_row_loop:
-                sta (L0070),y
+                sta (player_addr),y
                 dey
                 bpl fill_row_loop
-                lda L0070
+                lda player_addr
                 clc
                 adc #$40
-                sta L0070
-                lda L0071
+                sta player_addr
+                lda player_addr+1
                 adc #1
-                sta L0071
+                sta player_addr+1
                 dex
                 bne fill_rows_loop
                 pla
-                sta L0071
+                sta player_addr+1
                 pla
-                sta L0070
+                sta player_addr
                 inc L0072
                 lda L0072
                 cmp #41

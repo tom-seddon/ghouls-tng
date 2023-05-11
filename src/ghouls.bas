@@ -26,13 +26,14 @@ FORF=0TO31STEP4:F!&5CE0=F!{&sprite_goal_row0}:F!&5E20=F!{&sprite_goal_row1}:NEXT
 VDU23,0,1,0;0;0;0;:VDU19,1,1;0;19,2,3;0;19,3,LDATA?{$LevelData_colour3_offset};0;
 SOUND&12,4,0,18:SOUND&13,4,1,18:FORF=1TO40:VDU23,0,1,F;0;0;0;:*FX19
 NEXT
-!{&L0070}=&7A00:FORF=0TO GO STEP2:G=&6000+(RND(300)*16):F!{&ghosts_table}=G:NEXT:?{&bonus_update_timer}=31
+!{&player_addr}=&5800+LDATA?{$LevelData_pl_start_x_offset}*16+(4+LDATA?{$LevelData_pl_start_y_offset})*320
+FORF=0TO GO STEP2:G=&6000+(RND(300)*16):F!{&ghosts_table}=G:NEXT:?{&bonus_update_timer}=31
 ?&7D=0 {# the asm doesn't seem to use &7D...
 CALL{&entry_game}:*FX15
 IF?{&level_finished}=255GOTO{$L370}
 FORG=0TO4STEP2:N=G?{&ghosts_table+1}*256+G?{&ghosts_table}:IFN>&5800 FORF=0TO15STEP4:F!N=F!{&sprite_ghost_happy_row0}:F!(N+320)=F!{&sprite_ghost_happy_row1}:NEXT
 NEXT:{# TODO N=?{&platform_addr+1}*256+?{&platform_addr}:FORF=0TO31STEP4:F!N=F!{&sprite_floating_platform}:NEXT:N=?{&spider_addr+1}*256+?{&spider_addr}:IFN>&5800 FORF=0TO31STEP4:F!N=F!{&sprite_spider_1_row0}:F!(N+320)=F!{&sprite_spider_1_row1}:NEXT
-SOUND&10,-15,3,18:FORF=200TO0STEP-.6:SOUND&11,0,F,1:NEXT:N=?{&L0071}*256+?{&L0070}:IF?(N+326)=224N=N+320 ELSEIF?(N-314)=224N=N-320
+SOUND&10,-15,3,18:FORF=200TO0STEP-.6:SOUND&11,0,F,1:NEXT:N=?{&player_addr+1}*256+?{&player_addr}:IF?(N+326)=224N=N+320 ELSEIF?(N-314)=224N=N-320
 K=110:FORG={&sprite_pl_die_0} TO {&sprite_pl_die_7} STEP16:FORF=0TO15STEP4:F!N=F!G:NEXT
 FORJ=K TO K+5STEP.3:SOUND&11,-12,J,1:SOUND&12,-12,J-12,1:NEXT:FORJ=K+5 TO K-10STEP-.8:SOUND&11,-12,J,1:SOUND&12,-12,J-12,1:NEXT:K=K-8:NEXT
 FORF=0TO15STEP4:F!N=F!{&sprite_pl_die_8}:NEXT:FORG=0TO35STEP35:FORF=G TO G+40STEP1.5:SOUND&11,-15,F,1:NEXT:FORH=1TO400:NEXT:FORH=0TO15STEP4:H!N=H!{&L0DDE}:NEXT,
@@ -43,7 +44,7 @@ GOTO{$L100}
 NEXT
 END
 {:L370}
-IF?{&L0070}=192 FORJ=0TO15STEP4:J!&5CC0=0:J!&5CD0=J!{&sprite_pl_facing}:J!&5E00=0:J!&5E10=J!{&sprite_pl_facing+16}:NEXT
+IF?{&player_addr}=192 FORJ=0TO15STEP4:J!&5CC0=0:J!&5CD0=J!{&sprite_pl_facing}:J!&5E00=0:J!&5E10=J!{&sprite_pl_facing+16}:NEXT
 ENVELOPE1,2,-1,1,-1,1,1,1,0,-3,0,-1,126,90:RESTORE{$L1830}:FORF=1TO39:READP
 SOUND&11,1,P,4:SOUND&12,1,P+1,4:SOUND&13,1,P-1,4:FORK=1TO200:NEXT
 NEXT:FORF=1TO4000:NEXT:CALL{&reset_envelopes}

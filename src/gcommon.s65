@@ -31,6 +31,8 @@ map: .fill level_width*level_height
 LevelData_name_x_offset=LevelData.name_x
 LevelData_name_offset=LevelData.name
 LevelData_colour3_offset=LevelData.colour3
+LevelData_pl_start_x_offset=LevelData.pl_start_x
+LevelData_pl_start_y_offset=LevelData.pl_start_y
                 
 ; level_data_size=level_width*level_height
 ; level_name_x_offset=level_data_size

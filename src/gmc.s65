@@ -101,23 +101,6 @@ sprite_block:
                 .byte %11111111
                 .byte %10001000
                 .byte %11111111
-sprite_spring_row0:
-                .byte %00001010
-                .byte %00001111
-                .byte %00000000
-                .byte %00000111
-                .byte %00001000
-                .byte %00000111
-                .byte %00000000
-                .byte %00000111
-                .byte %00001010
-                .byte %00001100
-                .byte %00000010
-                .byte %00001001
-                .byte %00000101
-                .byte %00001110
-                .byte %00000010
-                .byte %00001001
 sprite_lblock:
                 .byte %11111111
                 .byte %10011001
@@ -169,6 +152,23 @@ sprite_spikes:
                 .byte %00001010
                 .byte %00001010
                 .byte %00001111
+sprite_spring_row0:
+                .byte %00001010
+                .byte %00001111
+                .byte %00000000
+                .byte %00000111
+                .byte %00001000
+                .byte %00000111
+                .byte %00000000
+                .byte %00000111
+                .byte %00001010
+                .byte %00001100
+                .byte %00000010
+                .byte %00001001
+                .byte %00000101
+                .byte %00001110
+                .byte %00000010
+                .byte %00001001
 sprite_spring_row1:
                 .byte %00001000
                 .byte %00000111
@@ -388,8 +388,8 @@ _..=[ed_ordinary_item(sprite_lblock,true)] ;lblock
 _..=[ed_ordinary_item(sprite_rblock,true)]  ;rblock
 _..=[ed_ordinary_item(sprite_block,true)]   ;block
 _..=[ed_ordinary_item(sprite_spikes,false)] ;spikes
-_..=[ed_ordinary_item(sprite_spring_row0,false)] ;spring u
-_..=[ed_ordinary_item(sprite_spring_row1,false)] ;spring l
+_..=[ed_ordinary_item(sprite_spring_row0,false)] ;spring (1 row)
+_..=[ed_item(sprite_spring_row0,1,2,false,-1,false)] ;spring (2 rows)
 _..=[ed_ordinary_item(sprite_dots,true)]        ;dots
 _..=[ed_ordinary_item(sprite_power_pill,false)]  ;pill
 _..=[ed_item(sprite_conveyor,1,1,false,-1,false)]    ;conveyor
@@ -1060,6 +1060,9 @@ find_loop:
                 jmp find_loop
 
 not_found:
+                cmp #type_spring_2_rows.index
+                beq spring_2_rows
+                
                 cmp #type_pill.index
                 beq pill
 
@@ -1126,6 +1129,19 @@ done:
                 sta was_platform_addr+4
                 rts
 
+spring_2_rows:
+                ldx #0
+spring_2_rows_loop:
+                lda spring_2_rows_data,x
+                jsr oswrch
+                inx
+                cpx #size(spring_2_rows_data)
+                bne spring_2_rows_loop
+                jmp next
+spring_2_rows_data: .block
+                .text 17,1,$e1,8,10,$e5,11,8
+                .endblock
+                
 platform:
                 ldy #otype_platform
                 jsr add_object
@@ -1215,9 +1231,8 @@ item_info:
                 .item_info_entry type_rblock
                 .item_info_entry type_block
                 .item_info_entry type_spikes
-                .item_info_entry type_spring_upper
-                .item_info_entry type_spring_lower
                 .item_info_entry type_dots
+                .item_info_entry type_spring_1_row
                 .byte $ff
 
 ; C=0 on exit if found. X refers to item info table entry.

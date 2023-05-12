@@ -50,8 +50,8 @@ type_lblock={.index:1,.char:$e2,.colour:3}
 type_rblock={.index:2,.char:$e3,.colour:3}
 type_block={.index:3,.char:$e0,.colour:3,}
 type_spikes={.index:4,.char:$e4,.colour:1,}
-type_spring_upper={.index:5,.char:$e1,.colour:1,}
-type_spring_lower={.index:6,.char:$e5,.colour:1,}
+type_spring_1_row={.index:5,.char:$e1,.colour:1,}
+type_spring_2_rows={.index:6}
 type_dots={.index:7,.char:$f3,.colour:2,}
 type_pill={.index:8,}
 type_conveyor={.index:9,}
@@ -69,8 +69,8 @@ ghouls_level_enc: .encode
                 .edef '//',type_rblock.index
                 .edef '||',type_block.index
                 .edef 'XX',type_spikes.index
-                .edef 'SU',type_spring_upper.index
-                .edef 'SL',type_spring_lower.index
+                .edef '^1',type_spring_1_row.index
+                .edef '^2',type_spring_2_rows.index
                 .edef '..',type_dots.index
                 .edef '()',type_pill.index
                 .edef '<<',type_conveyor.index
@@ -83,10 +83,6 @@ ghouls_level_enc: .encode
                 
                 .endencode
 
-flags_ghosts=$80                ;shown when GO>0
-flags_add8=$40                  ;add 8 to screen address
-flags_speed_mask=$1f
-                
 ;-------------------------------------------------------------------------
 
 ed_flags1_width2=$80             ;width=1 if clear

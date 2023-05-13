@@ -66,20 +66,25 @@ gmc_start:
                 .if editor
                 ; For use from BASIC. These are absolutely not in any
                 ; rational order.
-                .dword reset_envelopes          ;+0
-                .dword ed_test                  ;+4
-                .dword ed_read_level            ;+8
-                .dword ed_read_addr             ;+12
-                .dword ed_level_addr            ;+16
-                .dword ed_write_addr            ;+20
-                .dword ed_get_screen_write_addr ;+24
-                .dword ed_draw_level            ;+28
-                .dword ed_place_item            ;+32
-                .dword ed_draw_ltype            ;+36
-                .dword ed_erase_ltype           ;+40
-                .dword ed_get_item_speed        ;+44
-                .dword ed_get_next_ltype        ;+48
-                .dword ed_set_pl_start          ;+52
+                .dword reset_envelopes                    ;+0
+                .dword ed_test                            ;+4
+                .dword ed_read_level                      ;+8
+                .dword ed_read_addr                       ;+12
+                .dword ed_level_addr                      ;+16
+                .dword ed_write_addr                      ;+20
+                .dword ed_get_screen_write_addr           ;+24
+                .dword ed_draw_level                      ;+28
+                .dword ed_place_item                      ;+32
+                .dword ed_draw_ltype                      ;+36
+                .dword ed_erase_ltype                     ;+40
+                .dword ed_get_item_speed                  ;+44
+                .dword ed_get_next_ltype                  ;+48
+                .dword ed_set_pl_start                    ;+52
+                .dword ed_get_num_otype_create_parameters ;+56
+                .dword len(otypes)                        ;+60
+                .dword ed_scan_keys                       ;+64
+                .dword ed_scan_keys.counters              ;+68
+                .dword ed_scan_keys.any_pressed           ;+72
                 .endif
 
 sprite_blank:
@@ -434,7 +439,7 @@ otypes_ed_flags: .proc
 ; Exit: X=otype
 ;       A=create parameter
 ; Preserves: Y
-ed_unpack_ltype: .proc
+ed_find_otype: .proc
                 ldx #len(otypes)-1
 loop:
                 cmp otypes_ltype_end,x
@@ -504,6 +509,95 @@ ed_get_pl_start: .proc
                 lda (ed_level_addr),y
                 tay
                 rts
+                .endproc
+
+;-------------------------------------------------------------------------
+
+; Entry: A=otype
+; Return: A=max oarg
+
+ed_get_num_otype_create_parameters: .proc
+                tax
+                cpx #len(otypes)
+                bcs none
+
+                sec
+                lda otypes_ltype_end,x
+                sbc otypes_ltype_begin,x
+                rts
+
+none:
+                lda #0
+                rts
+                .endproc
+
+;-------------------------------------------------------------------------
+
+ed_scan_keys: .proc
+
+                lda #0
+                sta any_pressed
+                
+                ldy #num_keys-1
+loop:
+                ldx table,y
+                bpl next
+
+                tya
+                pha
+
+                lda #$81
+                ldy #$ff
+                jsr osbyte
+                cpx #$ff        ;C=1 if pressed
+
+                pla
+                tay
+
+                bcs pressed
+
+                lda #0
+                beq store
+
+pressed:
+                lda #1
+                sta any_pressed
+                
+                ldx counters,y
+                cpx #$80        ;C=1 if bit 7 set
+                inx
+                txa
+                bcc store
+                ora #$80        ;suppress further zeros
+store:
+                sta counters,y
+next:
+                dey
+                bpl loop
+                rts
+
+table:
+                .byte 1
+                .byte 1
+                .byte 1
+                .byte 1
+                .byte inkey(key_slash)
+                .byte inkey(key_colon)
+                .byte inkey(key_x)
+                .byte inkey(key_z)
+                .byte inkey(key_delete)
+                .byte inkey(key_right)
+                .byte inkey(key_left)
+                .byte inkey(key_return)
+                .byte inkey(key_tab)
+                .byte inkey(key_r)
+                .byte inkey(key_s)
+num_keys=*-table
+
+any_pressed:
+                .byte 0       
+counters:
+                .fill num_keys,0
                 .endproc
                 
 ;-------------------------------------------------------------------------
@@ -827,14 +921,36 @@ ed_erase_ltype: .proc
 
 ;-------------------------------------------------------------------------
 
+ed_draw_otype: .proc
+                clc             ;drawing
+                jmp ed_draw_or_erase_otype
+                .endproc
+
+ed_erase_otype: .proc
+                clc             ;erasing
+                jmp ed_draw_or_erase_otype
+                .endproc
+                
+;-------------------------------------------------------------------------
+
 ; preserves X/Y
 ed_draw_or_erase_ltype: .proc
-                ror erasing       ;bit 7 set if erasing
+                ror ed_draw_or_erase_otype.erasing       ;bit 7 set if erasing
+                stx ed_draw_or_erase_otype.xc
+                sty ed_draw_or_erase_otype.yc
+
+                jsr ed_find_otype
+                jmp ed_draw_or_erase_otype.common
+                .endproc
+
+; presrves X/Y
+ed_draw_or_erase_otype: .proc
+                ror erasing
                 stx xc
                 sty yc
-
-                jsr ed_unpack_ltype
-
+                
+                tax             ;X=otype
+common:
                 lda otypes_otype_flags,x
                 sta otype_flags
                 lda otypes_ed_flags,x

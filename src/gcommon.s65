@@ -58,7 +58,8 @@ type_conveyor={.index:9,}
 type_platform={.index:10}
 type_spider={.index:30}
 type_spider2={.index:50}
-
+type_index_max=70
+                
 speed_edef: .function prefix,speed
                 .cerror !(speed>=0 && speed<num_speeds)
                 .endfunction format('%s%c',prefix,char(speed>=0 && speed<10?'0'+speed:'a'+speed-10))
@@ -85,27 +86,14 @@ ghouls_level_enc: .encode
 
 ;-------------------------------------------------------------------------
 
-ed_flags1_width2=$80             ;width=1 if clear
-ed_flags1_height2=$40            ;height=1 if clear
-ed_flags1_masked=$20
-ed_flags1_speed_mask=$1f
-
-ed_flags2_repeat=$80
-
-; ed_get_flags1: .function width,height,masked,speed
-;                 .cerror !(width==1||width==2),'bad width'
-;                 .cerror !(height==1||height==2),'bad height'
-;                 .cerror !(speed>=-1&&speed<num_speeds),'bad speed'
-;                 .endfunction (width==2?ed_flags1_width2:0)|(height==2?ed_flags1_height2:0)|(masked?ed_flags1_masked:0)|(1+speed)
-                
-; ed_flags2_repeat_add=$80
-; ed_get_flags2: .function repeat
-;                 .endfunction (repeat?ed_flags2_repeat:0)
+otype_flags_width2=$80          ;set if 2xN rather than 1xN
+otype_flags_height2=$40         ;set if Nx2 rather than Nx1
 
 ;-------------------------------------------------------------------------
 
-otype_platform=0                ;var0=dir var1=speed var2=update timer
-otype_spider=1                  ;var0=dir var1=speed var2=update timer
-otype_conveyor=2                ;var0=dir/frame var1=N/A var2=update timer
+ed_flags_repeat=$80 ;set if you can hold Return to insert runs of this
+                    ;type of object
+ed_flags_masked=$40 ;set if this object should have a masked/dimmed
+                    ;sort of appearance in the editor
 
 ;-------------------------------------------------------------------------

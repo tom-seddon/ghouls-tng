@@ -75,10 +75,10 @@ gmc_start:
                 .dword ed_get_screen_write_addr ;+24
                 .dword ed_draw_level            ;+28
                 .dword ed_place_item            ;+32
-                .dword ed_draw_item             ;+36
-                .dword ed_erase_item            ;+40
+                .dword ed_draw_ltype            ;+36
+                .dword ed_erase_ltype           ;+40
                 .dword ed_get_item_speed        ;+44
-                .dword ed_get_item_index        ;+48
+                .dword ed_get_next_ltype        ;+48
                 .dword ed_set_pl_start          ;+52
                 .endif
 
@@ -366,76 +366,118 @@ loop:
 
 ;-------------------------------------------------------------------------
 
-ed_item: .function sprite_data,width,height,masked,speed,repeat
-                .cerror !(width==1||width==2),'bad width'
-                .cerror !(height==1||height==2),'bad height'
-                .cerror !(speed>=-1&&speed<num_speeds),'bad speed'
-                .endfunction {.sprite_data:sprite_data,.width:width,.height:height,.masked:masked,.speed:speed,.repeat:repeat,}
+make_otype: .function ltypes_begin,ltypes_end,sprite_data,sprite_width,sprite_height,init_routine,update_routine,ed_flags
+                .cerror !(sprite_width==1||sprite_width==2),'invalid sprite width'
+                .cerror !(sprite_height==1||sprite_height==2),'invalid sprite height'
                 
-ed_ordinary_item: .function sprite_data,repeat
-                .endfunction ed_item(sprite_data,1,1,false,-1,repeat)
+_otype_flags:=0
+                .if sprite_width==2
+_otype_flags:=_otype_flags|otype_flags_width2
+                .endif
 
-ed_speeds_items: .function sprite_data,width,height,masked
-_list:=[]
-                .for _i:=0,_i<num_speeds,_i+=1
-_list..=[ed_item(sprite_data,width,height,masked,_i,false)]
-                .endfor
-                .endfunction _list
+                .if sprite_height==2
+_otype_flags:=_otype_flags|otype_flags_height2
+                .endif
+
+                .endfunction {.ltypes_begin:ltypes_begin,.ltypes_end:ltypes_end,.sprite_data:sprite_data,.otype_flags:_otype_flags,.init_routine:init_routine,.update_routine:update_routine,.ed_flags:ed_flags}
+
+make_sta_otype: .function ltype,sprite_data,sprite_width,sprite_height,ed_flags=0
+                .endfunction make_otype(ltype,ltype+1,sprite_data,sprite_width,sprite_height,0,0,ed_flags)
+
+make_dyn_otype: .function base_ltype,num_ltypes,sprite_data,sprite_width,sprite_height,init_routine,update_routine,ed_flags=0
+                .endfunction make_otype(base_ltype,base_ltype+num_ltypes,sprite_data,sprite_width,sprite_height,init_routine,update_routine,ed_flags)
 
 _:=[]
-_..=[ed_ordinary_item(0,true)] ;blank
-_..=[ed_ordinary_item(sprite_lblock,true)] ;lblock
-_..=[ed_ordinary_item(sprite_rblock,true)]  ;rblock
-_..=[ed_ordinary_item(sprite_block,true)]   ;block
-_..=[ed_ordinary_item(sprite_spikes,false)] ;spikes
-_..=[ed_ordinary_item(sprite_spring_row0,false)] ;spring (1 row)
-_..=[ed_item(sprite_spring_row0,1,2,false,-1,false)] ;spring (2 rows)
-_..=[ed_ordinary_item(sprite_dots,true)]        ;dots
-_..=[ed_ordinary_item(sprite_power_pill,false)]  ;pill
-_..=[ed_item(sprite_conveyor,1,1,false,-1,false)]    ;conveyor
-_..=ed_speeds_items(sprite_floating_platform,2,1,false)      ;platform
-_..=ed_speeds_items(sprite_spider_0_row0,2,2,false) ;spider
-_..=ed_speeds_items(sprite_spider_0_row0,2,2,true) ;spider2
-_..=[ed_ordinary_item(sprite_pl_facing,false)]
-ed_types=_
+_..=[make_sta_otype(type_blank.index,0,1,1,ed_flags_repeat)]
+_..=[make_sta_otype(type_lblock.index,sprite_lblock,1,1)]
+_..=[make_sta_otype(type_rblock.index,sprite_rblock,1,1)]
+_..=[make_sta_otype(type_block.index,sprite_block,1,1,ed_flags_repeat)]
+_..=[make_sta_otype(type_spikes.index,sprite_spikes,1,1)]
+_..=[make_sta_otype(type_spring_1_row.index,sprite_spring_row0,1,1)]
+_..=[make_sta_otype(type_spring_2_rows.index,sprite_spring_row0,1,2)]
+_..=[make_sta_otype(type_dots.index,sprite_dots,1,1,ed_flags_repeat)]
+_..=[make_sta_otype(type_pill.index,sprite_power_pill,1,1)]
+otype_conveyor=len(_)           ;temp
+_..=[make_dyn_otype(type_conveyor.index,num_speeds,sprite_conveyor,1,1,0,update_conveyor)]
+otype_platform=len(_)           ;temp
+_..=[make_dyn_otype(type_platform.index,num_speeds,sprite_floating_platform,2,1,0,update_platform)]
+otype_spider=len(_)             ;temp
+_..=[make_dyn_otype(type_spider.index,num_speeds,sprite_spider_0_row0,2,2,0,update_spider)]
+_..=[make_dyn_otype(type_spider2.index,num_speeds,sprite_spider_0_row0,2,2,0,update_spider,ed_flags_masked)]
+otypes=_
 
-ed_item_sprite_addrs_lo: .proc
-                .for _i=0,_i<len(ed_types),_i+=1
-                .byte <ed_types[_i].sprite_data
-                .endfor
-                .endproc                
+otypes_ltype_begin:
+                .byte otypes.ltypes_begin
+otypes_ltype_end:
+                .byte otypes.ltypes_end
+otypes_sprite_data_lo:
+                .byte <otypes.sprite_data
+otypes_sprite_data_hi:
+                .byte >otypes.sprite_data
+otypes_init_routine_lo:
+                .byte <otypes.init_routine
+otypes_init_routine_hi:
+                .byte >otypes.init_routine
+otypes_update_routine_lo:
+                .byte <otypes.update_routine
+otypes_update_routine_hi:
+                .byte >otypes.update_routine
+otypes_otype_flags:
+                .byte otypes.otype_flags
+otypes_ed_flags: .proc
+                .byte otypes.ed_flags
+                .endproc
+
+;-------------------------------------------------------------------------
+
+; Entry: A=ltype
+; Exit: X=otype
+;       A=create parameter
+; Preserves: Y
+ed_unpack_ltype: .proc
+                ldx #len(otypes)-1
+loop:
+                cmp otypes_ltype_end,x
+                bcs next
+                cmp otypes_ltype_begin,x
+                bcc next
                 
-ed_item_sprite_addrs_hi: .proc
-                .for _i=0,_i<len(ed_types),_i+=1
-                .byte >ed_types[_i].sprite_data
-                .endfor
+                sbc otypes_ltype_begin,x
+                rts
+
+next:
+                dex
+                bpl loop
+
+                ; Assume it was the blank entry...
+                inx             ;X=0
+                txa             ;A=0
+                rts
                 .endproc
 
-ed_item_flags1s: .proc
-                .for _i=0,_i<len(ed_types),_i+=1
-_flags:=0
-                .if ed_types[_i].width==2
-_flags:=_flags|ed_flags1_width2
-                .endif
-                .if ed_types[_i].height==2
-_flags:=_flags|ed_flags1_height2
-                .endif
-                .if ed_types[_i].masked
-_flags:=_flags|ed_flags1_masked
-                .endif
-_flags:=_flags|(1+ed_types[_i].speed)
-                .byte _flags
-                .endfor
-                .endproc
+;-------------------------------------------------------------------------
 
-ed_item_flags2s: .proc
-                .for _i=0,_i<len(ed_types),_i+=1
-_flags:=0
-                .if ed_types[_i].repeat
-_flags:=_flags|ed_flags2_repeat
-                .endif
-                .byte _flags
-                .endfor
+; Entry: X=otype
+;        A=create parameter
+; Exit: A=ltype
+ed_pack_ltype: .proc
+                clc
+                adc otypes_ltype_begin,x
+
+                ; Clamp. Be vaguely resilient.
+                cmp otypes_ltype_begin,x
+                bcc min
+
+                cmp otypes_ltype_end,x
+                bcc done
+
+                lda otypes_ltype_end,x
+done:
+                rts
+
+min:
+                lda otypes_ltype_begin,x
+                rts
                 .endproc
 
 ;-------------------------------------------------------------------------
@@ -602,19 +644,28 @@ ed_draw_level: .proc
                 jsr oswrch
                 jsr oswrch
 
-                ldy #0
+                lda #0
+                sta yc
 y_loop:
-                ldx #0
+                lda #0
+                sta xc
 x_loop:
+                ldx xc
+                ldy yc
                 jsr ed_read_level
-                jsr ed_draw_item
+                
+                ldx xc
+                ldy yc
+                jsr ed_draw_ltype
 
-                inx
-                cpx #level_width
+                inc xc
+                lda xc
+                cmp #level_width
                 bne x_loop
 
-                iny
-                cpy #level_height
+                inc yc
+                lda yc
+                cmp #level_height
                 bne y_loop
 
                 ; Ick. Special case :(
@@ -635,6 +686,9 @@ x_loop:
                 dey
                 bpl -
                 rts
+
+xc: .byte 0
+yc: .byte 0
                 .endproc
 
 ;-------------------------------------------------------------------------
@@ -667,7 +721,7 @@ ed_add16z: .proc
 ed_place_item: .proc
                 pha
                 jsr ed_read_level
-                jsr ed_erase_item
+                jsr ed_erase_ltype
                 pla
 
                 pha
@@ -675,45 +729,45 @@ ed_place_item: .proc
                 pla
                 
                 ; Assume the old item was 2x2 and the new is 1x1.
-                jsr ed_draw_item
+                jsr ed_draw_ltype
 
                 inx
                 jsr ed_read_level
                 bcs +           ;taken if (X+1,Y+0) is out of bounds
-                jsr ed_draw_item
+                jsr ed_draw_ltype
 +
                 dex
 
                 iny
                 jsr ed_read_level
                 bcs +           ;taken if (X+0,Y+1) is out of bounds
-                jsr ed_draw_item
+                jsr ed_draw_ltype
 
                 ; since (X+1,Y+0) wasn't out of bounds, and (X+0,Y+1)
                 ; wasn't out of bounds, (X+1,Y+1) isn't out of bounds
                 ; either.
                 inx
                 jsr ed_read_level
-                jsr ed_draw_item
+                jsr ed_draw_ltype
 +
                 rts
                 .endproc
 
 ;-------------------------------------------------------------------------
 ;
-; entry: A = object index
+; entry: A = ltype
 ;        C = 0 to increment
 ;            1 to decrement
 ;
-; exit: A = new object index
+; exit: A = new ltype
                 
-ed_get_item_index: .proc
-                .cerror len(ed_types)==256,'needs a rethink'
+ed_get_next_ltype: .proc
+                .cerror type_index_max>=256,'needs a rethink'
                 
                 bcs sub
 add:
                 adc #1
-                cmp #len(ed_types)
+                cmp #type_index_max
                 bcc +
                 lda #0
 +
@@ -721,9 +775,9 @@ add:
 
 sub:
                 sbc #1
-                cmp #len(ed_types)
+                cmp #type_index_max
                 bcc +
-                lda #len(ed_types)-1
+                lda #type_index_max-1
 +
                 rts
                 .endproc
@@ -759,39 +813,42 @@ indexes_end:
                 
 ;-------------------------------------------------------------------------
 
-ed_draw_item: .proc
+ed_draw_ltype: .proc
                 clc             ;drawing
-                jmp ed_draw_or_erase_item
+                jmp ed_draw_or_erase_ltype
                 .endproc
 
 ;-------------------------------------------------------------------------
 
-ed_erase_item: .proc
+ed_erase_ltype: .proc
                 sec             ;erasing
-                jmp ed_draw_or_erase_item
+                jmp ed_draw_or_erase_ltype
                 .endproc
 
 ;-------------------------------------------------------------------------
 
 ; preserves X/Y
-ed_draw_or_erase_item: .proc
+ed_draw_or_erase_ltype: .proc
                 ror erasing       ;bit 7 set if erasing
                 stx xc
                 sty yc
-                sta itype
 
-                tax
-                lda ed_item_flags1s,x
-                sta flags1
-                lda ed_item_sprite_addrs_lo,x
+                jsr ed_unpack_ltype
+
+                lda otypes_otype_flags,x
+                sta otype_flags
+                lda otypes_ed_flags,x
+                sta ed_flags
+                lda otypes_sprite_data_lo,x
                 sta ed_read_addr+0
-                lda ed_item_sprite_addrs_hi,x
+                lda otypes_sprite_data_hi,x
                 sta ed_read_addr+1
 
                 jsr row
 
-                bit flags1
-                bvc done        ;taken if height=1
+                lda otype_flags
+                and #otype_flags_height2
+                beq done        ;taken if height=1
 
                 ; lda yc
                 ; cmp #level_height-1
@@ -813,8 +870,9 @@ row:
                 
                 jsr do_item_part
 
-                bit flags1
-                bpl row_done
+                lda otype_flags
+                and #otype_flags_width2
+                beq row_done    ;taken if width=1
 
                 ; lda xc
                 ; cmp #level_width-1
@@ -832,8 +890,8 @@ do_item_part:
                 beq next_column
                 
                 ldx #0          ;Unmasked mask
-                lda flags1
-                and #ed_flags1_masked
+                lda ed_flags
+                and #ed_flags_masked
                 beq +           ;taken if unmasked
                 ldx #2          ;Masked mask
 +
@@ -875,14 +933,13 @@ masks:
 
 erasing:
                 .byte 0
-itype:
-                .byte 0                
 xc:
                 .byte 0
 yc:
                 .byte 0                
-
-flags1:
+otype_flags:
+                .byte 0
+ed_flags:
                 .byte 0
                 .endproc
                 
@@ -1294,13 +1351,6 @@ L0E1E:       .byte ' '
 
 ;-------------------------------------------------------------------------
 
-object_update_routines=[update_platform,update_spider,update_conveyor]
-
-object_update_routines_lo: .byte <object_update_routines
-object_update_routines_hi: .byte >object_update_routines
-                
-;-------------------------------------------------------------------------
-
 entry_game:
                 lda #1
                 ; sta spider_direction
@@ -1348,9 +1398,9 @@ update_objects_loop:
                 
                 ldy object_types,x
                 
-                lda object_update_routines_lo,y
+                lda otypes_update_routine_lo,y
                 sta jsr_object_update+1
-                lda object_update_routines_hi,y
+                lda otypes_update_routine_hi,y
                 sta jsr_object_update+2
 
 jsr_object_update: jsr $ffff

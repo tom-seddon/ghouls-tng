@@ -3409,11 +3409,114 @@ not_level_number:
                 rts
                 
 load_levels:
+                jsr ed_print
+                .text 131,'Load levels',10,13
+                .byte 0
+
+                jsr enter_file_name
+
+                jsr init_file_load_save_block
+
+                ; load file to address given in control block
+                sta file_load_save_block.exec+0
+
+                lda #$ff        ;load file
+file_load_save_osfile:
+                ldx #<file_load_save_block
+                ldy #>file_load_save_block
+                jsr osfile
+                jmp ed_main_loop
+                
 save_levels:
-                .text 0,255,'TODO...',0
+                jsr ed_print
+                .text 131,'Save levels',10,13
+                .byte 0
+
+                jsr enter_file_name
+
+                jsr init_file_load_save_block
+
+                lda #$00        ;save file
+                jmp file_load_save_osfile
+
+init_file_load_save_block:
+                ; I don't trust the OSFILE block not to get modified.
+                lda file_name_block+0
+                sta file_load_save_block.name+0
+                lda file_name_block+1
+                sta file_load_save_block.name+1
+                
+                lda #<levels_org
+                sta file_load_save_block.load+0
+                sta file_load_save_block.exec+0
+                sta file_load_save_block.start+0
+                
+                lda #>levels_org
+                sta file_load_save_block.load+1
+                sta file_load_save_block.exec+1
+                sta file_load_save_block.start+1
+
+_levels_end=levels_org+level_data_pages*256
+                lda #<_levels_end
+                sta file_load_save_block.end+0
+                lda #>_levels_end
+                sta file_load_save_block.end+1
+                
+                lda #$ff
+                sta file_load_save_block.load+2
+                sta file_load_save_block.exec+2
+                sta file_load_save_block.start+2
+                sta file_load_save_block.end+2
+                sta file_load_save_block.load+3
+                sta file_load_save_block.exec+3
+                sta file_load_save_block.start+3
+                sta file_load_save_block.end+3
+
+                rts
+
+enter_file_name:
+                jsr ed_print
+                .text 131,'Enter file name:',135
+                .byte 0
+
+                jsr ed_enable_escape
+
+                ldx #<file_name_block
+                ldy #>file_name_block
+                lda #0
+                jsr osword
+                bcs ed_main_loop
+                rts
+
+file_name_block:
+                .word $7b00     ;definitely safe
+                .byte 255       ;max length
+                .byte 32        ;min char
+                .byte 126       ;max char
+
+file_load_save_block: .block
+name:
+                .word $7b00
+load:
+                .dword 0
+exec:
+                .dword 0
+start:
+                .dword 0
+end:
+                .dword 0
+                .endblock
 
                 .endproc
 
+;-------------------------------------------------------------------------
+
+ed_enable_escape:
+                lda #$e5        ;escape status (D.2-75)
+                ldx #0          ;enable escape generation
+                ldy #0          ;write
+                jmp osbyte
+                
 ;-------------------------------------------------------------------------
 
 ed_oscli_prompt: .proc
@@ -3427,11 +3530,7 @@ ed_oscli_prompt: .proc
                 jsr ed_print_brk_message
                 jsr osnewl
 brk_checked:
-
-                lda #$e5        ;escape status (D.2-75)
-                ldx #0          ;enable escape generation
-                ldy #0          ;write
-                jsr osbyte
+                jsr ed_enable_escape
                 
                 lda #<ed_oscli_prompt
                 sta ed_post_brk_loop+0
@@ -4072,12 +4171,12 @@ ed_brk_handler: .proc
 ;       ed_brk_addr?1 = 0
 ; Preserves: X
 ed_print_brk_message: .proc
-                lda ed_brk_addr+1
-                jsr ed_print_hex
-                lda ed_brk_addr+0
-                jsr ed_print_hex
-                jsr ed_print
-                .text ': ',0
+                ; lda ed_brk_addr+1
+                ; jsr ed_print_hex
+                ; lda ed_brk_addr+0
+                ; jsr ed_print_hex
+                ; jsr ed_print
+                ; .text ': ',0
                 
                 ldy #1
 loop:

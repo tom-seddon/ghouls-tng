@@ -71,28 +71,9 @@ object_var2s:
 gmc_start:
                 
                 .if editor
+                ; C64 files don't have separate load and exec
+                ; addresses.
                 jmp ed_entry
-                .byte 0
-                ; ; For use from BASIC. These are absolutely not in any
-                ; ; rational order.
-                ; .dword ed_test                            ;+4
-                ; .dword ed_read_level                      ;+8
-                ; .dword ed_read_addr                       ;+12
-                ; .dword ed_level_addr                      ;+16
-                ; .dword ed_write_addr                      ;+20
-                ; .dword ed_get_screen_write_addr           ;+24
-                ; .dword ed_draw_level                      ;+28
-                ; .dword ed_place_ltype                      ;+32
-                ; .dword ed_draw_ltype                      ;+36
-                ; .dword ed_erase_ltype                     ;+40
-                ; .dword ed_get_item_speed                  ;+44
-                ; .dword ed_get_next_ltype                  ;+48
-                ; .dword ed_set_pl_start                    ;+52
-                ; .dword ed_get_num_otype_create_parameters ;+56
-                ; .dword len(otypes)                        ;+60
-                ; .dword ed_scan_keys                       ;+64
-                ; .dword ed_scan_keys.counters              ;+68
-                ; .dword ed_scan_keys.any_pressed           ;+72
                 .endif
 
 sprite_blank:
@@ -439,766 +420,6 @@ otypes_otype_flags:
                 .byte otypes.otype_flags
 otypes_ed_flags: .proc
                 .byte otypes.ed_flags
-                .endproc
-
-;-------------------------------------------------------------------------
-
-; Entry: A=ltype
-; Exit: X=otype
-;       A=create parameter
-; Preserves: Y
-ed_find_otype: .proc
-                ldx #len(otypes)-1
-loop:
-                cmp otypes_ltype_end,x
-                bcs next
-                cmp otypes_ltype_begin,x
-                bcc next
-                
-                sbc otypes_ltype_begin,x
-                rts
-
-next:
-                dex
-                bpl loop
-
-                ; Assume it was the blank entry...
-                inx             ;X=0
-                txa             ;A=0
-                rts
-                .endproc
-
-;-------------------------------------------------------------------------
-
-; Entry: X=otype
-;        A=create parameter
-; Exit: A=ltype
-ed_pack_ltype: .proc
-                clc
-                adc otypes_ltype_begin,x
-
-                ; Clamp. Be vaguely resilient.
-                cmp otypes_ltype_begin,x
-                bcc min
-
-                cmp otypes_ltype_end,x
-                bcc done
-
-                lda otypes_ltype_end,x
-done:
-                rts
-
-min:
-                lda otypes_ltype_begin,x
-                rts
-                .endproc
-
-;-------------------------------------------------------------------------
-
-ed_set_pl_start: .proc
-                tya
-                ldy #LevelData.pl_start_y
-                sta (ed_level_addr),y
-
-                txa
-                ldy #LevelData.pl_start_x
-                sta (ed_level_addr),y
-                rts
-                .endproc
-                
-;-------------------------------------------------------------------------
-
-ed_get_pl_start: .proc
-                ldy #LevelData.pl_start_x
-                lda (ed_level_addr),y
-                tax
-
-                ldy #LevelData.pl_start_y
-                lda (ed_level_addr),y
-                tay
-                rts
-                .endproc
-
-;-------------------------------------------------------------------------
-
-; Entry: A=otype
-; Return: A=max oarg
-
-ed_get_num_otype_create_parameters: .proc
-                tax
-                cpx #len(otypes)
-                bcs none
-
-                sec
-                lda otypes_ltype_end,x
-                sbc otypes_ltype_begin,x
-                rts
-
-none:
-                lda #0
-                rts
-                .endproc
-
-;-------------------------------------------------------------------------
-                
-ed_test: .proc
-                jsr reset_envelopes
-                
-                lda ed_level_addr+0
-                sta level_draw_ptr+0
-                lda ed_level_addr+1
-                sta level_draw_ptr+1
-                
-                lda #12
-                jsr oswrch
-
-                ; Set up player start pos.
-                jsr ed_get_pl_start
-                ; Adjust for editor vs game positioning.
-                iny
-                iny
-                iny
-                iny
-                jsr ed_get_screen_write_addr
-                lda ed_write_addr+0
-                sta player_addr+0
-                lda ed_write_addr+1
-                sta player_addr+1
-
-                ; ; Default player start pos
-                ; lda #$00
-                ; sta player_addr+0
-                ; lda #$7A
-                ; sta player_addr+1
-
-                ldx #0          ;no ghosts
-                jsr entry_init_level
-
-                ; Reset ghosts table
-                ldx #7
--
-                lda #0
-                sta ghosts_table,x
-                dex
-                bpl -
-                
-                ; ; ???
-                ; lda #0
-                ; sta L0084
-
-                ; Whatever was behind player previously
-                ldy #31
--
-                lda (player_addr),y
-                sta L0DDE,y
-                dey
-                bpl -
-
-                ; Initial bonus and score
-                ldx #4
--
-                lda initial_score,x
-                sta score_chars,x
-                dex
-                bpl -
-
-                lda initial_bonus+0
-                sta bonus_chars+0
-                lda initial_bonus+1
-                sta bonus_chars+1
-
-                ; Copy level name
-
-                lda #<1279
-                sta level_name_x+0
-                lda #>1279
-                sta level_name_x+1
-                
-                ldy #LevelData.name
-                ldx #0
-name_len_loop:
-                lda (ed_level_addr),y
-                sta level_name,x
-                cmp #13
-                beq +
-
-                sec
-                lda level_name_x+0
-                sbc #64
-                sta level_name_x+0
-                bcs +
-                dec level_name_x+1
-+
-                iny
-                inx
-                cpx #17
-                bne name_len_loop
-
-                jsr ed_print
-
-                ; GCOL 0,1
-                .byte 18,0,1
-
-                ; VDU 5
-                .byte 5
-
-                ; MOVE ???,1023-30*32
-                .byte 25,4
-level_name_x:
-                .word 0
-                .word 28
-
-                ; Space for level name. Any embedded CRs are copied
-                ; too... VDU 5, so whatever.
-level_name:
-                .fill 17,'x'
-
-                ; VDU 4
-                .byte 4
-
-                ; MOVE 0,60
-                .byte 25,4
-                .word 0,60
-
-                ; DRAW 0,952
-                .byte 25,5
-                .word 0,952
-
-                ; MOVE 1279,60
-                .byte 25,4
-                .word 1279,60
-
-                ; DRAW 1279,952
-                .byte 25,5
-                .word 1279,952
-
-                ; MOVE 1080,800
-                .byte 25,4
-                .word 1080,800
-                
-                ; DRAW 1080,860
-                .byte 25,5
-                .word 1080,860
-                
-                ; GCOL 0,2
-                .byte 18,0,2
-                
-                ; MOVE 0,952
-                .byte 25,4
-                .word 0,952
-                
-                ; PLOT 21,1279,952
-                .byte 25,21
-                .word 1279,952
-                
-                ; MOVE 1092,864
-                .byte 25,4
-                .word 1092,864
-                
-                ; DRAW 1270,864
-                .byte 25,5
-                .word 1270,864
-
-                ; COLOUR 1
-                .byte 17,1
-
-                ; PRINT TAB(14,1)
-                .byte 31,14,1
-
-                ; "BONUS"
-                .byte 240,241,242
-
-                ; COLOUR 2
-                .byte 17,2
-
-                ; PRINT TAB(0,1)
-                .byte 31,0,1
-
-                ; Default score
-initial_score:
-                .byte 230,230,230,230,230
-
-                ; PRINT TAB(18,1)
-                .byte 31,18,1
-
-                ; Default bonus chars
-initial_bonus:
-                .byte 235,230
-
-                .byte 0
-
-                ; VDU 4 switches the cursor back on.
-                jsr ed_coff
-                
-                jsr entry_game_2
-
-                ; Flush all buffers.
-                lda #15
-                ldx #0
-                jsr osbyte
-                rts
-                
-entry_game_2:
-                jsr entry_game
-                rts
-
-                .endproc
-                
-;-------------------------------------------------------------------------
-
-ed_draw_level: .proc
-
-                lda #19
-                jsr oswrch
-                lda #3
-                jsr oswrch
-                ldy #LevelData.colour3
-                lda (ed_level_addr),y
-                jsr oswrch
-                lda #0
-                jsr oswrch
-                jsr oswrch
-                jsr oswrch
-
-                lda #0
-                sta yc
-y_loop:
-                lda #0
-                sta xc
-x_loop:
-                ldx xc
-                ldy yc
-                jsr ed_read_level
-                
-                ldx xc
-                ldy yc
-                jsr ed_draw_ltype
-
-                inc xc
-                lda xc
-                cmp #level_width
-                bne x_loop
-
-                inc yc
-                lda yc
-                cmp #level_height
-                bne y_loop
-
-                ; Ick. Special case :(
-                jsr ed_get_pl_start
-                jsr ed_get_screen_write_addr
-                
-                ldy #15
--
-                lda sprite_pl_facing,y
-                sta (ed_write_addr),y
-                dey
-                bpl -
-                jsr ed_next_write_addr_screen_row
-                ldy #15
--
-                lda sprite_pl_facing+16,y
-                sta (ed_write_addr),y
-                dey
-                bpl -
-                rts
-
-xc: .byte 0
-yc: .byte 0
-                .endproc
-
-;-------------------------------------------------------------------------
-
-ed_next_write_addr_screen_row: .proc
-                clc
-                lda ed_write_addr+0
-                adc #$40
-                sta ed_write_addr+0
-                lda ed_write_addr+1
-                adc #$01
-                sta ed_write_addr+1
-                rts
-                .endproc
-
-;-------------------------------------------------------------------------
-
-ed_add16z: .proc
-                clc
-                adc 0,x
-                sta 0,x
-                bcc +
-                inc 1,x
-+
-                rts
-                .endproc
-
-;-------------------------------------------------------------------------
-
-ed_place_ltype: .proc
-                pha
-                jsr ed_read_level
-                jsr ed_erase_ltype
-                pla
-
-                pha
-                jsr ed_write_level
-                pla
-                
-                ; Assume the old item was 2x2 and the new is 1x1.
-                jsr ed_draw_ltype
-
-                inx
-                jsr ed_read_level
-                bcs +           ;taken if (X+1,Y+0) is out of bounds
-                jsr ed_draw_ltype
-+
-                dex
-
-                iny
-                jsr ed_read_level
-                bcs +           ;taken if (X+0,Y+1) is out of bounds
-                jsr ed_draw_ltype
-
-                ; since (X+1,Y+0) wasn't out of bounds, and (X+0,Y+1)
-                ; wasn't out of bounds, (X+1,Y+1) isn't out of bounds
-                ; either.
-                inx
-                jsr ed_read_level
-                jsr ed_draw_ltype
-+
-                rts
-                .endproc
-
-;-------------------------------------------------------------------------
-;
-; entry: A = ltype
-;        C = 0 to increment
-;            1 to decrement
-;
-; exit: A = new ltype
-                
-ed_get_next_ltype: .proc
-                .cerror type_index_max>=256,'needs a rethink'
-                
-                bcs sub
-add:
-                adc #1
-                cmp #type_index_max
-                bcc +
-                lda #0
-+
-                rts
-
-sub:
-                sbc #1
-                cmp #type_index_max
-                bcc +
-                lda #type_index_max-1
-+
-                rts
-                .endproc
-                
-;-------------------------------------------------------------------------
-;
-; entry: A = object index
-;
-; exit: C = 0: A = object speed
-;       C = 1: object has no speed
-;
-ed_get_item_speed: .proc
-                tay
-                ldx #indexes_end-indexes-1
-loop:
-                tya
-                sec
-                sbc indexes,x
-                cmp #num_speeds
-                bcc got
-                dex
-                bpl loop
-                sec
-got:
-                rts
-                
-indexes:
-                .byte type_platform.index
-                .byte type_spider.index
-                .byte type_spider2.index
-indexes_end:
-                .endproc
-                
-;-------------------------------------------------------------------------
-
-ed_draw_ltype: .proc
-                clc             ;drawing
-                jmp ed_draw_or_erase_ltype
-                .endproc
-
-;-------------------------------------------------------------------------
-
-ed_erase_ltype: .proc
-                sec             ;erasing
-                jmp ed_draw_or_erase_ltype
-                .endproc
-
-;-------------------------------------------------------------------------
-
-ed_draw_otype: .proc
-                clc             ;drawing
-                jmp ed_draw_or_erase_otype
-                .endproc
-
-ed_erase_otype: .proc
-                sec             ;erasing
-                jmp ed_draw_or_erase_otype
-                .endproc
-                
-;-------------------------------------------------------------------------
-
-; preserves X/Y
-ed_draw_or_erase_ltype: .proc
-                ror ed_draw_or_erase_otype.erasing       ;bit 7 set if erasing
-                stx ed_draw_or_erase_otype.xc
-                sty ed_draw_or_erase_otype.yc
-
-                jsr ed_find_otype
-                jmp ed_draw_or_erase_otype.common
-                .endproc
-
-; presrves X/Y
-ed_draw_or_erase_otype: .proc
-                ror erasing
-                stx xc
-                sty yc
-                
-                tax             ;X=otype
-common:
-                lda otypes_otype_flags,x
-                sta otype_flags
-                lda otypes_ed_flags,x
-                sta ed_flags
-                lda otypes_sprite_data_lo,x
-                sta ed_read_addr+0
-                lda otypes_sprite_data_hi,x
-                sta ed_read_addr+1
-
-                jsr row
-
-                lda otype_flags
-                and #otype_flags_height2
-                beq done        ;taken if height=1
-
-                ; lda yc
-                ; cmp #level_height-1
-                ; beq done
-
-                inc yc
-                jsr row
-                dec yc
-
-done:
-                ldx xc
-                ldy yc
-                rts
-                
-row:
-                ldx xc
-                ldy yc
-                jsr ed_get_screen_write_addr
-                
-                jsr do_item_part
-
-                lda otype_flags
-                and #otype_flags_width2
-                beq row_done    ;taken if width=1
-
-                ; lda xc
-                ; cmp #level_width-1
-                ; beq row_done
-
-do_item_part:
-                ldy #15
-                lda #0
-                bit erasing
-                bmi erase_part_loop ;taken if erasing
-
-                ; The blank item doesn't overwrite. 
-                lda ed_read_addr+0
-                ora ed_read_addr+1
-                beq next_column
-                
-                ldx #0          ;Unmasked mask
-                lda ed_flags
-                and #ed_flags_masked
-                beq +           ;taken if unmasked
-                ldx #2          ;Masked mask
-+
-part_loop:
-                lda (ed_read_addr),y
-                and masks+0,x
-                sta (ed_write_addr),y
-                dey
-
-                lda (ed_read_addr),y
-                and masks+1,x
-                sta (ed_write_addr),y
-                dey
-
-                bpl part_loop
-
-next_part:
-                lda #16
-                ldx #ed_read_addr
-                jsr ed_add16z
-
-next_column:
-                lda #16
-                ldx #ed_write_addr
-                jsr ed_add16z
-
-row_done:
-                rts
-                
-erase_part_loop:
-                sta (ed_write_addr),y
-                dey
-                bpl erase_part_loop
-                bmi next_part
-
-masks:
-                .byte $ff,$ff   ;unmasked
-                .byte $ff,$00   ;masked
-
-erasing:
-                .byte 0
-xc:
-                .byte 0
-yc:
-                .byte 0                
-otype_flags:
-                .byte 0
-ed_flags:
-                .byte 0
-                .endproc
-                
-;-------------------------------------------------------------------------
-
-; preserves X/Y
-ed_get_screen_write_addr: .proc
-                lda #0
-                sta ed_write_addr+0
-
-                sty ed_write_addr+1 ;*256
-
-                tya
-                lsr a               ;>*128
-                ror ed_write_addr+0 ;<*128
-                lsr a               ;>*64
-                ror ed_write_addr+0 ;<*64 (C=0)
-                
-                adc ed_write_addr+1
-                sta ed_write_addr+1
-
-                txa
-                asl a           ;*2 (0-38)
-                asl a           ;*4 (0-76)
-                asl a           ;*8 (0-152)
-                asl a           ;*16 (0-304)
-                bcc +
-                inc ed_write_addr+1 ;definitely needed
-+
-                clc
-                adc ed_write_addr+0
-                sta ed_write_addr+0
-                bcc +
-                inc ed_write_addr+1
-+
-
-                ; The editor screen starts at (0,0).
-                clc
-                lda ed_write_addr+1
-                adc #$58
-                sta ed_write_addr+1
-                rts
-                .endproc
-
-;-------------------------------------------------------------------------
-
-; preserves X/Y
-ed_read_level: .proc
-                sty reload_y+1
-                jsr ed_prepare_for_level_map_access
-                lda (ed_read_addr),y
-reload_y: ldy #$ff
-                rts
-                .endproc
-
-;-------------------------------------------------------------------------
-
-; preserves A/X/Y
-ed_write_level: .proc
-                sty reload_y+1
-                pha
-                jsr ed_prepare_for_level_map_access
-                pla
-                sta (ed_read_addr),y ;hmm
-reload_y: ldy #$ff
-                rts
-                .endproc
-
-;-------------------------------------------------------------------------
-
-; sets things up so that (ed_read_addr),Y will access the appropriate
-; value in the level.
-;
-; Returns with C=1 if access out of bounds.
-;
-; preserves X.
-ed_prepare_for_level_map_access: .proc
-                cpx #level_width
-                bcs done
-                cpy #level_height
-                bcs done
-
-                lda #0
-                sta ed_read_addr+1
-
-                ; Y*16
-                tya
-                asl a           ;*2 - 0-50
-                asl a           ;*4 - 0-100
-                asl a           ;*8 - 0-200
-                rol ed_read_addr+1
-                asl a           ;*16 - 0-400
-                rol ed_read_addr+1
-                sta ed_read_addr+0
-
-                ; Y*16+Y*4 = Y*20
-                tya
-                asl a           ;*2
-                asl a           ;*4 (C=0)
-                adc ed_read_addr+0
-                sta ed_read_addr+0
-                bcc +
-                inc ed_read_addr+1
-+
-
-                clc
-                lda ed_read_addr+0
-                adc ed_level_addr+0
-                sta ed_read_addr+0
-                lda ed_read_addr+1
-                adc ed_level_addr+1
-                sta ed_read_addr+1
-
-                ; This is stupid, but it's going to be too confusing
-                ; to call from BASIC otherwise.
-                txa
-                clc
-                adc #LevelData.map
-                tay
-done:
-                rts
                 .endproc
 
 ;-------------------------------------------------------------------------
@@ -3855,6 +3076,749 @@ move_down:
 
 ;-------------------------------------------------------------------------
 ;
+; Split ltype into otype and create parameter.
+; 
+; Entry: A=ltype
+; Exit: X=otype
+;       A=create parameter
+; Preserves: Y
+ed_find_otype: .proc
+                ldx #len(otypes)-1
+loop:
+                cmp otypes_ltype_end,x
+                bcs next
+                cmp otypes_ltype_begin,x
+                bcc next
+                
+                sbc otypes_ltype_begin,x
+                rts
+
+next:
+                dex
+                bpl loop
+
+                ; Assume it was the blank entry...
+                inx             ;X=0
+                txa             ;A=0
+                rts
+                .endproc
+
+;-------------------------------------------------------------------------
+;
+; Pack otype and create parameter into ltype.
+; 
+; Entry: X=otype
+;        A=create parameter
+; Exit: A=ltype
+ed_pack_ltype: .proc
+                clc
+                adc otypes_ltype_begin,x
+
+                ; Clamp. Be vaguely resilient.
+                cmp otypes_ltype_begin,x
+                bcc min
+
+                cmp otypes_ltype_end,x
+                bcc done
+
+                lda otypes_ltype_end,x
+done:
+                rts
+
+min:
+                lda otypes_ltype_begin,x
+                rts
+                .endproc
+
+;-------------------------------------------------------------------------
+;
+; Get player start pos.
+;
+; Entry: ed_level_addr = address of level
+; Exit: X = player start X (0-19)
+;       Y = player start Y (0-25)
+ed_get_pl_start: .proc
+                ldy #LevelData.pl_start_x
+                lda (ed_level_addr),y
+                tax
+
+                ldy #LevelData.pl_start_y
+                lda (ed_level_addr),y
+                tay
+                rts
+                .endproc
+
+;-------------------------------------------------------------------------
+;
+; Get number of possible create parameters for the given otype. Valid
+; create parameters start at 0.
+; 
+; Entry: A = otype
+; Return: A = number of valid create parameters
+ed_get_num_otype_create_parameters: .proc
+                tax
+                cpx #len(otypes)
+                bcs none
+
+                sec
+                lda otypes_ltype_end,x
+                sbc otypes_ltype_begin,x
+                rts
+
+none:
+                lda #0
+                rts
+                .endproc
+
+;-------------------------------------------------------------------------
+;
+; Test current level.
+;
+; Entry: ed_level_addr = address of level
+ed_test: .proc
+                jsr reset_envelopes
+                
+                lda ed_level_addr+0
+                sta level_draw_ptr+0
+                lda ed_level_addr+1
+                sta level_draw_ptr+1
+                
+                lda #12
+                jsr oswrch
+
+                ; Set up player start pos.
+                jsr ed_get_pl_start
+                ; Adjust for editor vs game positioning.
+                iny
+                iny
+                iny
+                iny
+                jsr ed_get_screen_write_addr
+                lda ed_write_addr+0
+                sta player_addr+0
+                lda ed_write_addr+1
+                sta player_addr+1
+
+                ; ; Default player start pos
+                ; lda #$00
+                ; sta player_addr+0
+                ; lda #$7A
+                ; sta player_addr+1
+
+                ldx #0          ;no ghosts
+                jsr entry_init_level
+
+                ; Reset ghosts table
+                ldx #7
+-
+                lda #0
+                sta ghosts_table,x
+                dex
+                bpl -
+                
+                ; ; ???
+                ; lda #0
+                ; sta L0084
+
+                ; Whatever was behind player previously
+                ldy #31
+-
+                lda (player_addr),y
+                sta L0DDE,y
+                dey
+                bpl -
+
+                ; Initial bonus and score
+                ldx #4
+-
+                lda initial_score,x
+                sta score_chars,x
+                dex
+                bpl -
+
+                lda initial_bonus+0
+                sta bonus_chars+0
+                lda initial_bonus+1
+                sta bonus_chars+1
+
+                ; Copy level name
+
+                lda #<1279
+                sta level_name_x+0
+                lda #>1279
+                sta level_name_x+1
+                
+                ldy #LevelData.name
+                ldx #0
+name_len_loop:
+                lda (ed_level_addr),y
+                sta level_name,x
+                cmp #13
+                beq +
+
+                sec
+                lda level_name_x+0
+                sbc #64
+                sta level_name_x+0
+                bcs +
+                dec level_name_x+1
++
+                iny
+                inx
+                cpx #17
+                bne name_len_loop
+
+                jsr ed_print
+
+                ; GCOL 0,1
+                .byte 18,0,1
+
+                ; VDU 5
+                .byte 5
+
+                ; MOVE ???,1023-30*32
+                .byte 25,4
+level_name_x:
+                .word 0
+                .word 28
+
+                ; Space for level name. Any embedded CRs are copied
+                ; too... VDU 5, so whatever.
+level_name:
+                .fill 17,'x'
+
+                ; VDU 4
+                .byte 4
+
+                ; MOVE 0,60
+                .byte 25,4
+                .word 0,60
+
+                ; DRAW 0,952
+                .byte 25,5
+                .word 0,952
+
+                ; MOVE 1279,60
+                .byte 25,4
+                .word 1279,60
+
+                ; DRAW 1279,952
+                .byte 25,5
+                .word 1279,952
+
+                ; MOVE 1080,800
+                .byte 25,4
+                .word 1080,800
+                
+                ; DRAW 1080,860
+                .byte 25,5
+                .word 1080,860
+                
+                ; GCOL 0,2
+                .byte 18,0,2
+                
+                ; MOVE 0,952
+                .byte 25,4
+                .word 0,952
+                
+                ; PLOT 21,1279,952
+                .byte 25,21
+                .word 1279,952
+                
+                ; MOVE 1092,864
+                .byte 25,4
+                .word 1092,864
+                
+                ; DRAW 1270,864
+                .byte 25,5
+                .word 1270,864
+
+                ; COLOUR 1
+                .byte 17,1
+
+                ; PRINT TAB(14,1)
+                .byte 31,14,1
+
+                ; "BONUS"
+                .byte 240,241,242
+
+                ; COLOUR 2
+                .byte 17,2
+
+                ; PRINT TAB(0,1)
+                .byte 31,0,1
+
+                ; Default score
+initial_score:
+                .byte 230,230,230,230,230
+
+                ; PRINT TAB(18,1)
+                .byte 31,18,1
+
+                ; Default bonus chars
+initial_bonus:
+                .byte 235,230
+
+                .byte 0
+
+                ; VDU 4 switches the cursor back on.
+                jsr ed_coff
+                
+                jsr entry_game_2
+
+                ; Flush all buffers.
+                lda #15
+                ldx #0
+                jsr osbyte
+                rts
+                
+entry_game_2:
+                jsr entry_game
+                rts
+
+                .endproc
+                
+;-------------------------------------------------------------------------
+;
+; Draw current level.
+;
+; Entry: ed_level_addr = current level
+ed_draw_level: .proc
+
+                lda #19
+                jsr oswrch
+                lda #3
+                jsr oswrch
+                ldy #LevelData.colour3
+                lda (ed_level_addr),y
+                jsr oswrch
+                lda #0
+                jsr oswrch
+                jsr oswrch
+                jsr oswrch
+
+                lda #0
+                sta yc
+y_loop:
+                lda #0
+                sta xc
+x_loop:
+                ldx xc
+                ldy yc
+                jsr ed_read_level
+                
+                ldx xc
+                ldy yc
+                jsr ed_draw_ltype
+
+                inc xc
+                lda xc
+                cmp #level_width
+                bne x_loop
+
+                inc yc
+                lda yc
+                cmp #level_height
+                bne y_loop
+
+                ; Ick. Special case :(
+                jsr ed_get_pl_start
+                jsr ed_get_screen_write_addr
+                
+                ldy #15
+-
+                lda sprite_pl_facing,y
+                sta (ed_write_addr),y
+                dey
+                bpl -
+                jsr ed_next_write_addr_screen_row
+                ldy #15
+-
+                lda sprite_pl_facing+16,y
+                sta (ed_write_addr),y
+                dey
+                bpl -
+                rts
+
+xc: .byte 0
+yc: .byte 0
+                .endproc
+
+;-------------------------------------------------------------------------
+
+ed_place_ltype: .proc
+                pha
+                jsr ed_read_level
+                jsr ed_erase_ltype
+                pla
+
+                pha
+                jsr ed_write_level
+                pla
+                
+                ; Assume the old item was 2x2 and the new is 1x1.
+                jsr ed_draw_ltype
+
+                inx
+                jsr ed_read_level
+                bcs +           ;taken if (X+1,Y+0) is out of bounds
+                jsr ed_draw_ltype
++
+                dex
+
+                iny
+                jsr ed_read_level
+                bcs +           ;taken if (X+0,Y+1) is out of bounds
+                jsr ed_draw_ltype
+
+                ; since (X+1,Y+0) wasn't out of bounds, and (X+0,Y+1)
+                ; wasn't out of bounds, (X+1,Y+1) isn't out of bounds
+                ; either.
+                inx
+                jsr ed_read_level
+                jsr ed_draw_ltype
++
+                rts
+                .endproc
+
+;-------------------------------------------------------------------------
+;
+; Draw an object, given the ltype.
+;
+; Entry: A = ltype
+;        X = X coordinate (0-19)
+;        Y = Y coordinate (0-25)
+; Preserves: X/Y
+ed_draw_ltype: .proc
+                clc             ;drawing
+                jmp ed_draw_or_erase_ltype
+                .endproc
+
+;-------------------------------------------------------------------------
+;
+; Erase an object, given the ltype.
+;
+; Entry: A = ltype
+;        X = X coordinate (0-19)
+;        Y = Y coordinate (0-25)
+; Preserves: X/Y
+ed_erase_ltype: .proc
+                sec             ;erasing
+                jmp ed_draw_or_erase_ltype
+                .endproc
+
+;-------------------------------------------------------------------------
+;
+; Draw an object, given the otype.
+;
+; Entry: A = ltype
+;        X = X coordinate (0-19)
+;        Y = Y coordinate (0-25)
+; Preserves: X/Y
+ed_draw_otype: .proc
+                clc             ;drawing
+                jmp ed_draw_or_erase_otype
+                .endproc
+
+;-------------------------------------------------------------------------
+;
+; Erase an object, given the otype.
+;
+; Entry: A = ltype
+;        X = X coordinate (0-19)
+;        Y = Y coordinate (0-25)
+; Preserves: X/Y
+ed_erase_otype: .proc
+                sec             ;erasing
+                jmp ed_draw_or_erase_otype
+                .endproc
+                
+;-------------------------------------------------------------------------
+;
+; Draw or erase an object, given the ltype.
+;
+; Entry: A = ltype
+;        X = X coordinate (0-19)
+;        Y = Y coordinate (0-25)
+;        C = 0 to draw, 1 to erase
+; Preserves: X/Y
+ed_draw_or_erase_ltype: .proc
+                ror ed_draw_or_erase_otype.erasing       ;bit 7 set if erasing
+                stx ed_draw_or_erase_otype.xc
+                sty ed_draw_or_erase_otype.yc
+
+                jsr ed_find_otype
+                jmp ed_draw_or_erase_otype.common
+                .endproc
+
+;-------------------------------------------------------------------------
+;
+; Draw or erase an object, given the ltype.
+;
+; Entry: A = ltype
+;        X = X coordinate (0-19)
+;        Y = Y coordinate (0-25)
+;        C = 0 to draw, 1 to erase
+; Preserves: X/Y
+ed_draw_or_erase_otype: .proc
+                ror erasing
+                stx xc
+                sty yc
+                
+                tax             ;X=otype
+common:
+                lda otypes_otype_flags,x
+                sta otype_flags
+                lda otypes_ed_flags,x
+                sta ed_flags
+                lda otypes_sprite_data_lo,x
+                sta ed_read_addr+0
+                lda otypes_sprite_data_hi,x
+                sta ed_read_addr+1
+
+                jsr row
+
+                lda otype_flags
+                and #otype_flags_height2
+                beq done        ;taken if height=1
+
+                ; lda yc
+                ; cmp #level_height-1
+                ; beq done
+
+                inc yc
+                jsr row
+                dec yc
+
+done:
+                ldx xc
+                ldy yc
+                rts
+                
+row:
+                ldx xc
+                ldy yc
+                jsr ed_get_screen_write_addr
+                
+                jsr do_item_part
+
+                lda otype_flags
+                and #otype_flags_width2
+                beq row_done    ;taken if width=1
+
+                ; lda xc
+                ; cmp #level_width-1
+                ; beq row_done
+
+do_item_part:
+                ldy #15
+                lda #0
+                bit erasing
+                bmi erase_part_loop ;taken if erasing
+
+                ; The blank item doesn't overwrite. 
+                lda ed_read_addr+0
+                ora ed_read_addr+1
+                beq next_column
+                
+                ldx #0          ;Unmasked mask
+                lda ed_flags
+                and #ed_flags_masked
+                beq +           ;taken if unmasked
+                ldx #2          ;Masked mask
++
+part_loop:
+                lda (ed_read_addr),y
+                and masks+0,x
+                sta (ed_write_addr),y
+                dey
+
+                lda (ed_read_addr),y
+                and masks+1,x
+                sta (ed_write_addr),y
+                dey
+
+                bpl part_loop
+
+next_part:
+                lda #16
+                ldx #ed_read_addr
+                jsr ed_add16z
+
+next_column:
+                lda #16
+                ldx #ed_write_addr
+                jsr ed_add16z
+
+row_done:
+                rts
+                
+erase_part_loop:
+                sta (ed_write_addr),y
+                dey
+                bpl erase_part_loop
+                bmi next_part
+
+masks:
+                .byte $ff,$ff   ;unmasked
+                .byte $ff,$00   ;masked
+
+erasing:
+                .byte 0
+xc:
+                .byte 0
+yc:
+                .byte 0                
+otype_flags:
+                .byte 0
+ed_flags:
+                .byte 0
+                .endproc
+                
+;-------------------------------------------------------------------------
+;
+; Set ed_write_addr to the screen address for a given X/Y coordinate.
+;
+; Entry: X = X coordinate (0-19)
+;        Y = Y coordinate (0-25)
+; Exit: ed_write_addr = screen address
+; Preserves: X/Y
+ed_get_screen_write_addr: .proc
+                lda #0
+                sta ed_write_addr+0
+
+                sty ed_write_addr+1 ;*256
+
+                tya
+                lsr a               ;>*128
+                ror ed_write_addr+0 ;<*128
+                lsr a               ;>*64
+                ror ed_write_addr+0 ;<*64 (C=0)
+                
+                adc ed_write_addr+1
+                sta ed_write_addr+1
+
+                txa
+                asl a           ;*2 (0-38)
+                asl a           ;*4 (0-76)
+                asl a           ;*8 (0-152)
+                asl a           ;*16 (0-304)
+                bcc +
+                inc ed_write_addr+1 ;definitely needed
++
+                clc
+                adc ed_write_addr+0
+                sta ed_write_addr+0
+                bcc +
+                inc ed_write_addr+1
++
+
+                ; The editor screen starts at (0,0).
+                clc
+                lda ed_write_addr+1
+                adc #$58
+                sta ed_write_addr+1
+                rts
+                .endproc
+
+;-------------------------------------------------------------------------
+;
+; Read value from level map.
+;
+; Entry: ed_level_addr = address of level
+;        X = X coordinate (0-19)
+;        Y = Y coordinate (0-25)
+; Exit: A = value read from map
+; Preserves: X/Y
+ed_read_level: .proc
+                sty reload_y+1
+                jsr ed_prepare_for_level_map_access
+                lda (ed_read_addr),y
+reload_y: ldy #$ff
+                rts
+                .endproc
+
+;-------------------------------------------------------------------------
+;
+; Write value to level map.
+;
+; Entry: ed_level_addr = address of level
+;        A = value to write
+;        X = X coordinate (0-19)
+;        Y = Y coordinate (0-25)
+; Preserves: A/X/Y
+ed_write_level: .proc
+                sty reload_y+1
+                pha
+                jsr ed_prepare_for_level_map_access
+                pla
+                sta (ed_read_addr),y ;hmm
+reload_y: ldy #$ff
+                rts
+                .endproc
+
+;-------------------------------------------------------------------------
+; 
+; Sets things up so that (ed_read_addr),Y will access the appropriate
+; value in the level.
+;
+; Entry: ed_level_addr = address of level
+;        X = X coordinate (0-19)
+;        Y = Y coordinate (0-25)
+; Exit: ed_read_addr = address
+;       Y = offset for address
+;       C = 0 if valid coordinates, 1 if invalid coordinates
+; Preserves: X
+ed_prepare_for_level_map_access: .proc
+                cpx #level_width
+                bcs done
+                cpy #level_height
+                bcs done
+
+                lda #0
+                sta ed_read_addr+1
+
+                ; Y*16
+                tya
+                asl a           ;*2 - 0-50
+                asl a           ;*4 - 0-100
+                asl a           ;*8 - 0-200
+                rol ed_read_addr+1
+                asl a           ;*16 - 0-400
+                rol ed_read_addr+1
+                sta ed_read_addr+0
+
+                ; Y*16+Y*4 = Y*20
+                tya
+                asl a           ;*2
+                asl a           ;*4 (C=0)
+                adc ed_read_addr+0
+                sta ed_read_addr+0
+                bcc +
+                inc ed_read_addr+1
++
+
+                clc
+                lda ed_read_addr+0
+                adc ed_level_addr+0
+                sta ed_read_addr+0
+                lda ed_read_addr+1
+                adc ed_level_addr+1
+                sta ed_read_addr+1
+
+                ; This is stupid, but it's going to be too confusing
+                ; to call from BASIC otherwise.
+                txa
+                clc
+                adc #LevelData.map
+                tay
+done:
+                rts
+                .endproc
+
+
+;-------------------------------------------------------------------------
+;
 ; Set cursor on (con) or off (coff)
 ;
 ; Preserves: X
@@ -3933,14 +3897,14 @@ ed_box: .proc
                 ldy #6
                 jsr shlzbw
                 lda #63
-                jsr addbzw
+                jsr ed_add16z
 
                 ; 1023-(y1*32+31)
                 ldx #ed_box_y1
                 ldy #5
                 jsr shlzbw
                 lda #31
-                jsr addbzw
+                jsr ed_add16z
                 jsr rsub1023zw
 
                 lda #4
@@ -4005,15 +3969,6 @@ shlzbw:
                 bne -
                 rts
 
-addbzw:
-                clc
-                adc 0,x
-                sta 0,x
-                bcc +
-                inc 1,x
-+
-                rts
-                
                 .endproc
 
 ;-------------------------------------------------------------------------
@@ -4336,27 +4291,40 @@ ed_incz: .proc
                 rts
                 .endproc
 
-; ;-------------------------------------------------------------------------
-; ;
-; ; Shift zero page byte left N bits, producing a 16-bit result.
-; ;
-; ; Entry: X = zp address of byte
-; ;        Y = number of bits to shift (must be >0)
-; ; Exit: A = LSB of result
-; ;       ?ed_shl_msb = MSB of result
-; ; Preserves: X
+;-------------------------------------------------------------------------
+;
+; Add 320 to ed_write_addr, moving the address to the next screen row.
+;
+; Entry: ed_write_addr = address
+; Exit: ed_write_addr = address+320
+; Preserves: X/Y
+ed_next_write_addr_screen_row: .proc
+                clc
+                lda ed_write_addr+0
+                adc #$40
+                sta ed_write_addr+0
+                lda ed_write_addr+1
+                adc #$01
+                sta ed_write_addr+1
+                rts
+                .endproc
 
-; ed_shl: .proc
-;                 lda #0
-;                 sta ed_shl_msb
-;                 lda 0,x
-; loop:
-;                 asl a
-;                 rol ed_shl_msb
-;                 dey
-;                 bne loop
-;                 rts
-;                 .endproc
+;-------------------------------------------------------------------------
+;
+; Add an 8-bit value to a 16-bit zero page value.
+;
+; Entry: A = 8-bit value
+;        X = address of 16-bit value
+; Preserves: X/Y
+ed_add16z: .proc
+                clc
+                adc 0,x
+                sta 0,x
+                bcc +
+                inc 1,x
++
+                rts
+                .endproc
 
 ;-------------------------------------------------------------------------
 

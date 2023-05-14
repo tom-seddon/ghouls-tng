@@ -2,6 +2,16 @@
 
 ;-------------------------------------------------------------------------
 
+                .if editor
+*=$00
+ed_zp_begin:
+                .dsection ed_zp
+ed_zp_end:
+                .cerror *>$70,'ed_zp overflow'
+                .endif
+                
+;-------------------------------------------------------------------------
+
 player_addr=$70
 
 ; screen address for writing sprite
@@ -29,9 +39,6 @@ level_draw_ptr=$84
 ;L0084=$84
 L0085=$85
 level_draw_screen_addr=$86
-ed_read_addr=$88
-ed_level_addr=$8a
-ed_write_addr=$8c
                 
 ;-------------------------------------------------------------------------
 
@@ -64,27 +71,28 @@ object_var2s:
 gmc_start:
                 
                 .if editor
-                ; For use from BASIC. These are absolutely not in any
-                ; rational order.
-                .dword reset_envelopes                    ;+0
-                .dword ed_test                            ;+4
-                .dword ed_read_level                      ;+8
-                .dword ed_read_addr                       ;+12
-                .dword ed_level_addr                      ;+16
-                .dword ed_write_addr                      ;+20
-                .dword ed_get_screen_write_addr           ;+24
-                .dword ed_draw_level                      ;+28
-                .dword ed_place_item                      ;+32
-                .dword ed_draw_ltype                      ;+36
-                .dword ed_erase_ltype                     ;+40
-                .dword ed_get_item_speed                  ;+44
-                .dword ed_get_next_ltype                  ;+48
-                .dword ed_set_pl_start                    ;+52
-                .dword ed_get_num_otype_create_parameters ;+56
-                .dword len(otypes)                        ;+60
-                .dword ed_scan_keys                       ;+64
-                .dword ed_scan_keys.counters              ;+68
-                .dword ed_scan_keys.any_pressed           ;+72
+                jmp ed_entry
+                .byte 0
+                ; ; For use from BASIC. These are absolutely not in any
+                ; ; rational order.
+                ; .dword ed_test                            ;+4
+                ; .dword ed_read_level                      ;+8
+                ; .dword ed_read_addr                       ;+12
+                ; .dword ed_level_addr                      ;+16
+                ; .dword ed_write_addr                      ;+20
+                ; .dword ed_get_screen_write_addr           ;+24
+                ; .dword ed_draw_level                      ;+28
+                ; .dword ed_place_item                      ;+32
+                ; .dword ed_draw_ltype                      ;+36
+                ; .dword ed_erase_ltype                     ;+40
+                ; .dword ed_get_item_speed                  ;+44
+                ; .dword ed_get_next_ltype                  ;+48
+                ; .dword ed_set_pl_start                    ;+52
+                ; .dword ed_get_num_otype_create_parameters ;+56
+                ; .dword len(otypes)                        ;+60
+                ; .dword ed_scan_keys                       ;+64
+                ; .dword ed_scan_keys.counters              ;+68
+                ; .dword ed_scan_keys.any_pressed           ;+72
                 .endif
 
 sprite_blank:
@@ -532,75 +540,6 @@ none:
                 .endproc
 
 ;-------------------------------------------------------------------------
-
-ed_scan_keys: .proc
-
-                lda #0
-                sta any_pressed
-                
-                ldy #num_keys-1
-loop:
-                ldx table,y
-                bpl next
-
-                tya
-                pha
-
-                lda #$81
-                ldy #$ff
-                jsr osbyte
-                cpx #$ff        ;C=1 if pressed
-
-                pla
-                tay
-
-                bcs pressed
-
-                lda #0
-                beq store
-
-pressed:
-                lda #1
-                sta any_pressed
-                
-                ldx counters,y
-                cpx #$80        ;C=1 if bit 7 set
-                inx
-                txa
-                bcc store
-                ora #$80        ;suppress further zeros
-store:
-                sta counters,y
-next:
-                dey
-                bpl loop
-                rts
-
-table:
-                .byte 1
-                .byte 1
-                .byte 1
-                .byte 1
-                .byte inkey(key_slash)
-                .byte inkey(key_colon)
-                .byte inkey(key_x)
-                .byte inkey(key_z)
-                .byte inkey(key_delete)
-                .byte inkey(key_right)
-                .byte inkey(key_left)
-                .byte inkey(key_return)
-                .byte inkey(key_tab)
-                .byte inkey(key_r)
-                .byte inkey(key_s)
-num_keys=*-table
-
-any_pressed:
-                .byte 0       
-counters:
-                .fill num_keys,0
-                .endproc
-                
-;-------------------------------------------------------------------------
                 
 ed_test: .proc
                 stx level_draw_ptr+0
@@ -927,7 +866,7 @@ ed_draw_otype: .proc
                 .endproc
 
 ed_erase_otype: .proc
-                clc             ;erasing
+                sec             ;erasing
                 jmp ed_draw_or_erase_otype
                 .endproc
                 
@@ -1105,7 +1044,7 @@ ed_get_screen_write_addr: .proc
 ; preserves X/Y
 ed_read_level: .proc
                 sty reload_y+1
-                jsr ed_prepare_for_level_access
+                jsr ed_prepare_for_level_map_access
                 lda (ed_read_addr),y
 reload_y: ldy #$ff
                 rts
@@ -1117,7 +1056,7 @@ reload_y: ldy #$ff
 ed_write_level: .proc
                 sty reload_y+1
                 pha
-                jsr ed_prepare_for_level_access
+                jsr ed_prepare_for_level_map_access
                 pla
                 sta (ed_read_addr),y ;hmm
 reload_y: ldy #$ff
@@ -1132,7 +1071,7 @@ reload_y: ldy #$ff
 ; Returns with C=1 if access out of bounds.
 ;
 ; preserves X.
-ed_prepare_for_level_access: .proc
+ed_prepare_for_level_map_access: .proc
                 cpx #level_width
                 bcs done
                 cpy #level_height
@@ -3113,6 +3052,1037 @@ fill_row_loop:
                 bne slide_off_loop
                 rts
 
+;-------------------------------------------------------------------------
+                .if editor
+;-------------------------------------------------------------------------
+
+ed_keys=[key_z,key_x,key_slash,key_colon,key_return,key_delete,key_tab,key_r,key_s,key_escape,key_left,key_right,key_up,key_down]
+
+ed_key_index: .function k
+                .for _i:=0,_i<len(ed_keys),_i+=1
+                .breakif ed_keys[_i]==k
+                .endfor
+                .cerror _i==len(ed_keys),'key not found'
+                .endfunction _i
+                
+                .section ed_zp
+ed_read_addr: .fill 2
+ed_level_addr: .fill 2
+ed_write_addr: .fill 2
+ed_print_addr: .fill 2
+ed_brk_addr: .fill 2
+ed_box_mode: .fill 1            ;PLOT mode
+ed_box_x0: .fill 2
+ed_box_y0: .fill 2
+ed_box_x1: .fill 2
+ed_box_y1: .fill 2
+ed_cx: .fill 1
+ed_cy: .fill 1
+ed_new_otype: .fill 1
+                .endsection
+                
+ed_levels_header_magic:
+                .dword levels_header_magic
+
+ed_old_language_rom:
+                .byte 0
+
+ed_post_brk_loop:
+                .cerror (*&$ff)==$ff,'oh no'
+                .word 0
+ed_key_counters:
+                .fill len(ed_keys),0
+ed_any_keys_pressed:
+                .byte 0
+
+ed_new_ovalues:
+                .fill len(otypes),0
+
+;-------------------------------------------------------------------------
+
+ed_entry:
+                jsr ed_one_time_init
+                jmp ed_main_loop
+
+ed_main_loop: .proc
+                ldx #$ff
+                txs
+
+                lda #$7e        ;acknowledge Escape (D.2-37)
+                jsr osbyte
+
+                lda #$e5        ;escape key status (D.2-75)
+                ldx #1          ;make Escape generate ASCII
+                ldy #0          ;write
+                jsr osbyte
+                
+                lda #<ed_main_loop
+                sta ed_post_brk_loop+0
+                lda #>ed_main_loop
+                sta ed_post_brk_loop+1
+                
+                jmp ed_main_menu
+
+                jmp ed_shutdown
+                
+                .endproc
+
+;-------------------------------------------------------------------------
+
+ed_shutdown: .proc
+                lda #$8e        ;enter language ROM (D.2-44)
+                ldx ed_old_language_rom
+                jmp osbyte
+                .endproc
+                
+;-------------------------------------------------------------------------
+
+ed_main_menu: .proc
+                jsr ed_print
+
+                .text 22,7
+                .text 129,157,131,141,10,13,129,157,131,141
+                .text 31,12,0,"GHOULS: ARCHITECT"
+                .text 31,12,1,"GHOULS: ARCHITECT"
+                .text 31,0,3
+                .byte 0
+
+                lda ed_brk_addr+0
+                ora ed_brk_addr+1
+                beq brk_checked
+
+                jsr ed_print
+                .text 129,'Last error:',135
+                .byte 0
+                
+                jsr ed_print_brk_message
+                jsr osnewl
+                jsr osnewl
+brk_checked:
+                
+                ldy #0
+levels_loop:
+                tya
+                pha
+
+                jsr ed_prepare_for_level_access
+
+                clc
+                tya
+                adc #'1'
+                sta level_number_insert_1
+                sta level_number_insert_2
+
+                jsr ed_print
+                .byte 133
+level_number_insert_1:
+                .text 'X'
+                .text ':',131,'Edit level '
+level_number_insert_2:
+                .text 'X'
+                .text ' - ',134
+                .byte 0
+
+                ldy #LevelData.name
+print_name_loop:
+                lda (ed_level_addr),y
+                bmi printed_name
+                cmp #32
+                bcc printed_name
+                jsr oswrch
+                iny
+                cpy #LevelData.name+17
+                bne print_name_loop
+printed_name:
+
+                jsr osnewl
+
+                pla
+                tay
+                iny
+                cpy #4
+                bne levels_loop
+
+                jsr ed_print
+
+                .text 133,'L:',131,'Load levels',10,13
+                .text 133,'S:',131,'Save levels',10,13
+                .text 133,'*:',131,'* prompt',10,13
+                .byte 0
+
+input_loop:
+                lda #15         ;flush buffer (D.2-24)
+                ldx #1
+                jsr osbyte
+                
+                jsr osrdch
+                bcs escaped
+
+                cmp #'a'
+                bcc not_lower
+                cmp #'z'+1
+                bcs not_lower
+                and #$df
+not_lower:
+                cmp #'L'
+                beq load_levels
+
+                cmp #'S'
+                beq save_levels
+
+                cmp #'*'
+                beq ed_oscli_prompt
+
+                cmp #'1'
+                beq edit_level
+                cmp #'2'
+                beq edit_level
+                cmp #'3'
+                beq edit_level
+                cmp #'4'
+                beq edit_level
+
+                jmp input_loop
+
+escaped:
+                .text 0,17,'Escape',0
+
+edit_level:
+                sec
+                sbc #'1'        ;form level index
+                jsr ed_prepare_for_level_access
+                jmp ed_editor
+                
+load_levels:
+save_levels:
+                .text 0,255,'TODO...',0
+
+                .endproc
+
+;-------------------------------------------------------------------------
+
+ed_oscli_prompt: .proc
+                ldx #$ff
+                txs
+
+                lda ed_brk_addr+0
+                ora ed_brk_addr+1
+                beq brk_checked
+
+                jsr ed_print_brk_message
+                jsr osnewl
+brk_checked:
+
+                lda #$e5        ;escape status (D.2-75)
+                ldx #0          ;enable escape generation
+                ldy #0          ;write
+                jsr osbyte
+                
+                lda #<ed_oscli_prompt
+                sta ed_post_brk_loop+0
+                lda #>ed_oscli_prompt
+                sta ed_post_brk_loop+1
+                
+                lda #'*'
+                jsr oswrch
+
+                ldx #<block
+                ldy #>block
+                lda #0          ;read line from input
+                jsr osword
+                bcs ed_main_loop
+
+                ldx block+0
+                ldy block+1
+                jsr oscli
+
+                jmp ed_oscli_prompt
+
+block:
+                .word $7b00     ;definitely safe
+                .byte 255       ;max length
+                .byte 32        ;min char
+                .byte 126       ;max char
+                .endproc
+
+;-------------------------------------------------------------------------
+
+ed_editor: .proc
+                ldx #len(ed_keys)-1
+                lda #0
+-
+                sta ed_key_counters,x
+                dex
+                bpl -
+
+                jsr coff
+
+                jsr redraw
+                
+                lda #0
+                sta ed_cx
+                sta ed_cy
+
+                jsr draw_new_otype
+edit_loop:
+                lda #19
+                jsr osbyte
+                
+                jsr con
+                
+                ldx ed_cx
+                ldy ed_cy
+                jsr ed_gotoxy
+
+                jsr ed_scan_keys
+
+                ldx #ed_key_index(key_z)
+                jsr check_movement_key_3
+                bcc +
+                jsr move_left
+
++
+                ldx #ed_key_index(key_x)
+                jsr check_movement_key_3
+                bcc +
+                jsr move_right
+
++
+                ldx #ed_key_index(key_slash)
+                jsr check_movement_key_3
+                bcc +
+                jsr move_down
+
++
+                ldx #ed_key_index(key_colon)
+                jsr check_movement_key_3
+                bcc +
+                jsr move_up
+
++
+                ldx #ed_key_index(key_escape)
+                jsr check_tapped_key
+                bcc +
+                jmp ed_main_loop
+
++
+                ldx #ed_key_index(key_r)
+                jsr check_tapped_key
+                bcc +
+                jsr redraw
+
++
+                ldx #ed_key_index(key_s)
+                jsr check_tapped_key
+                bcc +
+                jsr set_start_pos
+
++
+                ldx #ed_key_index(key_left)
+                jsr check_movement_key_7
+                bcc +
+                jsr prev_otype
+
++
+                ldx #ed_key_index(key_right)
+                jsr check_movement_key_7
+                bcc +
+                jsr next_otype
+
++
+                ldx #ed_key_index(key_up)
+                jsr check_movement_key_3
+                bcc +
+                jsr next_ovalue
+
++
+                ldx #ed_key_index(key_down)
+                jsr check_movement_key_3
+                bcc +
+                jsr prev_ovalue
++
+
+;                 ldx #ed_key_index(key_return)
+;                 jsr check_tapped_key
+;                 bcc +
+; +
+                
+                jmp edit_loop
+
+get_num_ovalues:
+                sec
+                lda otypes_ltype_end,x
+                sbc otypes_ltype_begin,x
+                ; C=1
+                sbc #1
+                rts
+                
+next_ovalue: .proc
+                jsr coff
+                ldx ed_new_otype
+                jsr get_num_ovalues
+                beq done
+                cmp ed_new_ovalues,x
+                beq wrap
+                inc ed_new_ovalues,x
+print:
+                jsr print_new_ovalue
+done:
+                rts
+wrap:
+                lda #0
+                sta ed_new_ovalues,x
+                beq print
+                .endproc
+
+prev_ovalue: .proc
+                jsr coff
+                ldx ed_new_otype
+                jsr get_num_ovalues
+                beq done
+                dec ed_new_ovalues,x
+                bpl print
+                sta ed_new_ovalues,x
+print:
+                jsr print_new_ovalue
+done:
+                rts
+                .endproc
+
+prev_otype:
+                jsr coff
+                jsr erase_new_otype
+                ldx ed_new_otype
+                dex
+                bpl +
+                ldx #len(otypes)-1
++
+                stx ed_new_otype
+                jsr draw_new_otype
+                rts
+                
+next_otype:
+                jsr coff
+                jsr erase_new_otype
+                ldx ed_new_otype
+                inx
+                cpx #len(otypes)
+                bcc +
+                ldx #0
++
+                stx ed_new_otype
+                jsr draw_new_otype
+                rts
+
+erase_new_otype:
+                ldx #5
+                ldy #27
+                lda ed_new_otype
+                jmp ed_erase_otype
+                
+draw_new_otype:
+                ldx #5
+                ldy #27
+                lda ed_new_otype
+                jsr ed_draw_otype
+
+print_new_ovalue:
+                ldx #14
+                ldy #27
+                jsr ed_gotoxy
+
+                ldx ed_new_otype
+                jsr get_num_ovalues
+                beq no_ovalue
+                lda ed_new_ovalues,x
+                jmp ed_print_dec
+
+no_ovalue:
+                jsr ed_print
+                .text '--'
+                .byte 0
+                rts
+
+                
+                
+set_start_pos:
+                lda ed_cx
+                ldy #LevelData.pl_start_x
+                sta (ed_level_addr),y
+
+                lda ed_cy
+                ldy #LevelData.pl_start_y
+                sta (ed_level_addr),y
+
+                ; fall through
+
+redraw:
+                ldy #LevelData.colour3
+                lda (ed_level_addr),y
+                sta colour3_physical_colour
+                
+                jsr ed_print
+                .text 22,5
+                .byte 19,3
+colour3_physical_colour:
+                .byte 7
+                .byte 0,0,0
+
+                .byte 17,2
+                .text 31,0,27,'NEW:'
+                .text 31,8,27,'CVAL:'
+                .text 31,0,29,'CUR:'
+                .text 31,8,29,'CVAL:'
+                
+                .byte 0
+
+                jsr ed_draw_level
+
+                ldy #1
+                jsr ed_gcol0
+
+                lda #0
+                sta ed_box_x0
+                sta ed_box_y0
+                lda #19
+                sta ed_box_x1
+                lda #25
+                sta ed_box_y1
+                lda #5
+                jsr ed_box
+
+                rts
+                
+move_left:
+                ldx ed_cx
+                beq +
+                dex
++
+                stx ed_cx
+                rts
+
+move_right:
+                ldx ed_cx
+                cpx #level_width-1
+                bcs +
+                inx
++
+                stx ed_cx
+                rts
+
+move_up:
+                ldx ed_cy
+                beq +
+                dex
++
+                stx ed_cy
+                rts
+
+move_down:
+                ldx ed_cy
+                cpx #level_height-1
+                bcs +
+                inx
++
+                stx ed_cy
+                rts
+
+check_tapped_key:
+                lda ed_key_counters,x
+                cmp #1
+                beq +
+                clc
++
+                rts
+
+check_movement_key_7:
+                lda #7
+                bne check_movement_key_n
+check_movement_key_3:
+                lda #3
+check_movement_key_n:
+                and ed_key_counters,x
+                cmp #1
+                clc
+                bne +
+                sec
++
+                rts
+
+                
+coff:
+                lda #10
+                bne set_r10
+con:
+                lda #0
+set_r10:
+                ldx #10
+                stx $fe00
+                sta $fe01
+                rts
+                
+                .endproc
+
+;-------------------------------------------------------------------------
+;
+; Do a PRINT TAB
+;
+; Entry: X = X coordinate
+;        Y = Y coordinate
+; Preserves: X/Y
+ed_gotoxy: .proc
+                lda #31
+                jsr oswrch
+                txa
+                jsr oswrch
+                tya
+                jmp oswrch
+                .endproc
+
+;-------------------------------------------------------------------------
+;
+; Do a GCOL 0,y
+;
+; Entry: Y = colour
+; Preserves: X/Y
+
+ed_gcol0: .proc
+                lda #18
+                jsr oswrch
+                lda #0
+                jsr oswrch
+                tya
+                jmp oswrch
+                .endproc
+                
+;-------------------------------------------------------------------------
+;
+; Draw a box surrounding the specified range of map squares.
+;
+; The box edges are to the top and left of the top left square, and the
+; bottom and right of the bottom right square.
+;
+; Entry: A = plot mode for the lines, as per PLOT/VDU 25
+;        ?ed_box_x0 = X coord of top left square (0-19)
+;        ?ed_box_y0 = Y coord of top left square (0-25)
+;        ?ed_box_x1 = X coord of bottom right square (0-19)
+;        ?ed_box_y1 = Y coord of bottom right square (0-25)
+
+ed_box: .proc
+                sta ed_box_mode
+                
+                ; x0*64
+                ldx #ed_box_x0
+                ldy #6
+                jsr shlzbw
+
+                ; 1023-y0*32
+                ldx #ed_box_y0
+                ldy #5
+                jsr shlzbw
+                jsr rsub1023zw
+
+                ; x1*64+63
+                ldx #ed_box_x1
+                ldy #6
+                jsr shlzbw
+                lda #63
+                jsr addbzw
+
+                ; 1023-(y1*32+31)
+                ldx #ed_box_y1
+                ldy #5
+                jsr shlzbw
+                lda #31
+                jsr addbzw
+                jsr rsub1023zw
+
+                lda #4
+                ldx #ed_box_x0
+                ldy #ed_box_y0
+                jsr plot
+
+                lda ed_box_mode
+                ldx #ed_box_x1
+                ldy #ed_box_y0
+                jsr plot
+
+                lda ed_box_mode
+                ldx #ed_box_x1
+                ldy #ed_box_y1
+                jsr plot
+                
+                lda ed_box_mode
+                ldx #ed_box_x0
+                ldy #ed_box_y1
+                jsr plot
+
+                lda ed_box_mode
+                ldx #ed_box_x0
+                ldy #ed_box_y0
+                jsr plot
+
+                rts
+
+plot:
+                pha
+                lda #25
+                jsr oswrch
+                pla
+                jsr oswrch
+                lda 0,x
+                jsr oswrch
+                lda 1,x
+                jsr oswrch
+                lda 0,y         ;16 bit address ;(
+                jsr oswrch
+                lda 1,y         ;16 bit address ;(
+                jmp oswrch
+                
+rsub1023zw:
+                sec
+                lda #<1023
+                sbc 0,x
+                sta 0,x
+                lda #>1023
+                sbc 1,x
+                sta 1,x
+                rts
+                
+shlzbw:
+                lda #0
+                sta 1,x
+-
+                asl 0,x
+                rol 1,x
+                dey
+                bne -
+                rts
+
+addbzw:
+                clc
+                adc 0,x
+                sta 0,x
+                bcc +
+                inc 1,x
++
+                rts
+                
+                .endproc
+
+;-------------------------------------------------------------------------
+;
+; Scan editor keys
+;
+ed_scan_keys: .proc
+
+                lda #0
+                sta ed_any_keys_pressed
+                
+                ldy #len(ed_keys)-1
+loop:
+                tya
+                pha
+
+                lda #$81
+                ldx table,y
+                jsr ed_osbyte_yff
+                cpx #$ff        ;C=1 if pressed
+
+                pla
+                tay
+
+                lda #0
+                bcc store
+
+                lda #$ff
+                sta ed_any_keys_pressed
+
+                ldx ed_key_counters,y
+                cpx #$80        ;C=1 if bit 7 set
+                inx
+                txa
+                bcc store
+                ora #$80        ;suppress further $00 and $01
+
+store:
+                sta ed_key_counters,y
+
+                dey
+                bpl loop
+                rts
+
+table:
+                .for _i:=0,_i<len(ed_keys),_i+=1
+                .byte inkey(ed_keys[_i])
+                .endfor
+                .endproc
+                
+
+;-------------------------------------------------------------------------
+;
+; Sets up ed_level_addr for access to a specific level.
+; 
+; Entry: A = level index, 0-3
+; Exit: ed_level_addr set up
+; Preserves: Y
+; 
+ed_prepare_for_level_access: .proc
+                asl a           ;*2
+                asl a           ;*4
+                tax
+
+                clc
+                lda #<levels_org
+                adc levels_org+4,x
+                sta ed_level_addr+0
+
+                lda #>levels_org
+                adc levels_org+5,x
+                sta ed_level_addr+1
+
+                rts
+                .endproc
+                
+;-------------------------------------------------------------------------
+;
+; Check if if looks like valid level data is loaded.
+;
+; Exit: C=1 if yes, C=0 if no
+; 
+ed_check_levels_header_magic: .proc
+                ldx #3
+loop:
+                lda levels_org,x
+                cmp ed_levels_header_magic,x
+                bne no
+                dex
+                bpl loop
+                rts
+no:
+                clc
+                rts
+                .endproc
+
+;-------------------------------------------------------------------------
+;
+; BRK handler. Stores the BRK address in (ed_brk_addr) and jumps to
+; the post-BRK routine.
+; 
+ed_brk_handler: .proc
+                lda $fd
+                sta ed_brk_addr+0
+                lda $fe
+                sta ed_brk_addr+1
+
+                jmp (ed_post_brk_loop)
+                .endproc
+
+;-------------------------------------------------------------------------
+;
+; Print last BRK message and reset the brk message pointer.
+;
+; Exit: ed_brk_addr?0 = 0
+;       ed_brk_addr?1 = 0
+; Preserves: X
+ed_print_brk_message: .proc
+                lda ed_brk_addr+1
+                jsr ed_print_hex
+                lda ed_brk_addr+0
+                jsr ed_print_hex
+                jsr ed_print
+                .text ': ',0
+                
+                ldy #1
+loop:
+                lda (ed_brk_addr),y
+                beq done
+                jsr oswrch
+                iny
+                bne loop
+done:
+                lda #0
+                sta ed_brk_addr+0
+                sta ed_brk_addr+1
+                rts
+                .endproc
+                
+;-------------------------------------------------------------------------
+
+ed_one_time_init: .proc
+                lda #$fc        ;current language ROM (D.2-83)
+                jsr ed_osbyte_x00_yff
+                stx ed_old_language_rom
+
+                lda #<ed_brk_handler
+                sta brkv+0
+                lda #>ed_brk_handler
+                sta brkv+1
+                
+                ldx #ed_zp_begin
+                lda #0
+-
+                sta 0,x
+                inx
+                cpx #ed_zp_end
+                bne -
+                
+                ldx #<run_gudgs
+                ldy #>run_gudgs
+                jsr oscli
+
+                jsr ed_check_levels_header_magic
+                bcs levels_loaded ;some left in RAM
+
+                ldx #<load_glevels
+                ldy #>load_glevels
+                jsr oscli
+
+levels_loaded:
+                rts
+
+run_gudgs:
+                .text '/$.GUDGS',13
+
+load_glevels:
+                .text 'LOAD $.GLEVELS',13
+                .endproc
+
+;-------------------------------------------------------------------------
+;
+; Print 0-terminated string following call.
+;
+; 0 bytes in VDU commands are handled correctly. The terminating 0
+; must stand on its own. (This does mean the string can't be
+; terminated in the middle of a command sequence.)
+; 
+ed_print: .proc
+                pla
+                sta ed_print_addr+0
+                pla
+                sta ed_print_addr+1
+
+loop:
+                ldx #ed_print_addr
+                jsr ed_incz
+
+                lda (0,x)
+                bne print
+
+                lda #$da
+                jsr ed_osbyte_x00_yff
+                cpx #0
+                beq done
+
+                lda #0
+print:
+                jsr oswrch
+                jmp loop
+
+done:
+                lda ed_print_addr+1
+                pha
+                lda ed_print_addr+0
+                pha
+                rts
+
+                .endproc
+
+;-------------------------------------------------------------------------
+;
+; Print 2-digit decimal value using OSWRCH
+;
+; Entry: A = value to print, 0-99 ($00-$63)
+; Preserves: Y
+ed_print_dec: .proc
+                ldx #'0'
+-
+                sec
+                sbc #10
+                bcc +
+                inx
+                bne -
++
+                adc #10
+                pha
+                txa
+                jsr oswrch
+                pla
+                clc
+                adc #'0'
+                jmp oswrch
+                .endproc
+                
+;-------------------------------------------------------------------------
+; 
+; Print hex value using OSWRCH
+;
+; Entry: A = value to print
+; Preserves: X/Y
+ed_print_hex: .proc
+                pha
+                lsr a
+                lsr a
+                lsr a
+                lsr a
+                jsr nybble
+                pla
+                and #$0f
+nybble:
+                sed
+                clc
+                adc #$90
+                adc #$40
+                cld
+                jmp oswrch
+                .endproc
+                
+;-------------------------------------------------------------------------
+;
+; Increment zero page word.
+;
+; Entry: X = zp address of word
+; Preserves: A/X/Y/C
+ed_incz: .proc
+                inc 0,x
+                bne +
+                inc 1,x
++
+                rts
+                .endproc
+
+; ;-------------------------------------------------------------------------
+; ;
+; ; Shift zero page byte left N bits, producing a 16-bit result.
+; ;
+; ; Entry: X = zp address of byte
+; ;        Y = number of bits to shift (must be >0)
+; ; Exit: A = LSB of result
+; ;       ?ed_shl_msb = MSB of result
+; ; Preserves: X
+
+; ed_shl: .proc
+;                 lda #0
+;                 sta ed_shl_msb
+;                 lda 0,x
+; loop:
+;                 asl a
+;                 rol ed_shl_msb
+;                 dey
+;                 bne loop
+;                 rts
+;                 .endproc
+
+;-------------------------------------------------------------------------
+
+ed_osbyte_x00_yff:
+                ldx #$00
+ed_osbyte_yff:
+                ldy #$ff
+                jmp osbyte
+                
+;-------------------------------------------------------------------------
+                .endif          ;editor
 ;-------------------------------------------------------------------------
 
                 .if editor

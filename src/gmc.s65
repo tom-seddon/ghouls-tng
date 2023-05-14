@@ -82,7 +82,7 @@ gmc_start:
                 ; .dword ed_write_addr                      ;+20
                 ; .dword ed_get_screen_write_addr           ;+24
                 ; .dword ed_draw_level                      ;+28
-                ; .dword ed_place_item                      ;+32
+                ; .dword ed_place_ltype                      ;+32
                 ; .dword ed_draw_ltype                      ;+36
                 ; .dword ed_erase_ltype                     ;+40
                 ; .dword ed_get_item_speed                  ;+44
@@ -542,8 +542,12 @@ none:
 ;-------------------------------------------------------------------------
                 
 ed_test: .proc
-                stx level_draw_ptr+0
-                sty level_draw_ptr+1
+                jsr reset_envelopes
+                
+                lda ed_level_addr+0
+                sta level_draw_ptr+0
+                lda ed_level_addr+1
+                sta level_draw_ptr+1
                 
                 lda #12
                 jsr oswrch
@@ -590,27 +594,59 @@ ed_test: .proc
                 dey
                 bpl -
 
-                ; Other OSWRCH setup
+                ; Initial bonus and score
+                ldx #4
+-
+                lda initial_score,x
+                sta score_chars,x
+                dex
+                bpl -
+
+                lda initial_bonus+0
+                sta bonus_chars+0
+                lda initial_bonus+1
+                sta bonus_chars+1
+
+                ; Level position and level name
+                ldy #LevelData.name_x
+                lda (ed_level_addr),y
+                sta level_name_x+0
+                iny
+                lda (ed_level_addr),y
+                sta level_name_x+1
+
+                ldy #LevelData.name
                 ldx #0
 -
-                lda test_prints,x
-                jsr oswrch
+                lda (ed_level_addr),y
+                sta level_name,x
+                iny
                 inx
-                cpx #test_prints_end-test_prints
+                cpx #17
                 bne -
 
-                ; Double jsr, so kill_player_and_drop_caller returns
-                ; here.
-                jsr entry_game_2
-                rts
-                
-entry_game_2:
-                jsr entry_game
-                rts
+                ; Other OSWRCH setup
+                jsr ed_print
 
-test_prints:
                 ; GCOL 0,1
                 .byte 18,0,1
+
+                ; VDU 5
+                .byte 5
+
+                ; MOVE ???,28
+                .byte 25,4
+level_name_x:
+                .word 0
+                .word 28
+
+                ; Space for level name. Any embedded CRs are copied
+                ; too... VDU 5, so whatever.
+level_name:
+                .fill 17,'x'
+
+                ; VDU 4
+                .byte 4
 
                 ; MOVE 0,60
                 .byte 25,4
@@ -655,10 +691,49 @@ test_prints:
                 .byte 25,5
                 .word 1270,864
 
+                ; COLOUR 1
+                .byte 17,1
+
+                ; PRINT TAB(14,1)
+                .byte 31,14,1
+
+                ; "BONUS"
+                .byte 240,241,242
+
                 ; COLOUR 2
                 .byte 17,2
-test_prints_end:
+
+                ; PRINT TAB(0,1)
+                .byte 31,0,1
+
+                ; Default score
+initial_score:
+                .byte 230,230,230,230,230
+
+                ; PRINT TAB(18,1)
+                .byte 31,18,1
+
+                ; Default bonus chars
+initial_bonus:
+                .byte 235,230
+
+                .byte 0
+
+                ; VDU 4 switches the cursor back on.
+                jsr ed_coff
                 
+                jsr entry_game_2
+
+                ; Flush all buffers.
+                lda #15
+                ldx #0
+                jsr osbyte
+                rts
+                
+entry_game_2:
+                jsr entry_game
+                rts
+
                 .endproc
                 
 ;-------------------------------------------------------------------------
@@ -751,7 +826,7 @@ ed_add16z: .proc
 
 ;-------------------------------------------------------------------------
 
-ed_place_item: .proc
+ed_place_ltype: .proc
                 pha
                 jsr ed_read_level
                 jsr ed_erase_ltype
@@ -3189,7 +3264,7 @@ level_number_insert_1:
                 .text ':',131,'Edit level '
 level_number_insert_2:
                 .text 'X'
-                .text ' - ',134
+                .text ' -',134
                 .byte 0
 
                 ldy #LevelData.name
@@ -3324,7 +3399,7 @@ ed_editor: .proc
                 dex
                 bpl -
 
-                jsr coff
+                jsr ed_coff
 
                 jsr redraw
                 
@@ -3337,7 +3412,7 @@ edit_loop:
                 lda #19
                 jsr osbyte
                 
-                jsr con
+                jsr ed_con
                 
                 ldx ed_cx
                 ldy ed_cy
@@ -3366,6 +3441,11 @@ next_key:
                 bpl keys_loop
                 jmp edit_loop
 
+
+; entry conditions for routine:
+;
+; X = index of key in ed_key_flags
+;
 key_action: .function k,mask,routine
                 .endfunction {.key_index:ed_key_index(k),.mask:mask,.routine:routine}
 
@@ -3381,12 +3461,48 @@ _..=[key_action(key_left,ed_key_flag_rept_8,prev_otype)]
 _..=[key_action(key_right,ed_key_flag_rept_8,next_otype)]
 _..=[key_action(key_up,ed_key_flag_rept_4,next_ovalue)]
 _..=[key_action(key_down,ed_key_flag_rept_4,prev_ovalue)]
+_..=[key_action(key_return,ed_key_flag_down,add_object)]
+_..=[key_action(key_delete,ed_key_flag_down,erase_object)]
+_..=[key_action(key_tab,ed_key_flag_newly_down,test_level)]
 key_actions=_
 
 key_indexes: .byte key_actions.key_index
 key_masks: .byte key_actions.mask
 key_routines_lo: .byte <key_actions.routine
 key_routines_hi: .byte >key_actions.routine
+
+test_level:
+                jsr ed_coff
+                jsr ed_test
+                jmp ed_editor
+                
+erase_object:
+                lda #0
+                jmp add_object.place_ltype
+                
+add_object: .proc
+                ldy ed_new_otype
+                lda otypes_ed_flags,y
+                and #ed_flags_repeat
+                bne add
+
+                lda ed_key_flags,x
+                and #ed_key_flag_newly_down
+                beq done
+                
+add:
+                ldx ed_new_otype
+                lda ed_new_ovalues,y
+                jsr ed_pack_ltype
+                
+place_ltype:
+                ldx ed_cx
+                ldy ed_cy
+                jsr ed_place_ltype
+
+done:
+                rts
+                .endproc
                 
 get_num_ovalues:
                 sec
@@ -3397,7 +3513,7 @@ get_num_ovalues:
                 rts
                 
 next_ovalue: .proc
-                jsr coff
+                jsr ed_coff
                 ldx ed_new_otype
                 jsr get_num_ovalues
                 beq done
@@ -3415,7 +3531,7 @@ wrap:
                 .endproc
 
 prev_ovalue: .proc
-                jsr coff
+                jsr ed_coff
                 ldx ed_new_otype
                 jsr get_num_ovalues
                 beq done
@@ -3429,7 +3545,7 @@ done:
                 .endproc
 
 prev_otype:
-                jsr coff
+                jsr ed_coff
                 jsr erase_new_otype
                 ldx ed_new_otype
                 dex
@@ -3441,7 +3557,7 @@ prev_otype:
                 rts
                 
 next_otype:
-                jsr coff
+                jsr ed_coff
                 jsr erase_new_otype
                 ldx ed_new_otype
                 inx
@@ -3565,19 +3681,23 @@ move_down:
 +
                 stx ed_cy
                 rts
+                .endproc
 
-coff:
+;-------------------------------------------------------------------------
+;
+; Set cursor on (con) or off (coff)
+;
+; Preserves: X
+ed_coff:
                 lda #10
                 bne set_r10
-con:
+ed_con:
                 lda #0
 set_r10:
                 ldx #10
                 stx $fe00
                 sta $fe01
                 rts
-                
-                .endproc
 
 ;-------------------------------------------------------------------------
 ;

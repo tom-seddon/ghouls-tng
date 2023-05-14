@@ -4127,13 +4127,6 @@ ed_brk_handler: .proc
 ;       ed_brk_addr?1 = 0
 ; Preserves: X
 ed_print_brk_message: .proc
-                ; lda ed_brk_addr+1
-                ; jsr ed_print_hex
-                ; lda ed_brk_addr+0
-                ; jsr ed_print_hex
-                ; jsr ed_print
-                ; .text ': ',0
-                
                 ldy #1
 loop:
                 lda (ed_brk_addr),y
@@ -4142,6 +4135,21 @@ loop:
                 iny
                 bne loop
 done:
+
+                jsr ed_print
+                .text 10,13,129,'(Error addr: &',0
+                lda ed_brk_addr+1
+                jsr ed_print_hex
+                lda ed_brk_addr+0
+                jsr ed_print_hex
+                jsr ed_print
+                .text ')',10,13,129,'(Error number: &',0
+                ldy #0
+                lda (ed_brk_addr),y
+                jsr ed_print_hex
+                jsr ed_print
+                .text ')',10,13,0
+                
                 lda #0
                 sta ed_brk_addr+0
                 sta ed_brk_addr+1

@@ -2391,6 +2391,9 @@ ed_box_y1: .fill 2
 ed_cx: .fill 1
 ed_cy: .fill 1
 ed_new_otype: .fill 1
+ed_cur_ltype: .fill 1
+ed_cur_otype: .fill 1
+ed_cur_ovalue: .fill 1
                 .endsection
                 
 ed_levels_header_magic:
@@ -2859,6 +2862,9 @@ ed_editor: .proc
                 dex
                 bpl -
 
+                lda #$ff
+                sta ed_cur_ltype
+
                 jsr ed_coff
 
                 jsr redraw
@@ -2880,6 +2886,9 @@ edit_loop:
 
                 jsr ed_scan_keys
 
+                lda ed_any_keys_pressed
+                beq update_stuff
+
                 ldy #len(key_actions)-1
 keys_loop:
                 ldx key_indexes,y
@@ -2900,6 +2909,46 @@ next_key:
                 dey
                 bpl keys_loop
                 jmp edit_loop
+
+update_stuff: .proc
+                ldx ed_cx
+                ldy ed_cy
+                jsr ed_read_level
+                cmp ed_cur_ltype
+                beq edit_loop
+
+                sta ed_cur_ltype
+
+                ldx #5
+                ldy #29
+                lda ed_cur_otype
+                jsr ed_erase_otype
+
+                lda ed_cur_ltype
+                jsr ed_find_otype
+
+                stx ed_cur_otype
+                sta ed_cur_ovalue
+                
+                ldx #5
+                ldy #29
+                lda ed_cur_otype
+                jsr ed_draw_otype
+
+                ldx #14
+                ldy #29
+                jsr ed_gotoxy
+
+                ldx ed_cur_otype
+                jsr get_num_ovalues
+                bne +
+                jsr no_ovalue
+                jmp edit_loop
++
+                lda ed_cur_ovalue
+                jsr ed_print_dec
+                jmp edit_loop
+                .endproc
 
 
 ; entry conditions for routine:
@@ -3066,8 +3115,6 @@ no_ovalue:
                 .text '--'
                 .byte 0
                 rts
-
-                
                 
 set_start_pos:
                 lda ed_cx

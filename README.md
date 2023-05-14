@@ -38,7 +38,8 @@ dir and so on. Press ESCAPE to get back to the editor menu.
 
 When editing:
 
-- `Z`/`X`/`*`/`?` move the cursor
+- `Z`/`X`/`*`/`?` move the cursor. CUR shows the item under the
+  cursor, and its creation value (see below)
 - `DELETE` deletes the thing under the cursor
 - `←`/`→` select the NEW thing's type
 - `↑`/`↓` select the NEW thing's creation value (see below)

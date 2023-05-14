@@ -14,7 +14,6 @@ levels_data:
                 .dword level_data_3-levels_data
                 
 level_data_0:
-                .word 364
                 ;      0123456789abcdef
                 .text "SPECTRES' LAIR",13,13,13
                 .byte 4
@@ -50,7 +49,6 @@ level_data_0:
                 .endencode
                 .cerror *-level_data_0!=size(LevelData),format('%d != %d',*-level_data_0,size(LevelData))
 level_data_1:
-                .word 400
                 ;      0123456789abcdef
                 .text "HORRID HALL",13,13,13,13,13,13
                 .byte 2
@@ -87,7 +85,6 @@ level_data_1:
                 .cerror *-level_data_1!=size(LevelData),'oops'
 
 level_data_2:
-                .word 332
                 ;      0123456789abcdef
                 .text "SPIDERS PARLOUR",13,13
                 .byte 6
@@ -124,7 +121,6 @@ level_data_2:
                 .cerror *-level_data_2!=size(LevelData),'oops'
 
 level_data_3:
-                .word 400
                 ;      0123456789abcdef
                 .text "DEATH TOWER",13,13,13,13,13,13
                 .byte 7

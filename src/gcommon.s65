@@ -20,7 +20,6 @@ level_width=20
 level_height=26
 
 LevelData: .struct
-name_x: .fill 2
 name: .fill 17
 colour3: .fill 1
 pl_start_x: .fill 1
@@ -29,7 +28,6 @@ map: .fill level_width*level_height
                 .endstruct
 
 ; for BASIC's benefit. Don't know how to get 64tass to export these.
-LevelData_name_x_offset=LevelData.name_x
 LevelData_name_offset=LevelData.name
 LevelData_colour3_offset=LevelData.colour3
 LevelData_pl_start_x_offset=LevelData.pl_start_x

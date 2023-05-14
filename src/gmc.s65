@@ -607,25 +607,33 @@ ed_test: .proc
                 lda initial_bonus+1
                 sta bonus_chars+1
 
-                ; Level position and level name
-                ldy #LevelData.name_x
-                lda (ed_level_addr),y
-                sta level_name_x+0
-                iny
-                lda (ed_level_addr),y
-                sta level_name_x+1
+                ; Copy level name
 
+                lda #<1279
+                sta level_name_x+0
+                lda #>1279
+                sta level_name_x+1
+                
                 ldy #LevelData.name
                 ldx #0
--
+name_len_loop:
                 lda (ed_level_addr),y
                 sta level_name,x
+                cmp #13
+                beq +
+
+                sec
+                lda level_name_x+0
+                sbc #64
+                sta level_name_x+0
+                bcs +
+                dec level_name_x+1
++
                 iny
                 inx
                 cpx #17
-                bne -
+                bne name_len_loop
 
-                ; Other OSWRCH setup
                 jsr ed_print
 
                 ; GCOL 0,1
@@ -634,7 +642,7 @@ ed_test: .proc
                 ; VDU 5
                 .byte 5
 
-                ; MOVE ???,28
+                ; MOVE ???,1023-30*32
                 .byte 25,4
 level_name_x:
                 .word 0
@@ -3289,6 +3297,7 @@ printed_name:
 
                 jsr ed_print
 
+                .text 133,'N:',131,'Set level name',10,13
                 .text 133,'L:',131,'Load levels',10,13
                 .text 133,'S:',131,'Save levels',10,13
                 .text 133,'*:',131,'* prompt',10,13
@@ -3300,7 +3309,6 @@ input_loop:
                 jsr osbyte
                 
                 jsr osrdch
-                bcs escaped
 
                 cmp #'a'
                 bcc not_lower
@@ -3314,28 +3322,91 @@ not_lower:
                 cmp #'S'
                 beq save_levels
 
+                cmp #'N'
+                beq name_levels
+
                 cmp #'*'
                 beq ed_oscli_prompt
 
-                cmp #'1'
-                beq edit_level
-                cmp #'2'
-                beq edit_level
-                cmp #'3'
-                beq edit_level
-                cmp #'4'
-                beq edit_level
+                jsr is_ascii_level_number
+                bcs edit_level
 
                 jmp input_loop
 
-escaped:
-                .text 0,17,'Escape',0
+; escaped:
+;                 .text 0,17,'Escape',0
 
+name_levels:
+                jsr ed_print
+                .text 131,'Select level (1-4):',135
+                .byte 0
+name_level_loop:
+                jsr osrdch
+                cmp #27
+                beq ed_main_menu
+                jsr is_ascii_level_number
+                bcc name_level_loop
+
+                jsr oswrch
+                pha
+                jsr osnewl
+                pla
+                sec
+                sbc #'1'
+                jsr ed_prepare_for_level_access
+
+                jsr ed_print
+                .text 131,'Enter name:',132,157,135
+                .fill 16+2,' '
+                .text 156
+                .fill 16+3,8
+                .byte 0
+
+                ldy #LevelData.name
+                ldx #17
+                lda #13
+-
+                sta (ed_level_addr),y
+                iny
+                dex
+                bne -
+                
+                clc
+                lda ed_level_addr+0
+                adc #LevelData.name
+                sta name_level_block+0
+                lda ed_level_addr+1
+                adc #0
+                sta name_level_block+1
+
+                ldx #<name_level_block
+                ldy #>name_level_block
+                lda #0
+                jsr osword
+                jmp ed_main_menu
+
+name_level_block:
+                .word 0
+                .byte 16        ;max length (excl CR)
+                .byte 32        ;min char
+                .byte 126       ;max char
+                
 edit_level:
                 sec
-                sbc #'1'        ;form level index
+                sbc #'1'
                 jsr ed_prepare_for_level_access
                 jmp ed_editor
+
+is_ascii_level_number:
+                cmp #'1'
+                bcc not_level_number
+                cmp #'4'+1
+                bcs not_level_number
+                sec
+                rts
+not_level_number:
+                clc
+                rts
                 
 load_levels:
 save_levels:

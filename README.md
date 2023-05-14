@@ -26,6 +26,9 @@ From the editor menu, press `1`/`2`/`3`/`4` to edit that level.
 Press `N` to set a level's name. Select level number then type in its
 new name. There's a limit of 16 chars.
 
+Press `R` to reset a level's data. The level will be emptied, leaving
+just a row of blocks along the bottom.
+
 Press `L` to load levels. Enter file name.
 
 Press `S` to save levels. Enter file name.

@@ -2520,6 +2520,7 @@ printed_name:
                 jsr ed_print
 
                 .text 133,'N:',131,'Set level name',10,13
+                .text 133,'R:',131,'Reset level',10,13
                 .text 133,'L:',131,'Load levels',10,13
                 .text 133,'S:',131,'Save levels',10,13
                 .text 133,'*:',131,'* prompt',10,13
@@ -2547,6 +2548,9 @@ not_lower:
                 cmp #'N'
                 beq name_levels
 
+                cmp #'R'
+                beq reset_level
+
                 cmp #'*'
                 beq ed_oscli_prompt
 
@@ -2558,17 +2562,16 @@ not_lower:
 ; escaped:
 ;                 .text 0,17,'Escape',0
 
-name_levels:
+select_level:
                 jsr ed_print
                 .text 131,'Select level (1-4):',135
                 .byte 0
-name_level_loop:
+select_level_loop:
                 jsr osrdch
                 cmp #27
                 beq ed_main_menu
                 jsr is_ascii_level_number
-                bcc name_level_loop
-
+                bcc select_level_loop
                 jsr oswrch
                 pha
                 jsr osnewl
@@ -2576,7 +2579,72 @@ name_level_loop:
                 sec
                 sbc #'1'
                 jsr ed_prepare_for_level_access
+                rts
 
+reset_level: .proc
+                jsr select_level
+
+                ; Reset map data
+                ldy #level_height-1
+y_loop:
+                ldx #level_width-1
+x_loop:
+                lda #0
+                jsr ed_write_level
+                dex
+                bpl x_loop
+                dey
+                bpl y_loop
+
+                ; Put blocks on the bottom row
+                ldx #level_width-1
+                ldy #level_height-1
+                lda #type_block.index
+-
+                jsr ed_write_level
+                dex
+                bpl -
+
+                ; Clear header
+                ldy #0
+                ldx #LevelData.map
+                lda #0
+-
+                sta (ed_level_addr),y
+                iny
+                dex
+                bne -
+
+                ; Reset name
+                ldy #LevelData.name
+                ldx #17
+                lda #13
+-
+                sta (ed_level_addr),y
+                iny
+                dex
+                bne -
+
+                ; Other stuff
+                lda #1
+                ldy #LevelData.pl_start_x
+                sta (ed_level_addr),y
+
+                lda #23
+                ldy #LevelData.pl_start_y
+                sta (ed_level_addr),y
+
+                lda #7
+                ldy #LevelData.colour3
+                sta (ed_level_addr),y
+
+                jmp ed_main_menu
+
+                .endproc
+                
+name_levels:
+                jsr select_level
+                
                 jsr ed_print
                 .text 131,'Enter name:',132,157,135
                 .fill 16+2,' '

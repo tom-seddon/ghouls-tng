@@ -2205,6 +2205,7 @@ L16E4:
                 lda player_addr+1
                 adc #1
                 sta player_addr+1
+                bmi draw_pl_splat
                 lda player_addr
                 clc
                 adc #$40

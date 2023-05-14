@@ -3064,6 +3064,13 @@ ed_key_index: .function k
                 .endfor
                 .cerror _i==len(ed_keys),'key not found'
                 .endfunction _i
+
+; These values are set by RORs, so they can't be rearranged without
+; rejigging the routine that sets them.
+ed_key_flag_newly_down=$80
+ed_key_flag_down=$40
+ed_key_flag_rept_4=$20
+ed_key_flag_rept_8=$10
                 
                 .section ed_zp
 ed_read_addr: .fill 2
@@ -3091,6 +3098,8 @@ ed_post_brk_loop:
                 .cerror (*&$ff)==$ff,'oh no'
                 .word 0
 ed_key_counters:
+                .fill len(ed_keys),0
+ed_key_flags:
                 .fill len(ed_keys),0
 ed_any_keys_pressed:
                 .byte 0
@@ -3336,79 +3345,49 @@ edit_loop:
 
                 jsr ed_scan_keys
 
-                ldx #ed_key_index(key_z)
-                jsr check_movement_key_3
-                bcc +
-                jsr move_left
+                ldy #len(key_actions)-1
+keys_loop:
+                ldx key_indexes,y
+                lda ed_key_flags,x
+                and key_masks,y
+                beq next_key
 
-+
-                ldx #ed_key_index(key_x)
-                jsr check_movement_key_3
-                bcc +
-                jsr move_right
-
-+
-                ldx #ed_key_index(key_slash)
-                jsr check_movement_key_3
-                bcc +
-                jsr move_down
-
-+
-                ldx #ed_key_index(key_colon)
-                jsr check_movement_key_3
-                bcc +
-                jsr move_up
-
-+
-                ldx #ed_key_index(key_escape)
-                jsr check_tapped_key
-                bcc +
-                jmp ed_main_loop
-
-+
-                ldx #ed_key_index(key_r)
-                jsr check_tapped_key
-                bcc +
-                jsr redraw
-
-+
-                ldx #ed_key_index(key_s)
-                jsr check_tapped_key
-                bcc +
-                jsr set_start_pos
-
-+
-                ldx #ed_key_index(key_left)
-                jsr check_movement_key_7
-                bcc +
-                jsr prev_otype
-
-+
-                ldx #ed_key_index(key_right)
-                jsr check_movement_key_7
-                bcc +
-                jsr next_otype
-
-+
-                ldx #ed_key_index(key_up)
-                jsr check_movement_key_3
-                bcc +
-                jsr next_ovalue
-
-+
-                ldx #ed_key_index(key_down)
-                jsr check_movement_key_3
-                bcc +
-                jsr prev_ovalue
-+
-
-;                 ldx #ed_key_index(key_return)
-;                 jsr check_tapped_key
-;                 bcc +
-; +
-                
+                lda key_routines_lo,y
+                sta jsr_key_routine+1
+                lda key_routines_hi,y
+                sta jsr_key_routine+2
+                tya
+                pha
+jsr_key_routine: jsr $ffff
+                pla
+                tay
+next_key:
+                dey
+                bpl keys_loop
                 jmp edit_loop
 
+key_action: .function k,mask,routine
+                .endfunction {.key_index:ed_key_index(k),.mask:mask,.routine:routine}
+
+_:=[]
+_..=[key_action(key_z,ed_key_flag_rept_4,move_left)]
+_..=[key_action(key_x,ed_key_flag_rept_4,move_right)]
+_..=[key_action(key_slash,ed_key_flag_rept_4,move_down)]
+_..=[key_action(key_colon,ed_key_flag_rept_4,move_up)]
+_..=[key_action(key_escape,ed_key_flag_newly_down,ed_main_loop)]
+_..=[key_action(key_r,ed_key_flag_newly_down,redraw)]
+_..=[key_action(key_s,ed_key_flag_newly_down,set_start_pos)]
+_..=[key_action(key_left,ed_key_flag_rept_8,prev_otype)]
+_..=[key_action(key_right,ed_key_flag_rept_8,next_otype)]
+_..=[key_action(key_up,ed_key_flag_rept_4,next_ovalue)]
+_..=[key_action(key_down,ed_key_flag_rept_4,prev_ovalue)]
+key_actions=_
+
+key_indexes: .byte key_actions.key_index
+key_masks: .byte key_actions.mask
+key_routines_lo: .byte <key_actions.routine
+key_routines_hi: .byte >key_actions.routine
+                
 get_num_ovalues:
                 sec
                 lda otypes_ltype_end,x
@@ -3587,29 +3566,6 @@ move_down:
                 stx ed_cy
                 rts
 
-check_tapped_key:
-                lda ed_key_counters,x
-                cmp #1
-                beq +
-                clc
-+
-                rts
-
-check_movement_key_7:
-                lda #7
-                bne check_movement_key_n
-check_movement_key_3:
-                lda #3
-check_movement_key_n:
-                and ed_key_counters,x
-                cmp #1
-                clc
-                bne +
-                sec
-+
-                rts
-
-                
 coff:
                 lda #10
                 bne set_r10
@@ -3803,13 +3759,43 @@ loop:
                 inx
                 txa
                 bcc store
-                ora #$80        ;suppress further $00 and $01
+                ; keep counting in bits 0-7, but suppress further
+                ; occurrences of $00 or $01
+                ora #$80
 
 store:
                 sta ed_key_counters,y
 
+                ; repeat 8
+                pha
+                and #7
+                jsr if1
+
+                ; repeat 4
+                and #3
+                jsr if1
+
+                ; down
+                pla
+                cmp #1
+                ror lda_key_flags+1
+
+                ; newly down
+                jsr if1
+
+lda_key_flags: lda #$ff
+                sta ed_key_flags,y
+
                 dey
                 bpl loop
+                rts
+
+if1:
+                cmp #1
+                beq +
+                clc
++
+                ror lda_key_flags+1
                 rts
 
 table:

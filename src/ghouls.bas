@@ -14,7 +14,7 @@ FORF=0TO4:F?{&score_chars}=230:NEXT:LI=4:SC=SC1:?{&L0AF2}=60:GO=GO1
 {:L100}
 FORF=1TO3:VDU19,F,0;0;:NEXT
 PRINTTAB(0,5);:COLOUR3:GCOL0,1
-LDATA={&levels_org}+!({&levels_org}+SC*4):!{&level_draw_ptr}=LDATA:A%=0:X%=GO:CALL{&entry_init_level}:VDU5:MOVE(20-LEN($(LDATA+{$LevelData_name_offset})))*64,28:PRINT$(LDATA+{$LevelData_name_offset}):VDU4
+LDATA={&levels_org}+4+(SC-1)*{$LevelData_size}:!{&level_draw_ptr}=LDATA:A%=0:X%=GO:CALL{&entry_init_level}:VDU5:MOVE(20-LEN($(LDATA+{$LevelData_name_offset})))*64,28:PRINT$(LDATA+{$LevelData_name_offset}):VDU4
 !{&ghosts_table}=0:!{&ghosts_table+3}=0:COLOUR1:PRINTTAB(14,1);:VDU240,241,242{# TODO: ghosts_table+3 should probably be ghosts_table+4...
 GCOL0,1:MOVE0,60:DRAW0,952:MOVE1279,60:DRAW1279,860:MOVE1080,800:DRAW1080,860:GCOL0,2:MOVE0,952:PLOT21,1279,952:GCOL0,2:MOVE1092,864:DRAW1270,864
 IFLI=1GOTO{$L160}

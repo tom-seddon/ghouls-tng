@@ -4005,19 +4005,28 @@ table:
 ; Preserves: Y
 ; 
 ed_prepare_for_level_access: .proc
-                asl a           ;*2
-                asl a           ;*4
                 tax
-
-                clc
-                lda #<levels_org
-                adc levels_org+4,x
+                
+                lda #<(levels_org+4)
                 sta ed_level_addr+0
-
-                lda #>levels_org
-                adc levels_org+5,x
+                lda #>(levels_org+4)
                 sta ed_level_addr+1
 
+loop:
+                txa
+                beq done
+
+                clc
+                lda ed_level_addr+0
+                adc #<size(LevelData)
+                sta ed_level_addr+0
+                lda ed_level_addr+1
+                adc #>size(LevelData)
+                sta ed_level_addr+1
+
+                dex
+                jmp loop
+done:
                 rts
                 .endproc
                 

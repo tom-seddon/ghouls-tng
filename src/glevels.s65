@@ -8,16 +8,13 @@
 
 levels_data:
                 .byte $60,$d7,$73,$0e
-                .dword level_data_0-levels_data
-                .dword level_data_1-levels_data
-                .dword level_data_2-levels_data
-                .dword level_data_3-levels_data
                 
 level_data_0:
                 ;      0123456789abcdef
                 .text "SPECTRES' LAIR",13,13,13
                 .byte 4
                 .byte 4,23
+                .fill 35,0
                 .encode ghouls_level_enc
                 ;      0001020304050607080910111213141516171819
                 .text '__....______....________________________' ;4
@@ -53,6 +50,7 @@ level_data_1:
                 .text "HORRID HALL",13,13,13,13,13,13
                 .byte 2
                 .byte 4,23
+                .fill 35,0
                 .encode ghouls_level_enc
                 ;      0001020304050607080910111213141516171819
                 .text '________________________________________' ;4 
@@ -89,6 +87,7 @@ level_data_2:
                 .text "SPIDERS PARLOUR",13,13
                 .byte 6
                 .byte 4,23
+                .fill 35,0
                 .encode ghouls_level_enc
                 ;      0001020304050607080910111213141516171819
                 .text '________________________________________' ;4 
@@ -125,6 +124,7 @@ level_data_3:
                 .text "DEATH TOWER",13,13,13,13,13,13
                 .byte 7
                 .byte 4,23
+                .fill 35,0
                 .encode ghouls_level_enc
                 ;      0001020304050607080910111213141516171819
                 .text '________________________________________' ;4 
@@ -156,4 +156,4 @@ level_data_3:
                 .endencode
                 .cerror *-level_data_3!=size(LevelData),'oops'
 
-                .cerror *-levels_data>max_levels_pages*256,"glevels overflow"
+                .cerror *-levels_data!=level_data_pages*256,"glevels is the wrong size"

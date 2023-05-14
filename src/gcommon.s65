@@ -3,10 +3,10 @@
 ;-------------------------------------------------------------------------
 
 max_gmc_pages=16
-max_levels_pages=10
+level_data_pages=9
 
 himem=$5800
-levels_org=himem-max_levels_pages*256
+levels_org=himem-level_data_pages*256
 gmc_org=levels_org-max_gmc_pages*256
 
 gedmc_org=$2000;levels_org-max_gedmc_pages*256
@@ -24,10 +24,14 @@ name: .fill 17
 colour3: .fill 1
 pl_start_x: .fill 1
 pl_start_y: .fill 1
+spare: .fill 35
 map: .fill level_width*level_height
                 .endstruct
 
+                .cerror size(LevelData)!=575,'oops'
+
 ; for BASIC's benefit. Don't know how to get 64tass to export these.
+LevelData_size=size(LevelData)
 LevelData_name_offset=LevelData.name
 LevelData_colour3_offset=LevelData.colour3
 LevelData_pl_start_x_offset=LevelData.pl_start_x

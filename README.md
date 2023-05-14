@@ -43,6 +43,7 @@ When editing:
 - `←`/`→` select the NEW thing's type
 - `↑`/`↓` select the NEW thing's creation value (see below)
 - `RETURN` adds an instance of the NEW thing to the level
+- `C` changes the level-specific colour
 - `R` redraws the level
 - `S` sets the player's start position
 - `TAB` lets you test the level. Testing ends with `ESCAPE` or when

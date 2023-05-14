@@ -2361,7 +2361,7 @@ fill_row_loop:
                 .if editor
 ;-------------------------------------------------------------------------
 
-ed_keys=[key_z,key_x,key_slash,key_colon,key_return,key_delete,key_tab,key_r,key_s,key_escape,key_left,key_right,key_up,key_down]
+ed_keys=[key_z,key_x,key_slash,key_colon,key_return,key_delete,key_tab,key_r,key_s,key_escape,key_left,key_right,key_up,key_down,key_c]
 
 ed_key_index: .function k
                 .for _i:=0,_i<len(ed_keys),_i+=1
@@ -2924,12 +2924,21 @@ _..=[key_action(key_down,ed_key_flag_rept_4,prev_ovalue)]
 _..=[key_action(key_return,ed_key_flag_down,add_object)]
 _..=[key_action(key_delete,ed_key_flag_down,erase_object)]
 _..=[key_action(key_tab,ed_key_flag_newly_down,test_level)]
+_..=[key_action(key_c,ed_key_flag_newly_down,next_colour)]
 key_actions=_
 
 key_indexes: .byte key_actions.key_index
 key_masks: .byte key_actions.mask
 key_routines_lo: .byte <key_actions.routine
 key_routines_hi: .byte >key_actions.routine
+
+next_colour:
+                ldy #LevelData.colour3
+                lda (ed_level_addr),y
+                clc
+                adc #1
+                sta (ed_level_addr),y
+                jmp redraw
 
 test_level:
                 jsr ed_coff

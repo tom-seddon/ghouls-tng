@@ -30,7 +30,7 @@ Press `L` to load levels. Enter file name.
 
 Press `S` to save levels. Enter file name.
 
-Press `* to get a prompt for entering OS commands. Change drive and
+Press `*` to get a prompt for entering OS commands. Change drive and
 dir and so on. Press ESCAPE to get back to the editor menu.
 
 When editing:

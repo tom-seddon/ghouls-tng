@@ -77,6 +77,9 @@ endif
 # Create GLOADER
 	$(_V)$(BASICTOOL) --tokenise --basic-2 --output-binary src/gloader.bas $(BEEB_OUTPUT)/$$.GLOADER
 
+# Create GCSREEN
+	$(_V)$(SHELLCMD) copy-file $(BEEB_VOLUME)/0/$$.GSCREEN $(BEEB_OUTPUT)/
+
 # Set the boot option
 	$(_V)echo 3 > $(BEEB_OUTPUT)/.opt4
 
@@ -88,7 +91,7 @@ endif
 # Create a .ssd
 #
 # TODO: don't include everything!
-	$(_V)$(SSD_CREATE) -o $(SSD_OUTPUT) --dir $(BEEB_OUTPUT) $(BEEB_OUTPUT)/$$.!BOOT $(BEEB_OUTPUT)/$$.GLOADER $(BEEB_OUTPUT)/$$.GUDGS $(BEEB_OUTPUT)/$$.GMC $(BEEB_OUTPUT)/$$.GLEVELS $(BEEB_OUTPUT)/$$.GBAS $(BEEB_OUTPUT)/$$.GEDMC
+	$(_V)$(SSD_CREATE) -o $(SSD_OUTPUT) --dir $(BEEB_OUTPUT) $(BEEB_OUTPUT)/$$.!BOOT $(BEEB_OUTPUT)/$$.GLOADER $(BEEB_OUTPUT)/$$.GSCREEN $(BEEB_OUTPUT)/$$.GUDGS $(BEEB_OUTPUT)/$$.GMC $(BEEB_OUTPUT)/$$.GLEVELS $(BEEB_OUTPUT)/$$.GBAS $(BEEB_OUTPUT)/$$.GEDMC
 
 ##########################################################################
 ##########################################################################

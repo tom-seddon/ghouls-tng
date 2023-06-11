@@ -16,7 +16,7 @@ install:
   - cd ~/tass64-code && make -j$(NPROC)
 
 build_script:
-  - ps: cd ghouls-tng && make wip_build VERBOSE=1 TASS=$HOME/tass64-code/64tass
+  - ps: cd ~/ghouls-tng && make wip_build VERBOSE=1 TASS=$HOME/tass64-code/64tass
   - ps: $env:OUTPUT_NAME=Get-Content ghouls-tng/build/last_wip_build.txt -First 1
   - ps: 'dir env:'
     

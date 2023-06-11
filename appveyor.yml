@@ -13,7 +13,7 @@ install:
   - ps: nproc
   - ps: pwd
   - pushd ~
-  - svn checkout -r 2974 https://svn.code.sf.net/p/tass64/code/trunk tass64-code
+  - svn checkout -r 2980 https://svn.code.sf.net/p/tass64/code/trunk tass64-code
   - cd ~/tass64-code && make -j$(nproc)
   - popd
   - ps: $env:SUFFIX = $(git log -1 --format=%cd-%h --date=format:%Y%m%d-%H%M%S $env:APPVEYOR_REPO_COMMIT)

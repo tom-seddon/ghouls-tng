@@ -8,14 +8,13 @@ image:
   - Ubuntu2004
 
 install:
-  - pushd
   - ps: git submodule init
   - ps: git submodule update
   - ps: nproc
   - ps: pwd
-  - ps: cd ~ && svn checkout -r 2974 https://svn.code.sf.net/p/tass64/code/trunk tass64-code
+  - cd ~ && svn checkout -r 2974 https://svn.code.sf.net/p/tass64/code/trunk tass64-code
   - cd ~/tass64-code && make -j$(nproc)
-  - popd
+  - cd ~/ghouls-tng
   - ps: $env:SUFFIX = $(git log -1 --format=%cd-%h --date=format:%Y%m%d-%H%M%S $env:APPVEYOR_REPO_COMMIT)
   - ps: $env:TIMESTAMP = $(git log -1 --format=%cd --date=format:%Y%m%d-%H%M%S $env:APPVEYOR_REPO_COMMIT)
   - ps: $env:RELEASE_NAME = "ghouls-tng-"+$env:SUFFIX

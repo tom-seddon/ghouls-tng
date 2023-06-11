@@ -12,16 +12,17 @@ install:
   - ps: git submodule update
   - ps: nproc
   - ps: pwd
-  - cd ~ && svn checkout -r 2974 https://svn.code.sf.net/p/tass64/code/trunk tass64-code
+  - pushd ~
+  - svn checkout -r 2974 https://svn.code.sf.net/p/tass64/code/trunk tass64-code
   - cd ~/tass64-code && make -j$(nproc)
-  - cd ~/ghouls-tng
+  - popd
   - ps: $env:SUFFIX = $(git log -1 --format=%cd-%h --date=format:%Y%m%d-%H%M%S $env:APPVEYOR_REPO_COMMIT)
   - ps: $env:TIMESTAMP = $(git log -1 --format=%cd --date=format:%Y%m%d-%H%M%S $env:APPVEYOR_REPO_COMMIT)
   - ps: $env:RELEASE_NAME = "ghouls-tng-"+$env:SUFFIX
 
 build_script:
   - ps: $env:OUTPUT_NAME=$HOME/$(RELEASE_NAME)
-  - ps: cd ~/ghouls-tng && make wip_build VERBOSE=1 TASS=$HOME/tass64-code/64tass OUTPUT_SSD=$env:OUTPUT_NAME
+  - ps: make wip_build VERBOSE=1 TASS=$HOME/tass64-code/64tass OUTPUT_SSD=$env:OUTPUT_NAME
   - ps: 'dir env:'
     
 artifacts:

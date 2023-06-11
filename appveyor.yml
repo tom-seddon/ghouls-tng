@@ -14,10 +14,13 @@ install:
   - ps: pwd
   - ps: cd ~ && svn checkout -r 2974 https://svn.code.sf.net/p/tass64/code/trunk tass64-code
   - cd ~/tass64-code && make -j$(NPROC)
+  - ps: $env:SUFFIX = $(git log -1 --format=%cd-%h --date=format:%Y%m%d-%H%M%S $env:APPVEYOR_REPO_COMMIT)
+  - ps: $env:TIMESTAMP = $(git log -1 --format=%cd --date=format:%Y%m%d-%H%M%S $env:APPVEYOR_REPO_COMMIT)
+  - ps: $env:RELEASE_NAME = "ghouls-tng-"+$env:SUFFIX
 
 build_script:
-  - ps: cd ~/ghouls-tng && make wip_build VERBOSE=1 TASS=$HOME/tass64-code/64tass
-  - ps: $env:OUTPUT_NAME=Get-Content ghouls-tng/build/last_wip_build.txt -First 1
+  - ps: $env:OUTPUT_NAME=$HOME/$(RELEASE_NAME)
+  - ps: cd ~/ghouls-tng && make wip_build VERBOSE=1 TASS=$HOME/tass64-code/64tass OUTPUT_SSD=$env:OUTPUT_NAME
   - ps: 'dir env:'
     
 artifacts:
@@ -25,3 +28,18 @@ artifacts:
     name: output
 
 deploy:
+  - release: $(RELEASE_NAME)
+    description: |
+      $(APPVEYOR_REPO_COMMIT_MESSAGE)
+      
+      $(APPVEYOR_REPO_COMMIT_MESSAGE_EXTENDED)
+      
+    provider: GitHub
+    auth_token:
+      secure: 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
+    artifact: output
+    draft: false
+    prerelease: false
+    on:
+      branch: main
+      deploy: true

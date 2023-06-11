@@ -13,8 +13,15 @@ install:
   - ps: nproc
   - ps: pwd
   - ps: cd ~ && svn checkout -r 2974 https://svn.code.sf.net/p/tass64/code/trunk tass64-code
-  - ps: cd ~/tass64-code && make
+  - cd ~/tass64-code && make -d -j$(NPROC)
 
 build_script:
-  - ps: make VERBOSE=1 TASS=$HOME/tass64-code/64tass
+  - ps: make wip_build VERBOSE=1 TASS=$HOME/tass64-code/64tass
+  - ps: $env:OUTPUT_NAME=Get-Content build/last_wip_build.txt -First 1
+  - ps: 'dir env:'
     
+artifacts:
+  - path: $(OUTPUT_NAME)
+    name: output
+
+deploy:

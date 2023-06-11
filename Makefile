@@ -138,4 +138,4 @@ wip_build:
 	$(_V)$(MAKE) build
 	$(_V)$(SHELLCMD) copy-file $(SSD_OUTPUT) $(OUTPUT_SSD)
 	$(_V)echo $(OUTPUT_SSD)
-
+	$(_V)echo $(OUTPUT_SSD) > $(BUILD)/last_wip_build_ssd.txt

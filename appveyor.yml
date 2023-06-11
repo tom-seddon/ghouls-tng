@@ -21,12 +21,14 @@ install:
   - ps: $env:RELEASE_NAME = "ghouls-tng-"+$env:SUFFIX
 
 build_script:
-  - ps: $env:OUTPUT_NAME=$env:RELEASE_NAME+".ssd"
+  - ps: $env:OUTPUT_SSD=$env:RELEASE_NAME+".ssd"
+  - ps: $env:OUTPUT_ZIP=$env:RELEASE_NAME+".zip"
   - ps: make wip_build VERBOSE=1 TASS=$HOME/tass64-code/64tass OUTPUT_SSD=$env:OUTPUT_NAME
-  - ps: 'dir env:'
+  - ps: zip -9 $(OUTPUT_ZIP) $(OUTPUT_SSD)
+  - env
     
 artifacts:
-  - path: $(OUTPUT_NAME)
+  - path: $(OUTPUT_ZIP)
     name: output
 
 deploy:
@@ -42,6 +44,3 @@ deploy:
     artifact: output
     draft: false
     prerelease: false
-    on:
-      branch: main
-      deploy: true

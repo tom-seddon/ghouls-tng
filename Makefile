@@ -71,6 +71,7 @@ endif
 	$(_V)$(MAKE) _asm PC=glevels BEEB=GLEVELS
 
 # Create GBAS
+	$(_V)ls -l $(BUILD)
 	$(_V)$(PYTHON) $(BIN)/bbpp.py -Ddebug=True --asm-symbols $(BUILD)/gmc.symbols "" -o $(BUILD)/ghouls.bas src/ghouls.bas
 	$(_V)$(BASICTOOL) --tokenise --basic-2 --output-binary $(BUILD)/ghouls.bas $(BEEB_OUTPUT)/$$.GBAS
 

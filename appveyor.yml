@@ -1,0 +1,11 @@
+version: '{build}'
+
+branches:
+  only:
+    - master
+
+image:
+  - Ubuntu2004
+
+install:
+  - ps: 'dir env:'

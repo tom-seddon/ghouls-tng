@@ -40,7 +40,7 @@ deploy:
       
     provider: GitHub
     auth_token:
-      secure: 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
+      secure: 4W5gLh9wP/h+mqHPWAnfkq+TdLFmrzC926Z1KZSM8A4HSkZ2bzS+cP/RAUkm9Qao
     artifact: output
     draft: false
     prerelease: false

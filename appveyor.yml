@@ -10,7 +10,6 @@ image:
 install:
   - ps: git submodule init
   - ps: git submodule update
-  - ps: 'dir env:'
   - ps: nproc
   - ps: pwd
   - ps: cd ~ && svn checkout -r 2974 https://svn.code.sf.net/p/tass64/code/trunk tass64-code

@@ -438,13 +438,11 @@ and power pills, as they are positioned by screen address.
 
 Offsets are relative to the start of the file.
 
-| Offset | Type    | Name   | What                            |
-|--------+---------+--------+---------------------------------|
-|     +0 | byte[4] | ident  | 60 d7 73 0e - file magic number |
-|     +4 | dword   | level1 | offset of level 1 data          |
-|     +8 | dword   | level2 | offset of level 2 data          |
-|    +12 | dword   | level3 | offset of level 3 data          |
-|    +16 | dword   | level4 | offset of level 4 data          |
+| Offset | Type    | Name  | What                            |
+|--------+---------+-------+---------------------------------|
+|     +0 | byte[4] | ident | 60 d7 73 0e - file magic number |
+|--------+---------+-------+---------------------------------|
+|     +4 |         |       | header size                     |
 
 The magic number is `&0e73d760` when read with BBC BASIC's `!`
 operator.
@@ -455,17 +453,18 @@ Offsets are relative to the start of the level data.
 
 | Offset | Type         | Name       | What                                 |
 |--------+--------------+------------+--------------------------------------|
-|     +0 | word         | name_x     | Graphics X coord for level name      |
-|     +2 | char[17]     | name       | Level name, CR-terminated            |
-|    +19 | byte         | colour3    | Physical colour for logical colour 3 |
-|    +20 | byte         | pl_start_x | Player start X                       |
-|    +21 | byte         | pl_start_y | Player start Y                       |
-|    +22 | byte[26][20] | map        | Map data                             |
+|     +0 | char[17]     | name       | Level name, CR-terminated            |
+|    +17 | byte         | colour3    | Physical colour for logical colour 3 |
+|    +18 | byte         | pl_start_x | Player start X                       |
+|    +19 | byte         | pl_start_y | Player start Y                       |
+|    +20 | byte[35]     | spare      | Available for future expansion       |
+|    +55 | byte[26][20] | map        | Map data                             |
+|--------+--------------+------------+--------------------------------------|
+|   +575 |              |            | level total size                     |
 
-The logic behind the name's X coordinate is a bit unclear. So if it
-goes in the level data, original levels can match the originals for
-now, and the editor can do something sensible for any new levels. It's
-only 2 bytes.
+(So total level data size is header size+4*level size = 4+4*575 = 2304
+(0x900) - the size of ~spare~ being chosen to allow this total to be a
+round number)
 
 The player start pos is stored as X/Y, with (0,0) as top left of
 level. as that's how the editor manages everything internally. It's

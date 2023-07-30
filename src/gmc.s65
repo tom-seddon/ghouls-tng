@@ -567,6 +567,13 @@ platform:
                 sta object_var2s,x ;update timer
                 lda #0
                 sta object_var0s,x ;direction
+
+                ldy #31
+platform_loop:
+                lda sprite_floating_platform,y
+                sta (level_draw_screen_addr),y
+                dey
+                bpl platform_loop
                 jmp next
                 
 conveyor:
@@ -576,6 +583,13 @@ conveyor:
                 sta object_var2s,x ;update timer
                 lda #1
                 sta object_var0s,x ;direction
+
+                ldy #15
+conveyor_loop:
+                lda sprite_conveyor,y
+                sta (level_draw_screen_addr),y
+                dey
+                bpl conveyor_loop
                 jmp next
                 
 pill:
@@ -604,6 +618,23 @@ spider_common:
                 sta object_var2s,x ;update timer
                 lda #1
                 sta object_var0s,x ;direction
+
+                clc
+                lda level_draw_screen_addr+0
+                adc #$40
+                sta L0074+0
+                lda level_draw_screen_addr+1
+                adc #$01
+                sta L0074+1
+                ldy #31
+spider_loop:
+                lda sprite_spider_0_row0,y
+                sta (level_draw_screen_addr),y
+                lda sprite_spider_0_row1,y
+                sta (L0074),y
+                dey
+                bpl spider_loop
+                
                 jmp next
 
 add_object:

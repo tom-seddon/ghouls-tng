@@ -1,5 +1,5 @@
 #!/usr/bin/python
-import os,os.path,sys,argparse
+import os,os.path,sys,argparse,hashlib
 
 class Symbols: pass
 
@@ -20,11 +20,19 @@ def main2(options):
 
     def budget(name,begin,end):
         nonlocal any_bad
+
+        with open(os.path.join(options.path,name),'rb') as f: data=f.read()
+
+        hasher=hashlib.sha1()
+        hasher.update(data)
         
-        n=os.stat(os.path.join(options.path,name)).st_size
         max_n=end-begin
-        rem=max_n-n
-        print('%d/%d (%d free) %s'%(n,max_n,rem,name))
+        rem=max_n-len(data)
+        print('%d/%d (%d free) %s %s'%(len(data),
+                                       max_n,
+                                       rem,
+                                       name,
+                                       hasher.hexdigest()))
         if rem<0: any_bad=True
 
     PAGE=0x1100

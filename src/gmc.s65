@@ -30,8 +30,8 @@ was_platform_addr=$7a
 L007C=$7c
 L007E=$7e
 L007F=$7f
-was_conveyor_addr=$80               ; Crap name, since it doesn't even
-                                ; convey! I njust oticed too late that
+was_conveyor_addr=$80           ; Crap name, since it doesn't even
+                                ; convey! I just noticed too late that
                                 ; the objects page calls this the
                                 ; moving floor
 object_addr=$82
@@ -213,7 +213,25 @@ sprite_pl_die_8:.byte 0, $40, $20,$C0, 0, $20, $50, $10, $80,$A0, $40, 0, $30, $
 sprite_pl_splat:.byte 0, 0, 0, $20, $90, $70,$E0,$F0, 0, 0, 0, $40,$C0,$A0,$D0,$F0; 0
 sprite_spider_1_row0:.byte $C, $17, $11, 0, $17, $C, $33, $77, 0, 0,$CC, $55,$FF,$FF,$DF,$DF, 0, 0, $33,$AA,$FF,$FF,$BF,$BF, 3, $8E, $88, 0, $8E, 3,$CC,$EE; 0
 sprite_spider_1_row1:.byte $55, $5D, $19, $1B, $A, 2, 2, 2, $57, $77, $77, 2, 2, 4, 4, 0,$AE,$EE,$EE, 4, 4, 2, 2, 0,$AA,$AB, $89, $8D, 5, 4, 4, 4; 0
-sprite_power_pill:.byte 0, 0, $10, $21, $21, $21, $10, 0, 0, 0, $80, $48, $48, $48, $80, 0; 0
+sprite_power_pill:
+                .byte %00000000
+                .byte %00000000
+                .byte %00010000
+                .byte %00100001
+                .byte %00100001
+                .byte %00100001
+                .byte %00010000
+                .byte %00000000
+                .byte %00000000
+                .byte %00000000
+                .byte %10000000
+                .byte %01001000
+                .byte %01001000
+                .byte %01001000
+                .byte %10000000
+                .byte %00000000
+
+                
 sprite_ghost_angry_row0:.byte 3, 7, 7, $69, $49, $49, $F, $F, $C, $E, $E, $69, $29, $29, $F, $F; 0
 sprite_ghost_angry_row1:.byte $E, 4, 4, 5, 3, 3, 3, $F, 7, 3, 2, $A, $E, $C, $C, 0; 0
 sprite_ghost_happy_row0:.byte 3, 7, 7, $49, $49, $69, $F, $F, $C, $E, $E, $29, $29, $69, $F, $F; 0
@@ -704,7 +722,7 @@ not_found:
 ;-------------------------------------------------------------------------
 
 ; copy of what was behind player
-L0DDE:
+data_behind_player:
                 .fill 32
 
 ;-------------------------------------------------------------------------
@@ -974,19 +992,24 @@ move_player_left:
 L0F89:
                 ldy #$F
 
-L0F8B:
-                lda L0DDE,y  ; copy of what was under player, row 0?
+copy_screen_behind_player_loop:
+                lda data_behind_player,y  ; copy of what was under player, row 0?
                 sta (L0072),y
-                lda L0DDE+16,y  ; copy of what was under player, row 1?
+                lda data_behind_player+16,y  ; copy of what was under player, row 1?
                 sta (L0074),y
                 dey
-                bpl L0F8B
-                lda L0DDE+5  ; copy of what was under player, row 0?
-                cmp #$21
-                bne L101C
-                lda L0DDE+$C ; copy of what was under player, row 0?
-                cmp #$48
-                bne L101C
+                bpl copy_screen_behind_player_loop
+
+                ; Check for power pill
+                ldy #15
+check_power_pill_loop:
+                lda data_behind_player,y
+                cmp sprite_power_pill,y
+                bne L101C       ;not power pill
+                dey
+                bpl check_power_pill_loop
+                
+                ; It was the power pill.
                 lda #6
                 sta L0AC8+4  ;pitch
                 lda #7
@@ -1000,7 +1023,7 @@ L0F8B:
 
 L0FBF:
                 sta (L0072),y
-                sta L0DDE,y  ; copy of what was under player, row 0?
+                sta data_behind_player,y  ; copy of what was under player, row 0?
                 dey
                 bne L0FBF
                 lda #100
@@ -1139,17 +1162,17 @@ L1092:
 
 L10A1:
                 lda (player_addr),y
-                sta L0DDE,y  ; copy of what was under player, row 0?
+                sta data_behind_player,y  ; copy of what was under player, row 0?
                 lda (L0072),y
-                sta L0DDE+16,y  ; copy of what was under player, row 1?
+                sta data_behind_player+16,y  ; copy of what was under player, row 1?
                 dey
                 bpl L10A1
-                lda L0DDE+4  ; copy of what was under player, row 0?
+                lda data_behind_player+4  ; copy of what was under player, row 0?
                 cmp #$30
                 bne L10DD
                 lda #0
-                sta L0DDE+4  ; copy of what was under player, row 0?
-                sta L0DDE+5  ; copy of what was under player, row 0?
+                sta data_behind_player+4  ; copy of what was under player, row 0?
+                sta data_behind_player+5  ; copy of what was under player, row 0?
                 lda L0085
                 clc
                 adc #4
@@ -1177,12 +1200,12 @@ L10E6:
                 ldy #$F
 
 L10E8:
-                lda L0DDE+16,y  ; copy of what was under player, row 1?
+                lda data_behind_player+16,y  ; copy of what was under player, row 1?
                 cmp #8
                 beq L1104
                 cmp #1
                 beq L1104
-                lda L0DDE,y  ; copy of what was under player, row 0?
+                lda data_behind_player,y  ; copy of what was under player, row 0?
                 cmp #8
                 beq L1104
                 cmp #1
@@ -1198,8 +1221,8 @@ L1104:
                 lda #0
 
 L1108:
-                sta L0DDE+16,y  ; copy of what was under player, row 1?
-                sta L0DDE,y  ; copy of what was under player, row 0?
+                sta data_behind_player+16,y  ; copy of what was under player, row 1?
+                sta data_behind_player,y  ; copy of what was under player, row 0?
                 dey
                 bpl L1108
                 lda L0AF7
@@ -2205,9 +2228,9 @@ L16C6:
                 ldy #$F
 
 L16E4:
-                lda L0DDE,y  ; copy of what was under player, row 0?
+                lda data_behind_player,y  ; copy of what was under player, row 0?
                 sta (player_addr),y
-                lda L0DDE+16,y  ; copy of what was under player, row 1?
+                lda data_behind_player+16,y  ; copy of what was under player, row 1?
                 sta (L0072),y
                 dey
                 bpl L16E4
@@ -2230,15 +2253,15 @@ L16E4:
 
 L170F:
                 lda (player_addr),y
-                sta L0DDE,y  ; copy of what was under player, row 0?
+                sta data_behind_player,y  ; copy of what was under player, row 0?
                 lda (L0072),y
-                sta L0DDE+16,y  ; copy of what was under player, row 1?
+                sta data_behind_player+16,y  ; copy of what was under player, row 1?
                 dey
                 bpl L170F
-                lda L0DDE+16    ; copy of what was under player, row 1?
+                lda data_behind_player+16    ; copy of what was under player, row 1?
                 cmp #$FF
                 beq draw_pl_splat
-                lda L0DDE+16+8  ; copy of what was under player, row 1?
+                lda data_behind_player+16+8  ; copy of what was under player, row 1?
                 cmp #$FF
                 beq draw_pl_splat
                 lda L0078
@@ -2300,7 +2323,7 @@ kill_player_and_drop_caller:
                 ldy #$F
 
 L177A:
-                lda L0DDE,y  ; copy of what was under player, row 0?
+                lda data_behind_player,y  ; copy of what was under player, row 0?
                 sta (player_addr),y
                 lda sprite_pl_splat,y
                 sta (L0072),y
@@ -3373,7 +3396,7 @@ ed_test: .proc
                 ldy #31
 -
                 lda (player_addr),y
-                sta L0DDE,y
+                sta data_behind_player,y
                 dey
                 bpl -
 

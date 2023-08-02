@@ -807,30 +807,21 @@ update_objects_done:
                 ; jsr update_conveyor
                 ; jsr update_spider
                 
-                lda #$81        ; INKEY (AUG p153)
-                ldx #$C8        ; P
-                ldy #$FF        ; keyboard scan
-                jsr osbyte
-                tya             ; A=$ff if pressed
+                ldx #inkey(key_p)
+                jsr test_key
                 beq L0E85
 
 pause_loop:
-                lda #$81        ; INKEY (AUG p153)
-                ldx #$C9        ; O
-                ldy #$FF        ; keyboard scan
-                jsr osbyte
-                tya
+                ldx #inkey(key_o)
+                jsr test_key
                 beq pause_loop
 
 L0E85:
                 lda #19
                 jsr osbyte
 
-                lda #$81        ; INKEY (AUG p153)
-                ldx #$8F        ; ESCAPE
-                ldy #$FF        ; keyboard scan
-                jsr osbyte
-                tya
+                ldx #inkey(key_escape)
+                jsr test_key
                 beq main_loop
                 rts
 
@@ -880,11 +871,8 @@ L0ED7:
 L0EDA:
                 lda #0
                 sta player_movement
-                lda #$81
-                ldx #$BD        ; X
-                ldy #$FF
-                jsr osbyte
-                tya
+                ldx #inkey(key_x)
+                jsr test_key
                 beq test_z_key
 ; X pressed
                 lda player_movement
@@ -902,11 +890,8 @@ L0EF8:
 ;-------------------------------------------------------------------------
 
 test_z_key:
-                lda #$81
-                ldx #$9E        ; Z
-                ldy #$FF
-                jsr osbyte
-                tya
+                ldx #inkey(key_z)
+                jsr test_key
                 beq L0F1E
                 lda player_movement
                 bne L0F19
@@ -1933,11 +1918,8 @@ L14F7:
 L14FA:
                 lda player_jump_state
                 bne L1519    ; taken if already jumping
-                lda #$81        ; INKEY
-                ldx #$B6        ; RETURN
-                ldy #$FF
-                jsr osbyte
-                tya
+                ldx #inkey(key_return)
+                jsr test_key
                 beq L1519    ; taken if not pressed
                 lda #4
                 sta player_jump_state
@@ -2388,6 +2370,17 @@ fill_row_loop:
                 bne slide_off_loop
                 rts
 
+;-------------------------------------------------------------------------
+;
+; Entry: X = key to test
+; Exit: Z=0 if key pressed (BNE if pressed, BEQ if not pressed)
+test_key:
+                lda #$81
+                ldy #$ff
+                jsr osbyte
+                tya
+                rts
+                
 ;-------------------------------------------------------------------------
                 .if editor
 ;-------------------------------------------------------------------------

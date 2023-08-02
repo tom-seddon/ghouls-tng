@@ -1594,7 +1594,7 @@ L1343:
                 cmp #0
                 bne L134C
                 lda sprite_ghost_angry_row0,y
-                sta ($7E),y
+                sta (L007E),y
 
 L134C:
                 lda (L0074),y
@@ -1608,7 +1608,7 @@ L1355:
                 cmp #0
                 bne L135E
                 lda sprite_ghost_angry_row1,y
-                sta ($74),y
+                sta (L0074),y
 
 L135E:
                 dey

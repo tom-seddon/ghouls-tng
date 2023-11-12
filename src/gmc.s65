@@ -3031,8 +3031,16 @@ key_routines_hi: .byte >key_actions.routine
 next_colour:
                 ldy #LevelData.colour3
                 lda (ed_level_addr),y
+                and #15
                 clc
                 adc #1
+
+                ; The last 4 flashing colours are pointless, since
+                ; they're not obviously different from the first 4...
+                cmp #12
+                bcc +
+                lda #0
++
                 sta (ed_level_addr),y
                 jmp redraw
 

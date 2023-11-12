@@ -2921,6 +2921,13 @@ ed_editor: .proc
 
                 jsr redraw
 
+                ; Wait until no keys pressed.
+wait_for_keys_up_loop:
+                lda #$7a        ; keyboard scan from $10 (AUG p145)
+                jsr osbyte
+                cpx #$ff
+                bne wait_for_keys_up_loop
+                
                 jsr draw_new_otype
 edit_loop:
                 lda #19
@@ -3548,7 +3555,7 @@ initial_bonus:
                 jsr entry_game_2
 
                 ; Flush all buffers.
-                lda #15
+                lda #15         ; flush buffers
                 ldx #0
                 jsr osbyte
                 rts

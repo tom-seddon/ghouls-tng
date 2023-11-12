@@ -2735,6 +2735,11 @@ edit_level:
                 sec
                 sbc #'1'
                 jsr ed_prepare_for_level_access
+                
+                lda #0
+                sta ed_cx
+                sta ed_cy
+
                 jmp ed_editor
 
 is_ascii_level_number:
@@ -2915,10 +2920,6 @@ ed_editor: .proc
                 jsr ed_coff
 
                 jsr redraw
-                
-                lda #0
-                sta ed_cx
-                sta ed_cy
 
                 jsr draw_new_otype
 edit_loop:

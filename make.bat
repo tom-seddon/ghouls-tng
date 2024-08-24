@@ -1,1 +1,1 @@
-@bin\gmake %*
+@bin\gmake --no-print-directory %*

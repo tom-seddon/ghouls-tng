@@ -2441,6 +2441,11 @@ ed_new_otype: .fill 1
 ed_cur_ltype: .fill 1
 ed_cur_otype: .fill 1
 ed_cur_ovalue: .fill 1
+; The test start position is valid when bit 7 of ed_test_pl_start_x is
+; clear. Otherwise, it hasn't been set, and the level's position
+; should be used.
+ed_test_pl_start_x: .fill 1
+ed_test_pl_start_y: .fill 1
                 .endsection
                 
 ed_levels_header_magic:
@@ -2457,6 +2462,10 @@ ed_key_counters:
 ed_key_flags:
                 .fill len(ed_keys),0
 ed_any_keys_pressed:
+                .byte 0
+ed_shift_pressed:
+                .byte 0
+ed_ctrl_pressed:
                 .byte 0
 
 ed_new_ovalues:
@@ -2739,6 +2748,10 @@ edit_level:
                 lda #0
                 sta ed_cx
                 sta ed_cy
+
+                ; Invalidate test start pos.
+                sec
+                ror ed_test_pl_start_x
 
                 jmp ed_editor
 
@@ -3180,6 +3193,30 @@ no_ovalue:
                 rts
                 
 set_start_pos:
+                bit ed_shift_pressed
+                bmi set_level_start_pos ; taken if SHIFT pressed
+
+                ; Set test start pos. Or clear it if it's the same.
+                lda ed_cx
+                cmp ed_test_pl_start_x
+                bne set_test_start_pos
+                lda ed_cy
+                cmp ed_test_pl_start_y
+                bne set_test_start_pos
+
+                ; Invalidate test start pos.
+                sec
+                ror ed_test_pl_start_x
+                jmp redraw
+
+set_test_start_pos:
+                lda ed_cx
+                sta ed_test_pl_start_x
+                lda ed_cy
+                sta ed_test_pl_start_y
+                jmp redraw
+
+set_level_start_pos:
                 lda ed_cx
                 ldy #LevelData.pl_start_x
                 sta (ed_level_addr),y
@@ -3375,7 +3412,23 @@ ed_test: .proc
                 jsr oswrch
 
                 ; Set up player start pos.
+                ;
+                ; If testing with SHIFT+TAB, always use level start
+                ; pos. If testing with TAB, use test start pos if
+                ; available, and level start pos if not.
+                bit ed_shift_pressed
+                bmi use_level_start ; taken if shift pressed
+
+                bit ed_test_pl_start_x
+                bmi use_level_start ; taken if test start not set
+
+                ldx ed_test_pl_start_x
+                ldy ed_test_pl_start_y
+                jmp got_start_pos
+
+use_level_start:
                 jsr ed_get_pl_start
+got_start_pos:
                 ; Adjust for editor vs game positioning.
                 iny
                 iny
@@ -3609,27 +3662,63 @@ x_loop:
                 cmp #level_height
                 bne y_loop
 
-                ; Ick. Special case :(
                 jsr ed_get_pl_start
+                lda #$f0
+                jsr draw_pl_start
+
+                ldx ed_test_pl_start_x
+                bmi done        ; taken if test start pos invalid
+                ldy ed_test_pl_start_y
+                lda #$0f
+                jsr draw_pl_start
+
+done:
+                rts
+
+draw_pl_start:
+                sta pl_start_colour
                 jsr ed_get_screen_write_addr
-                
-                ldy #15
--
-                lda sprite_pl_facing,y
-                sta (ed_write_addr),y
-                dey
-                bpl -
+
+                ldx #15
+                jsr draw_pl_start_half
+
                 jsr ed_next_write_addr_screen_row
+
+                ldx #31
+draw_pl_start_half:
                 ldy #15
 -
-                lda sprite_pl_facing+16,y
+                lda #$00
+                sta value
+                lda #$11
+                sta mask
+                jsr pixel
+                jsr pixel
+                jsr pixel
+                jsr pixel
                 sta (ed_write_addr),y
+                dex
                 dey
                 bpl -
                 rts
 
+pixel:
+                lda sprite_pl_facing,x
+                and mask
+                beq +
+                lda pl_start_colour
+                and mask
++
+                ora value
+                sta value
+                asl mask
+                rts
+
 xc: .byte 0
 yc: .byte 0
+pl_start_colour: .byte 0
+mask: .byte 0
+value: .byte 0
                 .endproc
 
 ;-------------------------------------------------------------------------
@@ -4173,10 +4262,8 @@ loop:
                 tya
                 pha
 
-                lda #$81
                 ldx table,y
-                jsr ed_osbyte_yff
-                cpx #$ff        ;C=1 if pressed
+                jsr ed_test_key
 
                 pla
                 tay
@@ -4221,6 +4308,15 @@ lda_key_flags: lda #$ff
 
                 dey
                 bpl loop
+
+                ldx #inkey(key_shift)
+                jsr ed_test_key
+                ror ed_shift_pressed
+
+                ldx #inkey(key_ctrl)
+                jsr ed_test_key
+                ror ed_ctrl_pressed
+                
                 rts
 
 if1:
@@ -4236,7 +4332,16 @@ table:
                 .byte inkey(ed_keys[_i])
                 .endfor
                 .endproc
-                
+
+;-------------------------------------------------------------------------
+; entry: X = inkey number
+; exit: C=1 if pressed
+
+ed_test_key: .proc
+                jsr test_key
+                cpx #$ff
+                rts
+                .endproc
 
 ;-------------------------------------------------------------------------
 ;
@@ -4362,6 +4467,9 @@ ed_one_time_init: .proc
                 inx
                 cpx #ed_zp_end
                 bne -
+
+                lda #$80
+                sta ed_test_pl_start_x
                 
                 ldx #<run_gudgs
                 ldy #>run_gudgs

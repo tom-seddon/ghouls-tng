@@ -46,10 +46,16 @@ When editing:
 - `RETURN` adds an instance of the NEW thing to the level
 - `C` changes the level-specific colour
 - `R` redraws the level
-- `S` sets the player's start position
-- `TAB` lets you test the level. Testing ends with `ESCAPE` or when
-  you die or complete the level
+- `SHIFT+S` sets the player's start position
+- `S` sets the player's test start position (shown in red)
+- `TAB` lets you test the level. If the test start position is set,
+  the player starts there. Testing ends with `ESCAPE` or when you die
+  or complete the level
+- `SHIFT+TAB` tests the level, always using the level start position
 - `ESCAPE` takes you back to the main menu
+
+(The test start position is not saved. It's there to make it quicker
+to iterate on sections of the level.)
 
 The creation value is a number associated with some types of object:
 

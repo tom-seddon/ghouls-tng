@@ -33,6 +33,10 @@ Press `L` to load levels. Enter file name.
 
 Press `S` to save levels. Enter file name.
 
+Press `I` to import a level from another level set. Enter file name,
+then level from that set to import, then level in the current set to
+replace. Press ESCAPE at any point to get back to the main menu.
+
 Press `*` to get a prompt for entering OS commands. Change drive and
 dir and so on. Press ESCAPE to get back to the editor menu.
 

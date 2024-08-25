@@ -27,7 +27,10 @@ VDU23,0,1,0;0;0;0;:VDU19,1,1;0;19,2,3;0;19,3,LDATA?{$LevelData_colour3_offset};0
 SOUND&12,4,0,18:SOUND&13,4,1,18:FORF=1TO40:VDU23,0,1,F;0;0;0;:*FX19
 NEXT
 !{&player_addr}=&5800+LDATA?{$LevelData_pl_start_x_offset}*16+(4+LDATA?{$LevelData_pl_start_y_offset})*320:CALL{&copy_data_behind_player}
-FORF=0TO GO STEP2:G=&6000+(RND(300)*16):F!{&ghosts_table}=G:NEXT:?{&bonus_update_timer}=31
+FORF=0TO GO STEP2
+IFLDATA?{$LevelData_flags_offset}AND{$LevelData_flags_has_ghost_rect}:F!{&ghosts_table}=&5D00+FNRND(LDATA?{$LevelData_ghost_min_x_offset},LDATA?{$LevelData_ghost_max_x_offset})*16+FNRND(LDATA?{$LevelData_ghost_min_y_offset},LDATA?{$LevelData_ghost_max_y_offset})*320:ELSE:F!{&ghosts_table}=&6000+(RND(300)*16)
+NEXT
+?{&bonus_update_timer}=31
 ?&7D=0 {# the asm doesn't seem to use &7D...
 CALL{&entry_game}:*FX15
 IF?{&level_finished}=255GOTO{$L370}
@@ -204,3 +207,4 @@ DATA5,16,17,16,33,16,53,16,37,24,37,8,33,8,25,8,17,8,13,8,5,16,17,16,33,16,53,16
 {:L2020}
 DATA5,20,13,8,17,16,5,16,25,20,33,8,37,16,25,16,33,20,37,8,33,8,25,8,17,8,13,8,-1,-1
 END
+DEFFNRND(N,X):=N+INT(RND(1)*((X+1)-N))

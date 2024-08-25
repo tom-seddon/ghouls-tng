@@ -2413,7 +2413,7 @@ test_key:
                 .if editor
 ;-------------------------------------------------------------------------
 
-ed_keys=[key_z,key_x,key_slash,key_colon,key_return,key_delete,key_tab,key_r,key_s,key_escape,key_left,key_right,key_up,key_down,key_c]
+ed_keys=[key_z,key_x,key_slash,key_colon,key_return,key_delete,key_tab,key_r,key_s,key_escape,key_left,key_right,key_up,key_down,key_c,key_g]
 
 ed_key_index: .function k
                 .for _i:=0,_i<len(ed_keys),_i+=1
@@ -3261,6 +3261,7 @@ _..=[key_action(key_return,ed_key_flag_down,add_object)]
 _..=[key_action(key_delete,ed_key_flag_down,erase_object)]
 _..=[key_action(key_tab,ed_key_flag_newly_down,test_level)]
 _..=[key_action(key_c,ed_key_flag_newly_down,next_colour)]
+_..=[key_action(key_g,ed_key_flag_newly_down,set_ghost_rect)]
 key_actions=_
 
 key_indexes: .byte key_actions.key_index
@@ -3268,6 +3269,101 @@ key_masks: .byte key_actions.mask
 key_routines_lo: .byte <key_actions.routine
 key_routines_hi: .byte >key_actions.routine
 
+set_ghost_rect: .proc
+                bit ed_ctrl_pressed
+                bmi unset
+                
+                ldy #LevelData.flags
+                lda (ed_level_addr),y
+                and #LevelData.flags.has_ghost_rect
+                beq init
+
+                bit ed_shift_pressed
+                bmi max
+
+                jsr set_min
+done:
+                ldy #LevelData.flags
+                lda (ed_level_addr),y
+                and #LevelData.flags.has_ghost_rect
+                beq y_done
+                
+                ldy #LevelData.ghost_min_x
+                lda (ed_level_addr),y
+                ldy #LevelData.ghost_max_x
+                cmp (ed_level_addr),y
+                bcc x_done            ; taken if min<max
+                pha             ; save greater
+                lda (ed_level_addr),y ; A = lesser
+                tax             ; X = lesser
+                pla             ; restore greater
+                sta (ed_level_addr),y ; max = greater
+                txa                   ; A = lesser
+                ldy #LevelData.ghost_min_x
+                sta (ed_level_addr),y ; min = lesser
+x_done:
+                ldy #LevelData.ghost_min_y
+                lda (ed_level_addr),y
+                ldy #LevelData.ghost_max_y
+                cmp (ed_level_addr),y
+                bcc y_done            ; taken if min<max
+                pha             ; save greater
+                lda (ed_level_addr),y ; A = lesser
+                tax             ; X = lesser
+                pla             ; restore greater
+                sta (ed_level_addr),y ; max = greater
+                txa                   ; A = lesser
+                ldy #LevelData.ghost_min_y
+                sta (ed_level_addr),y ; min = lesser
+y_done:
+                jsr redraw
+                rts
+
+unset:
+                ldy #LevelData.flags
+                lda (ed_level_addr),y
+                and #(~LevelData.flags.has_ghost_rect)&$ff
+                sta (ed_level_addr),y
+                jmp done
+
+max:
+                jsr set_max
+                jmp done
+
+init:
+                lda (ed_level_addr),y
+                ora #LevelData.flags.has_ghost_rect
+                sta (ed_level_addr),y
+
+                jsr set_min
+                jsr set_max
+                jmp done
+
+set_min:
+                lda ed_cx
+                ldy #LevelData.ghost_min_x
+                sta (ed_level_addr),y
+
+                lda ed_cy
+                ldy #LevelData.ghost_min_y
+                sta (ed_level_addr),y
+
+                rts
+
+set_max:
+                lda ed_cx
+                ldy #LevelData.ghost_max_x
+                sta (ed_level_addr),y
+
+                lda ed_cy
+                ldy #LevelData.ghost_max_y
+                sta (ed_level_addr),y
+
+                rts
+
+                .endproc
+                
+                
 next_colour:
                 ldy #LevelData.colour3
                 lda (ed_level_addr),y
@@ -3481,6 +3577,31 @@ colour3_physical_colour:
                 lda #5
                 jsr ed_box
 
+                ldy #LevelData.flags
+                lda (ed_level_addr),y
+                and #LevelData.flags.has_ghost_rect
+                beq ghost_rect_done ; taken if ghost rect not set
+
+                ldy #LevelData.ghost_min_x
+                lda (ed_level_addr),y
+                sta ed_box_x0
+
+                ldy #LevelData.ghost_min_y
+                lda (ed_level_addr),y
+                sta ed_box_y0
+
+                ldy #LevelData.ghost_max_x
+                lda (ed_level_addr),y
+                sta ed_box_x1
+
+                ldy #LevelData.ghost_max_y
+                lda (ed_level_addr),y
+                sta ed_box_y1
+
+                lda #24+5       ; dotted line
+                jsr ed_box
+ghost_rect_done:
+                
                 rts
                 
 move_left:
@@ -3615,6 +3736,15 @@ none:
                 .endproc
 
 ;-------------------------------------------------------------------------
+
+ed_convert_to_game_coordinates:
+                iny
+                iny
+                iny
+                iny
+                rts                
+                
+;-------------------------------------------------------------------------
 ;
 ; Test current level.
 ;
@@ -3649,10 +3779,7 @@ use_level_start:
                 jsr ed_get_pl_start
 got_start_pos:
                 ; Adjust for editor vs game positioning.
-                iny
-                iny
-                iny
-                iny
+                jsr ed_convert_to_game_coordinates
                 jsr ed_get_screen_write_addr
                 
                 lda ed_write_addr+0
@@ -3660,7 +3787,36 @@ got_start_pos:
                 lda ed_write_addr+1
                 sta player_addr+1
 
-                ldx #0          ;no ghosts
+                ; Reset ghosts table
+                ldx #7
+-
+                lda #0
+                sta ghosts_table,x
+                dex
+                bpl -
+                
+                ldy #LevelData.flags
+                lda (ed_level_addr),y
+                and #LevelData.flags.has_ghost_rect
+                beq +           ; taken if no ghosts
+
+                ldy #LevelData.ghost_min_x
+                lda (ed_level_addr),y
+                tax
+                ldy #LevelData.ghost_min_y
+                lda (ed_level_addr),y
+                tay
+                jsr ed_convert_to_game_coordinates
+                dey             ; ??? - not sure why necessary
+                jsr ed_get_screen_write_addr
+
+                lda ed_write_addr+0
+                sta ghosts_table+0
+                lda ed_write_addr+1
+                sta ghosts_table+1
+                
++
+                ldx #0
                 jsr entry_init_level
 
                 jsr copy_data_behind_player
@@ -3671,14 +3827,6 @@ got_start_pos:
                 ; lda #7
                 ; jsr oswrch
                 ; jsr osrdch
-                
-                ; Reset ghosts table
-                ldx #7
--
-                lda #0
-                sta ghosts_table,x
-                dex
-                bpl -
                 
                 ; ; ???
                 ; lda #0

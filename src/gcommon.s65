@@ -27,7 +27,17 @@ name: .fill 17
 colour3: .fill 1
 pl_start_x: .fill 1
 pl_start_y: .fill 1
-spare: .fill 35
+flags: .block
+has_ghost_rect=1
+                .fill 1
+                .endblock
+; only present if has_ghost_rect flag set. Otherwise, use default
+; calculation: &6000+RND(300)*16
+ghost_min_x: .fill 1
+ghost_min_y: .fill 1
+ghost_max_x: .fill 1
+ghost_max_y: .fill 1
+spare: .fill 30
 map: .fill level_width*level_height
                 .endstruct
 
@@ -39,6 +49,12 @@ LevelData_name_offset=LevelData.name
 LevelData_colour3_offset=LevelData.colour3
 LevelData_pl_start_x_offset=LevelData.pl_start_x
 LevelData_pl_start_y_offset=LevelData.pl_start_y
+LevelData_flags_offset=LevelData.flags
+LevelData_ghost_min_x_offset=LevelData.ghost_min_x
+LevelData_ghost_min_y_offset=LevelData.ghost_min_y
+LevelData_ghost_max_x_offset=LevelData.ghost_max_x
+LevelData_ghost_max_y_offset=LevelData.ghost_max_y
+LevelData_flags_has_ghost_rect=LevelData.flags.has_ghost_rect
                 
 ; level_data_size=level_width*level_height
 ; level_name_x_offset=level_data_size

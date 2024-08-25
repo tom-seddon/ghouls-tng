@@ -51,15 +51,24 @@ When editing:
 - `C` changes the level-specific colour
 - `R` redraws the level
 - `SHIFT+S` sets the player's start position
-- `S` sets the player's test start position (shown in red)
+- `G` sets one corner of the ghost start position area
+- `SHIFT+G` sets the other corner of the ghost start position area
+- `CTRL+G` unsets the ghost start position area
+- `S` sets the player's test start position
 - `TAB` lets you test the level. If the test start position is set,
   the player starts there. Testing ends with `ESCAPE` or when you die
   or complete the level
 - `SHIFT+TAB` tests the level, always using the level start position
 - `ESCAPE` takes you back to the main menu
 
-(The test start position is not saved. It's there to make it quicker
-to iterate on sections of the level.)
+The test start position is shown in red. It isn't saved. It's there to
+make it quicker to iterate on sections of the level.
+
+The ghost start area, if set, is indicated by a dotted red rectangle.
+(If not set, the ghost will start at some random point in the level.)
+Ghosts will start from some position in this area. Though please note
+that for technical reasons, the ghost start position is not random
+when testing in the editor.
 
 The creation value is a number associated with some types of object:
 

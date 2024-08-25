@@ -561,6 +561,7 @@ done:
                 sta was_platform_addr+2
                 sta was_platform_addr+3
                 sta was_platform_addr+4
+
                 rts
 
 spring_2_rows:
@@ -1150,7 +1151,7 @@ L1082:
 
 ;-------------------------------------------------------------------------
 
-L1092:
+copy_data_behind_player:
                 lda player_addr
                 clc
                 adc #$40
@@ -1167,6 +1168,10 @@ L10A1:
                 sta data_behind_player+16,y  ; copy of what was under player, row 1?
                 dey
                 bpl L10A1
+                rts
+                
+L1092:
+                jsr copy_data_behind_player
                 lda data_behind_player+4  ; copy of what was under player, row 0?
                 cmp #$30
                 bne L10DD
@@ -3649,20 +3654,24 @@ got_start_pos:
                 iny
                 iny
                 jsr ed_get_screen_write_addr
+                
                 lda ed_write_addr+0
                 sta player_addr+0
                 lda ed_write_addr+1
                 sta player_addr+1
 
-                ; ; Default player start pos
-                ; lda #$00
-                ; sta player_addr+0
-                ; lda #$7A
-                ; sta player_addr+1
-
                 ldx #0          ;no ghosts
                 jsr entry_init_level
 
+                jsr copy_data_behind_player
+
+                ; lda #15
+                ; ldx #1
+                ; jsr osbyte
+                ; lda #7
+                ; jsr oswrch
+                ; jsr osrdch
+                
                 ; Reset ghosts table
                 ldx #7
 -
@@ -3674,14 +3683,6 @@ got_start_pos:
                 ; ; ???
                 ; lda #0
                 ; sta L0084
-
-                ; Whatever was behind player previously
-                ldy #31
--
-                lda (player_addr),y
-                sta data_behind_player,y
-                dey
-                bpl -
 
                 ; Initial bonus and score
                 ldx #4

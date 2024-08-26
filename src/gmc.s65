@@ -1077,6 +1077,7 @@ erase_ghosts_next:
                 bne erase_ghosts_loop
 
 L101C:
+                ; L0072 = player, 2nd row
                 lda player_addr
                 clc
                 adc #$40
@@ -1084,20 +1085,22 @@ L101C:
                 lda player_addr+1
                 adc #1
                 sta L0072+1
+                
                 lda player_jump_state
                 bne L1060
-                lda player_addr
-                clc
-                adc #$40
-                sta L0072
-                lda player_addr+1
-                adc #1
-                sta L0072+1
-                ldy #$F
+                
+                ; lda player_addr
+                ; clc
+                ; adc #$40
+                ; sta L0072
+                ; lda player_addr+1
+                ; adc #1
+                ; sta L0072+1
 
+                ldy #$F
 L103D:
                 lda (L0072),y
-                cmp #$FF
+                cmp #mode5_byte(3,3,3,3)
                 beq L104B
                 dey
                 bpl L103D
@@ -1106,6 +1109,7 @@ L103D:
 ;-------------------------------------------------------------------------
 
 L104B:
+                ; Move player up one row.
                 lda player_addr
                 sec
                 sbc #$40
@@ -1113,8 +1117,10 @@ L104B:
                 lda player_addr+1
                 sbc #1
                 sta player_addr+1
+
                 ldx #5
                 jsr add_X_to_score
+                
                 jmp L1082
 
 ;-------------------------------------------------------------------------
@@ -1129,11 +1135,11 @@ L1060:
                 sta L0072+1
                 ldy #0
                 lda (L0072),y
-                cmp #$FF
+                cmp #mode5_byte(3,3,3,3)
                 beq L107D
                 ldy #8
                 lda (L0072),y
-                cmp #$FF
+                cmp #mode5_byte(3,3,3,3)
                 bne L1082
 
 L107D:
@@ -1143,7 +1149,7 @@ L107D:
 L1082:
                 ldy #$F
                 lda (L0074),y
-                cmp #$F0
+                cmp #mode5_byte(2,2,2,2)
                 bne L1092
                 lda player_jump_state
                 bne L1092
@@ -1173,7 +1179,7 @@ L10A1:
 L1092:
                 jsr copy_data_behind_player
                 lda data_behind_player+4  ; copy of what was under player, row 0?
-                cmp #$30
+                cmp #mode5_byte(0,0,2,2)
                 bne L10DD
                 lda #0
                 sta data_behind_player+4  ; copy of what was under player, row 0?
@@ -1202,18 +1208,17 @@ L10DD:
                 sta L0085
 
 L10E6:
-                ldy #$F
+                ldy #31
 
 L10E8:
-                lda data_behind_player+16,y  ; copy of what was under player, row 1?
-                cmp #8
+                lda data_behind_player,y  ; copy of what was under player, row 1?
+                cmp #mode5_byte(1,0,0,0)
                 beq L1104
-                cmp #1
+                cmp #mode5_byte(0,0,0,1)
                 beq L1104
-                lda data_behind_player,y  ; copy of what was under player, row 0?
-                cmp #8
+                cmp #mode5_byte(1,3,3,3)
                 beq L1104
-                cmp #1
+                cmp #mode5_byte(3,3,3,1)
                 beq L1104
                 dey
                 bne L10E8
@@ -1221,6 +1226,7 @@ L10E8:
 
 ;-------------------------------------------------------------------------
 
+; bump up against left or right edge
 L1104:
                 ldy #$F
                 lda #0
@@ -1230,6 +1236,7 @@ L1108:
                 sta data_behind_player,y  ; copy of what was under player, row 0?
                 dey
                 bpl L1108
+
                 lda L0AF7
                 sta player_addr
                 lda L0AF7+1
@@ -1251,7 +1258,7 @@ L1131:
 L1133:
                 lda (player_addr),y
                 beq L114B
-                cmp #$10
+                cmp #mode5_byte(0,0,0,2)
                 bcs L114B
 
 L113B:
@@ -1269,7 +1276,7 @@ L113B:
 L114B:
                 lda (L0072),y
                 beq L1153
-                cmp #$10
+                cmp #mode5_byte(0,0,0,2)
                 bcc L113B
 
 L1153:
@@ -1296,7 +1303,7 @@ L1158:
 L1174:
                 lda (player_addr),y
                 beq L117F
-                cmp #$F
+                cmp #mode5_byte(1,1,1,1)
                 bcs L117F
 
 L117C:
@@ -1307,7 +1314,7 @@ L117C:
 L117F:
                 lda (L0072),y
                 beq L1187
-                cmp #$F
+                cmp #mode5_byte(1,1,1,1)
                 bcc L117C
 
 L1187:
@@ -1358,15 +1365,15 @@ L11DF:
                 lda (object_addr),y
 
                 ; Change dir if bumping into wall
-                cmp #$FF
+                cmp #mode5_byte(3,3,3,3)
                 beq change_platform_direction
 
                 ; Change dir if bumping into left border
-                cmp #$08                      
+                cmp #mode5_byte(1,0,0,0)
                 beq change_platform_direction
 
                 ; Change dir if bumping into right border
-                cmp #$01
+                cmp #mode5_byte(0,0,0,1)
                 beq change_platform_direction
                 
                 dey
@@ -1597,7 +1604,7 @@ L1326:
 
 L133A:
                 lda (L007E),y
-                cmp #$20
+                cmp #mode5_byte(0,0,2,0)
                 bne L1343
                 jmp kill_player_and_drop_caller
 
@@ -1611,7 +1618,7 @@ L1343:
 
 L134C:
                 lda (L0074),y
-                cmp #$20
+                cmp #mode5_byte(0,0,2,0)
                 bne L1355
                 jmp kill_player_and_drop_caller
 
@@ -1687,9 +1694,9 @@ L13AF:
 
 L13BD:
                 lda (object_addr),y
-                cmp #$66
+                cmp #mode5_byte(0,3,3,0)
                 beq L13CB
-                cmp #$08        ;left border
+                cmp #mode5_byte(1,0,0,0) ; left border
                 beq L13CB
                 dey
                 bpl L13BD
@@ -1773,14 +1780,14 @@ L1412:
 
 L1443:
                 lda (L0072),y
-                cmp #$FF
+                cmp #mode5_byte(3,3,3,3)
                 beq L1457
-                cmp #$a0
+                cmp #mode5_byte(2,0,2,0)
                 beq L1457
                 lda (object_addr),y
-                cmp #$FF
+                cmp #mode5_byte(3,3,3,3)
                 beq L1457
-                cmp #$a0
+                cmp #mode5_byte(2,0,2,0)
                 beq L1457
                 dey
                 bpl L1443
@@ -1892,11 +1899,11 @@ L1490:
                 sta L0077
                 ldy #0
                 lda (L0076),y
-                cmp #$A
+                cmp #mode5_byte(1,0,1,0)
                 beq L14AD
                 ldy #8
                 lda (L0076),y
-                cmp #$A
+                cmp #mode5_byte(1,0,1,0)
                 bne L14CA
 
 L14AD:
@@ -1916,11 +1923,11 @@ L14AD:
 L14CA:
                 ldy #0
                 lda (L0076),y
-                cmp #$FF
+                cmp #mode5_byte(3,3,3,3)
                 beq L14FA
                 ldy #8
                 lda (L0076),y
-                cmp #$FF
+                cmp #mode5_byte(3,3,3,3)
                 beq L14FA
                 lda player_addr
                 clc
@@ -2264,10 +2271,10 @@ L170F:
                 dey
                 bpl L170F
                 lda data_behind_player+16    ; copy of what was under player, row 1?
-                cmp #$FF
+                cmp #mode5_byte(3,3,3,3)
                 beq draw_pl_splat
                 lda data_behind_player+16+8  ; copy of what was under player, row 1?
-                cmp #$FF
+                cmp #mode5_byte(3,3,3,3)
                 beq draw_pl_splat
                 lda L0078
                 clc

@@ -17,6 +17,13 @@ max_gedmc_pages=(levels_org-gedmc_org)/256
                 
 ;-------------------------------------------------------------------------
 
+mode5_pixel: .function _p
+                .cerror !(_p>=0&&_p<=3)
+                .endfunction ((_p&$02)!=0?$80:$00)|((_p&$01)!=0?$08:$00)
+                
+mode5_byte: .function _p0,_p1,_p2,_p3
+                .endfunction mode5_pixel(_p0)|mode5_pixel(_p1)>>1|mode5_pixel(_p2)>>2|mode5_pixel(_p3)>>3
+                
 ; TODO should be a 64tass struct or something
 
 level_width=20

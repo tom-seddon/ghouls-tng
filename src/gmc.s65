@@ -4108,23 +4108,23 @@ ed_place_ltype: .proc
 
                 inx
                 jsr ed_read_level
-                bcs +           ;taken if (X+1,Y+0) is out of bounds
+                bcs done_x1y0   ;taken if (X+1,Y+0) is out of bounds
                 jsr ed_draw_ltype
-+
+done_x1y0:
                 dex
 
                 iny
                 jsr ed_read_level
-                bcs +           ;taken if (X+0,Y+1) is out of bounds
+                bcs done_x0y1   ;taken if (X+0,Y+1) is out of bounds
                 jsr ed_draw_ltype
-
-                ; since (X+1,Y+0) wasn't out of bounds, and (X+0,Y+1)
-                ; wasn't out of bounds, (X+1,Y+1) isn't out of bounds
-                ; either.
+done_x0y1:
+                
                 inx
                 jsr ed_read_level
+                bcs done_x1y1   ; taken if (X+1,Y+1) is out of bounds
                 jsr ed_draw_ltype
-+
+done_x1y1:
+                
                 rts
                 .endproc
 
@@ -4399,7 +4399,9 @@ ed_write_level: .proc
                 pha
                 jsr ed_prepare_for_level_map_access
                 pla
+                bcs +
                 sta (ed_read_addr),y ;hmm
++
 reload_y: ldy #$ff
                 rts
                 .endproc

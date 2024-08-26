@@ -177,8 +177,6 @@ Things that a level can contain:
 | Conveyor   |     1 | 1            |
 | Power pill |     1 | -            |
 
-
-
 Spider and platform have configurable speeds.
 
 Start and end positions are currently fixed.
@@ -444,32 +442,55 @@ Offsets are relative to the start of the file.
 |--------+---------+-------+---------------------------------|
 |     +4 |         |       | header size                     |
 
-The magic number is `&0e73d760` when read with BBC BASIC's `!`
+The magic number is =&0e73d760= when read with BBC BASIC's `!`
 operator.
 
 ** Level data
 
 Offsets are relative to the start of the level data.
 
-| Offset | Type         | Name       | What                                 |
-|--------+--------------+------------+--------------------------------------|
-|     +0 | char[17]     | name       | Level name, CR-terminated            |
-|    +17 | byte         | colour3    | Physical colour for logical colour 3 |
-|    +18 | byte         | pl_start_x | Player start X                       |
-|    +19 | byte         | pl_start_y | Player start Y                       |
-|    +20 | byte[35]     | spare      | Available for future expansion       |
-|    +55 | byte[26][20] | map        | Map data                             |
-|--------+--------------+------------+--------------------------------------|
-|   +575 |              |            | level total size                     |
+| Offset | Type         | Name        | What                                 |
+|--------+--------------+-------------+--------------------------------------|
+|     +0 | char[17]     | name        | Level name, CR-terminated            |
+|    +17 | byte         | colour3     | Physical colour for logical colour 3 |
+|    +18 | byte         | pl_start_x  | Player start X                       |
+|    +19 | byte         | pl_start_y  | Player start Y                       |
+|    +20 | byte         | flags       | Flags - see below                    |
+|    +21 | byte         | ghost_min_x | Ghost rect (inclusive)               |
+|    +22 | byte         | ghost_min_y | "                                    |
+|    +23 | byte         | ghost_max_x | "                                    |
+|    +24 | byte         | ghost_max_y | "                                    |
+|    +25 | byte[30]     | spare       | Available for future expansion       |
+|    +55 | byte[26][20] | map         | Map data                             |
+|--------+--------------+-------------+--------------------------------------|
+|   +575 |              |             | level total size                     |
 
 (So total level data size is header size+4*level size = 4+4*575 = 2304
 (0x900) - the size of ~spare~ being chosen to allow this total to be a
 round number)
 
 The player start pos is stored as X/Y, with (0,0) as top left of
-level. as that's how the editor manages everything internally. It's
+level, as that's how the editor manages everything internally. It's
 easy for the game's BASIC driver to do the address calculation and
 adjust for the game's different top Y.
+
+Same applies to the ghost rect.
+
+Flags are:
+
+| Bit | What                       |
+|-----+----------------------------|
+|   7 |                            |
+|   6 |                            |
+|   5 |                            |
+|   4 |                            |
+|   3 |                            |
+|   2 |                            |
+|   1 |                            |
+|   0 | Set if ghost rect is valid |
+
+If ghost rect not valid, the ghost position is the previous default
+behaviour: initial address is =&6000+RND(300)*16=.
 
 ** Object types
 

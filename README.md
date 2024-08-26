@@ -65,10 +65,10 @@ The test start position is shown in red. It isn't saved. It's there to
 make it quicker to iterate on sections of the level.
 
 The ghost start area, if set, is indicated by a dotted red rectangle.
-(If not set, the ghost will start at some random point in the level.)
-Ghosts will start from some position in this area. Though please note
-that for technical reasons, the ghost start position is not random
-when testing in the editor.
+Ghosts will start from some position in this area. (If not set, the
+ghost will start at some random point in the level.) When testing in
+the editor, you will only get ghosts if the ghost region is set, and
+the ghost always starts from its top left corner.
 
 The creation value is a number associated with some types of object:
 

@@ -75,7 +75,8 @@ endif
 	$(_V)$(BASICTOOL) --tokenise --basic-2 --output-binary $(BUILD)/ghouls.bas $(BEEB_OUTPUT)/$$.GBAS
 
 # Create GLOADER
-	$(_V)$(BASICTOOL) --tokenise --basic-2 --output-binary src/gloader.bas $(BEEB_OUTPUT)/$$.GLOADER
+	$(_V)$(PYTHON) $(BIN)/bbpp.py --asm-symbols $(BUILD)/GMC.symbols "" -o $(BUILD)/gloader.bas src/gloader.bas
+	$(_V)$(BASICTOOL) --tokenise --basic-2 --output-binary $(BUILD)/gloader.bas $(BEEB_OUTPUT)/$$.GLOADER
 
 # Create GCSREEN
 	$(_V)$(SHELLCMD) copy-file $(BEEB_VOLUME)/0/$$.GSCREEN $(BEEB_OUTPUT)/

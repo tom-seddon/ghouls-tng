@@ -6,6 +6,15 @@
 *=$00
 ed_zp_begin:
                 .dsection ed_zp
+                
+                ; see BASIC ROM user guide and
+                ; http://8bs.com/basic/memory.htm - in practice $50
+                ; onwards is free
+ed_basic_friendly_zp_start=$50
+                .if *<ed_basic_friendly_zp_start
+*=ed_basic_friendly_zp_start
+                .endif
+                .dsection ed_basic_friendly_zp
 ed_zp_end:
                 .cerror *>$70,'ed_zp overflow'
                 .endif
@@ -74,6 +83,7 @@ gmc_start:
                 ; C64 files don't have separate load and exec
                 ; addresses.
                 jmp ed_entry
+                jmp ed_mul_test ; cheezy crap for BASIC test
                 .endif
 
 sprite_blank:
@@ -2458,6 +2468,16 @@ ed_cur_ovalue: .fill 1
 ; should be used.
 ed_test_pl_start_x: .fill 1
 ed_test_pl_start_y: .fill 1
+ed_random_frac_table_index: .fill 1
+ed_random_ghost_addr_table_index: .fill 1
+                .endsection
+
+                .section ed_basic_friendly_zp
+ed_mul_a: .fill 1
+ed_mul_b: .fill 1
+ed_mul_tempb: .fill 1
+ed_mul_tempw: .fill 2
+ed_mul_result: .fill 2
                 .endsection
                 
 ed_levels_header_magic:
@@ -3351,7 +3371,7 @@ set_min:
                 ldy #LevelData.ghost_min_x
                 sta (ed_level_addr),y
 
-                lda ed_cy
+                jsr get_ghost_rect_y
                 ldy #LevelData.ghost_min_y
                 sta (ed_level_addr),y
 
@@ -3362,10 +3382,19 @@ set_max:
                 ldy #LevelData.ghost_max_x
                 sta (ed_level_addr),y
 
-                lda ed_cy
+                jsr get_ghost_rect_y
                 ldy #LevelData.ghost_max_y
                 sta (ed_level_addr),y
 
+                rts
+
+get_ghost_rect_y:
+                ; don't allow the ghost to be placed on the bottom row
+                lda ed_cy
+                cmp #level_height-1
+                bcc +
+                lda #level_height-2
++
                 rts
 
                 .endproc
@@ -3805,24 +3834,84 @@ got_start_pos:
                 ldy #LevelData.flags
                 lda (ed_level_addr),y
                 and #LevelData.flags.has_ghost_rect
-                beq +           ; taken if no ghosts
+                beq init_default_random_ghost
 
+                ; Pick position in ghost rect
+
+                ldy #LevelData.ghost_max_x
+                lda (ed_level_addr),y
                 ldy #LevelData.ghost_min_x
+                sec
+                sbc (ed_level_addr),y ; ghost rect width
+                jsr mul_random_frac   ; A = ghost X offset
+                clc
+                adc (ed_level_addr),y ; A = ghost X
+                pha             ; save ghost X
+
+                ldy #LevelData.ghost_max_y
                 lda (ed_level_addr),y
-                tax
                 ldy #LevelData.ghost_min_y
-                lda (ed_level_addr),y
-                tay
+                sec
+                sbc (ed_level_addr),y ; ghost rect_height
+                jsr mul_random_frac   ; A = ghost Y offset
+                clc
+                adc (ed_level_addr),y ; A = ghost Y
+                tay             ; Y = ghost Y
+                pla             ; restore ghost X
+                tax             ; X = ghost X
+                
+                ; lda (ed_level_addr),y
+                ; sec
+                ; tax
+                ; ldy #LevelData.ghost_min_y
+                ; lda (ed_level_addr),y
+                ; tay
                 jsr ed_convert_to_game_coordinates
-                dey             ; ??? - not sure why necessary
+                ; dey             ; ??? - not sure why necessary
                 jsr ed_get_screen_write_addr
 
                 lda ed_write_addr+0
                 sta ghosts_table+0
                 lda ed_write_addr+1
                 sta ghosts_table+1
-                
+                jmp init_level
+
+mul_random_frac: .proc
+                sta ed_mul_a
+                ; get random 1.7 fixed point fraction - min $00 (0.0),
+                ; max $80 (1.0)
+                ldx ed_random_frac_table_index
+                lda ed_random_frac_table,x
+                inx
+                cpx #size(ed_random_frac_table)
+                bcc +
+                ldx #0
 +
+                stx ed_random_frac_table_index
+                sta ed_mul_b
+                jsr ed_mul_8x8_16
+                lda ed_mul_result+0
+                ldx #7
+-
+                lsr ed_mul_result+1
+                ror a
+                dex
+                bne -
+                rts
+                .endproc
+
+init_default_random_ghost:
+                ldx ed_random_ghost_addr_table_index
+                inc ed_random_ghost_addr_table_index
+                inc ed_random_ghost_addr_table_index ; it's a 2-byte
+                                                     ; table
+                lda ed_random_ghost_addr_table+0,x
+                sta ghosts_table+0
+                lda ed_random_ghost_addr_table+1,x
+                sta ghosts_table+1
+                ; fall through to init_level
+                
+init_level
                 ldx #0
                 jsr entry_init_level
 
@@ -4842,7 +4931,16 @@ ed_one_time_init: .proc
 
                 lda #$80
                 sta ed_test_pl_start_x
-                
+
+                lda $fe44       ; cheap and cheerful
+                and #$7f        ; the last entry will never be
+                                ; initially selected
+                sta ed_random_frac_table_index
+
+                lda $fe44
+                and #$fe
+                sta ed_random_ghost_addr_table_index
+
                 ldx #<run_gudgs
                 ldy #>run_gudgs
                 jsr oscli
@@ -5009,6 +5107,87 @@ ed_osbyte_x00_yff:
 ed_osbyte_yff:
                 ldy #$ff
                 jmp osbyte
+
+;-------------------------------------------------------------------------
+
+; ed_shr_mul_result_loop:
+;                 lsr ed_mul_result+1
+;                 ror ed_mul_result+0
+;                 dex
+; ed_shr_mul_result:
+;                 cpx #0
+;                 bne ed_shr_mul_result_loop
+;                 rts
+
+;-------------------------------------------------------------------------
+;
+; Entry: ?ed_mul_a = operand A
+;        ?ed_mul_b = operand B
+; Exit: 
+;
+; ed_mul_result.w = result
+ed_mul_test:
+                stx ed_mul_a
+                sty ed_mul_b
+                jsr ed_mul_8x8_16
+                ldx ed_mul_result+0
+                ldy ed_mul_result+1
+                rts
+                
+ed_mul_8x8_16: .proc
+                lda ed_mul_a
+                sta ed_mul_tempb
+                
+                lda ed_mul_b
+                sta ed_mul_tempw+0
+                lda #0
+                sta ed_mul_tempw+1
+
+                sta ed_mul_result+0
+                sta ed_mul_result+1
+
+                ldx #8
+loop:
+                lsr ed_mul_tempb
+                bcc +
+                clc
+                lda ed_mul_tempw+0
+                adc ed_mul_result+0
+                sta ed_mul_result+0
+                lda ed_mul_tempw+1
+                adc ed_mul_result+1
+                sta ed_mul_result+1
++
+                asl ed_mul_tempw+0
+                rol ed_mul_tempw+1
+                dex
+                bne loop
+
+                rts
+                .endproc
+
+;-------------------------------------------------------------------------
+;
+; Unsigned 1.7 fixed piont values from $00 (0.0) to $80 (1.0)
+; inclusive, in random order. 129 1-byte entries. Generated using Python:
+
+; values=list(range(129));
+; random.shuffle(values);
+; ','.join(['$%02x'%x for x in values])
+
+ed_random_frac_table: .block
+                .byte $61,$23,$6c,$55,$1c,$5a,$77,$39,$31,$4d,$6a,$0c,$1a,$29,$74,$4b,$40,$06,$79,$1e,$7f,$62,$2c,$6f,$17,$32,$66,$73,$50,$26,$70,$48,$58,$0f,$14,$78,$3f,$47,$25,$27,$19,$3b,$0a,$76,$68,$01,$1f,$65,$20,$44,$67,$00,$56,$0b,$43,$71,$3e,$80,$5e,$33,$57,$45,$75,$1d,$4e,$24,$54,$4a,$52,$5f,$21,$5b,$2a,$60,$3c,$51,$22,$38,$4f,$28,$09,$10,$2e,$15,$30,$7a,$35,$53,$6e,$7b,$6d,$04,$34,$4c,$49,$08,$11,$64,$5c,$5d,$12,$41,$36,$03,$16,$6b,$7c,$18,$07,$2d,$46,$42,$0e,$2f,$59,$02,$7e,$7d,$37,$05,$63,$3a,$1b,$2b,$0d,$3d,$69,$13,$72
+                .endblock
+
+;-------------------------------------------------------------------------
+;
+; Ghost addresses, generated by the Python equivalent of
+; &6000+RND(300)*16. 128 2-byte entries. Generated using Python:
+
+; ','.join(['$%04x'%(0x6000+random.randrange(301)*16) for i in range(128)])
+ed_random_ghost_addr_table: .block
+                .word $6280,$6d80,$6d90,$6f00,$6270,$6f80,$7270,$7050,$6d10,$65c0,$6640,$71e0,$6490,$6ec0,$6be0,$6090,$63c0,$61b0,$6e70,$6910,$6a90,$6770,$7100,$7090,$6980,$6580,$6420,$6ae0,$71b0,$72b0,$60a0,$6860,$6350,$6090,$71f0,$6960,$61c0,$6bd0,$6110,$69f0,$6300,$71c0,$6ec0,$6d40,$6170,$6260,$66f0,$6df0,$7070,$6280,$6990,$6f30,$6b80,$6650,$60d0,$6f30,$6d20,$65f0,$7160,$6730,$61f0,$6910,$61b0,$6790,$6890,$70f0,$6030,$70e0,$65e0,$6d60,$6e60,$6820,$69d0,$61e0,$6780,$6410,$6470,$6950,$6440,$6f30,$68c0,$6a40,$6a90,$6530,$6670,$6ac0,$67a0,$7090,$7200,$6c10,$6720,$6170,$6da0,$6970,$6740,$6990,$6d30,$6e50,$63a0,$6150,$6890,$7060,$66f0,$7070,$6150,$7050,$72b0,$63d0,$6110,$6530,$6fa0,$7140,$6320,$6d60,$6da0,$6d20,$6030,$71d0,$6030,$68d0,$6420,$6420,$6330,$61d0,$6180,$69b0,$71e0,$62e0
+                .endblock
                 
 ;-------------------------------------------------------------------------
                 .endif          ;editor

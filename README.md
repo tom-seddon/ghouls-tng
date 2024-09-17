@@ -52,7 +52,8 @@ When editing:
 - `R` redraws the level (since the editor isn't particularly careful
   about tidily redrawing everything while editing)
 - `SHIFT+S` sets the player's start position
-- `G` sets one corner of the ghost start position area
+- `G` sets one corner of the ghost start position area (the position
+  is automatically clamped if necessary)
 - `SHIFT+G` sets the other corner of the ghost start position area
 - `CTRL+G` unsets the ghost start position area
 - `S` sets the player's test start position
@@ -68,9 +69,7 @@ make it quicker to iterate on sections of the level.
 The ghost start area, if set, is indicated by a dotted red rectangle.
 Ghosts will start from some position in this area. (If not set, the
 ghost will start at some random point in the level.) When testing in
-the editor, you will only ever get 1 ghost, and that only if the ghost
-region is set, and the ghost always starts from the top left corner of
-the ghost start area.
+the editor, you will only ever get 1 ghost.
 
 The creation value is a number associated with some types of object:
 

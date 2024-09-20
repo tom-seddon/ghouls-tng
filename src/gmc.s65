@@ -2726,7 +2726,7 @@ x_loop:
 
                 ; Reset name
                 ldy #LevelData.name
-                ldx #17
+                ldx #size(LevelData.name)
                 lda #13
 -
                 sta (ed_level_addr),y
@@ -2761,14 +2761,14 @@ name_levels:
                 .fill 16+3,8
                 .byte 0
 
-                ldy #LevelData.name
-                ldx #17
-                lda #13
--
-                sta (ed_level_addr),y
-                iny
-                dex
-                bne -
+;                 ldy #LevelData.name
+;                 ldx #17
+;                 lda #13
+; -
+;                 sta (ed_level_addr),y
+;                 iny
+;                 dex
+;                 bne -
                 
                 clc
                 lda ed_level_addr+0
@@ -2782,11 +2782,25 @@ name_levels:
                 ldy #>name_level_block
                 lda #0
                 jsr osword
+                bcs ed_main_menu ; taken if ESCAPE pressed
+
+                lda #size(LevelData.name)
+                tya
+                clc
+                adc #LevelData.name
+                tay
+                lda #13
+-
+                sta (ed_level_addr),y
+                iny
+                cpy #LevelData.name+size(LevelData.name)
+                bne -
+                
                 jmp ed_main_menu
 
 name_level_block:
                 .word 0
-                .byte 16        ;max length (excl CR)
+                .byte size(LevelData.name)-1 ;max length (excl CR)
                 .byte 32        ;min char
                 .byte 126       ;max char
                 
@@ -3911,7 +3925,7 @@ init_default_random_ghost:
                 sta ghosts_table+1
                 ; fall through to init_level
                 
-init_level
+init_level:
                 ldx #0
                 jsr entry_init_level
 
@@ -3954,18 +3968,19 @@ name_len_loop:
                 lda (ed_level_addr),y
                 sta level_name,x
                 cmp #13
-                beq +
+                beq next_dest_char
 
                 sec
                 lda level_name_x+0
                 sbc #64
                 sta level_name_x+0
-                bcs +
+                bcs next_src_char
                 dec level_name_x+1
-+
+next_src_char:
                 iny
+next_dest_char:
                 inx
-                cpx #17
+                cpx #size(LevelData.name)
                 bne name_len_loop
 
                 jsr ed_print
@@ -3985,7 +4000,7 @@ level_name_x:
                 ; Space for level name. Any embedded CRs are copied
                 ; too... VDU 5, so whatever.
 level_name:
-                .fill 17,'x'
+                .fill size(LevelData.name),'x'
 
                 ; VDU 4
                 .byte 4

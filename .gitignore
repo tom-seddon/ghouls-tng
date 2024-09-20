@@ -3,3 +3,4 @@
 /build/
 /ghouls-tng.ssd
 /.dir-locals.el
+__pycache__/

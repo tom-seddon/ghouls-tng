@@ -2445,6 +2445,8 @@ ed_key_flag_newly_down=$80
 ed_key_flag_down=$40
 ed_key_flag_rept_4=$20
 ed_key_flag_rept_8=$10
+
+ed_file_name_buffer=$700        ; quite safe when in the editor
                 
                 .section ed_zp
 ed_read_addr: .fill 2
@@ -2499,7 +2501,6 @@ ed_shift_pressed:
                 .byte 0
 ed_ctrl_pressed:
                 .byte 0
-
 ed_new_ovalues:
                 .fill len(otypes),0
 
@@ -2516,10 +2517,7 @@ ed_main_loop: .proc
                 lda #$7e        ;acknowledge Escape (D.2-37)
                 jsr osbyte
 
-                lda #$e5        ;escape key status (D.2-75)
-                ldx #1          ;make Escape generate ASCII
-                ldy #0          ;write
-                jsr osbyte
+                jsr ed_disable_escape
                 
                 lda #<ed_main_loop
                 sta ed_post_brk_loop+0
@@ -2631,6 +2629,7 @@ edit_number_insert_2:
                 .text 133,'L:',131,'Load levels',10,13
                 .text 133,'I:',131,'Import level',10,13
                 .text 133,'S:',131,'Save levels',10,13
+                .text 133,'E:',131,'Export screen shots',10,13
                 .text 133,'*:',131,'* prompt',10,13
                 .byte 0
 
@@ -2659,6 +2658,9 @@ not_lower:
 
                 cmp #'R'
                 beq reset_level
+
+                cmp #'E'
+                beq export_screen_shots
 
                 cmp #'*'
                 beq ed_oscli_prompt
@@ -3103,18 +3105,23 @@ enter_file_name:
                 ldy #>file_name_block
                 lda #0
                 jsr osword
+
+                php
+                jsr ed_disable_escape
+                plp
+                
                 bcs ed_main_loop
                 rts
 
 file_name_block:
-                .word $7b00     ;definitely safe
-                .byte 255       ;max length
+                .word ed_file_name_buffer
+                .byte 250       ;max length
                 .byte 32        ;min char
                 .byte 126       ;max char
 
 levels_file_osfile_block: .block
 name:
-                .word $7b00
+                .word ed_file_name_buffer
 load:
                 .dword 0
 exec:
@@ -3125,15 +3132,138 @@ end:
                 .dword 0
                 .endblock
 
+export_screen_shots: .proc
+                jsr ed_print
+                .text 131,'Export screen shots',10,13
+                .byte 0
+                jsr enter_file_name
+
+                ldx #0
+find_file_name_end_loop:
+                lda ed_file_name_buffer,x
+                cmp #13
+                beq file_name_end_found
+                inx
+                jmp find_file_name_end_loop
+file_name_end_found:
+
+                stx screen_shot_file_name_length
+                lda #13
+                sta ed_file_name_buffer+1,x
+
+                lda #0          ; level number
+                sta screen_shot_level
+
+one_level:
+                lda screen_shot_level
+                jsr ed_prepare_for_level_access
+                jsr ed_editor.redraw
+
+                ; Crappy hack to clear out the editor HUD.
+                jsr ed_print
+                .byte 31,0,level_height
+                .byte 0
+
+                ldx #(31-level_height)*20-1
+                lda #' '
+clear_editor_hud_loop:
+                jsr oswrch
+                dex
+                bne clear_editor_hud_loop
+
+                ; Print level name
+                jsr ed_print
+                .byte 17,1
+                .byte 31,0,level_height+1
+                .byte 0
+
+                ldy #LevelData.name
+print_level_name_loop:
+                lda (ed_level_addr),y
+                cmp #13
+                beq level_name_printed
+                jsr oswrch
+                iny
+                jmp print_level_name_loop
+level_name_printed:
+
+                ; Save the colour 3 value somewhere.
+                ldy #LevelData.colour3
+                lda (ed_level_addr),y
+                sta $7fff       ; bit ugly but oh well.
+
+                ldx #size(screen_shot_osfile_block_template)-1
+copy_osfile_block_loop:
+                lda screen_shot_osfile_block_template,x
+                sta screen_shot_osfile_block,x
+                dex
+                bpl copy_osfile_block_loop
+
+                clc
+                lda screen_shot_level
+                adc #'0'
+                ldx screen_shot_file_name_length
+                sta ed_file_name_buffer,x
+
+                ldx #<screen_shot_osfile_block
+                ldy #>screen_shot_osfile_block
+                lda #$00        ; save file
+                jsr osfile
+
+                inc screen_shot_level
+                lda screen_shot_level
+                cmp #4
+                bne one_level
+
+                jmp ed_main_loop
+
+screen_shot_level:
+                .byte 0
+screen_shot_file_name_length:
+                .byte 0
+
+screen_shot_osfile_block: .block
+name:
+                .word 0
+load:
+                .dword 0
+exec:
+                .dword 0
+start:
+                .dword 0
+end:
+                .dword 0
+                .endblock
+
+screen_shot_osfile_block_template: .block
+name:
+                .word ed_file_name_buffer
+load:
+                .dword $ffff5800
+exec:
+                .dword $ffffffff
+start:
+                .dword $ffff5800
+end:
+                .dword $ffff8000
+                .endblock
                 .endproc
+                
+                .endproc
+
 
 ;-------------------------------------------------------------------------
 
 ed_enable_escape:
-                lda #$e5        ;escape status (D.2-75)
                 ldx #0          ;enable escape generation
+ed_set_escape_status:
+                lda #$e5        ;escape status (D.2-75)
                 ldy #0          ;write
                 jmp osbyte
+
+ed_disable_escape:
+                ldx #1          ;make Escape generate ASCII
+                bne ed_set_escape_status
                 
 ;-------------------------------------------------------------------------
 

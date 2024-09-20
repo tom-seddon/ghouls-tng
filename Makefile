@@ -131,9 +131,13 @@ _tom_laptop:
 	-curl --connect-timeout 0.25 --silent -H 'Content-Type:application/binary' --upload-file 'ghouls-tng.ssd' 'http://localhost:48075/run/b2?name=ghouls-tng.ssd'
 
 .PHONY:_tom_windows_laptop
+_tom_windows_laptop: CONFIG=B/Acorn 1770 + BeebLink
 _tom_windows_laptop:
-#	@$(MAKE) build
-	@$(MAKE) _tom_laptop
+#	@$(MAKE) _tom_laptop
+
+	@$(MAKE) build
+	-curl --connect-timeout 0.25 --silent -G 'http://localhost:48075/reset/b2' --data-urlencode "config=$(CONFIG)"
+
 
 ##########################################################################
 ##########################################################################

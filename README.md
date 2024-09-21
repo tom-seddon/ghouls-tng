@@ -6,9 +6,8 @@ Play the original in your browser: http://bbcmicro.co.uk/game.php?id=2506
 
 # Run
 
-Grab latest-dated .ssd file from the wip_builds folder. (Click on the
-.ssd, then use the download link. Don't right click. GitHub is
-annoying like that.)
+Get .ssd file (or .zip file containing .ssd file) for the latest build
+here: https://github.com/tom-seddon/ghouls-tng/releases/latest
 
 Shift+Break to boot.
 

@@ -137,15 +137,3 @@ _tom_windows_laptop:
 
 	@$(MAKE) build
 	-curl --connect-timeout 0.25 --silent -G 'http://localhost:48075/reset/b2' --data-urlencode "config=$(CONFIG)"
-
-
-##########################################################################
-##########################################################################
-
-.PHONY:wip_build
-wip_build: OUTPUT_SSD:=$(shell $(SHELLCMD) realpath wip_builds/ghouls-tng-$(shell $(SHELLCMD) strftime -d _ _Y_m_d-_H_M_S)-$(shell $(SHELLCMD) whoami).ssd)
-wip_build:
-	$(_V)$(MAKE) build
-	$(_V)$(SHELLCMD) copy-file $(SSD_OUTPUT) $(OUTPUT_SSD)
-	$(_V)echo $(OUTPUT_SSD)
-

@@ -37,11 +37,12 @@ then level from that set to import, then level in the current set to
 replace. Press ESCAPE at any point to get back to the main menu.
 
 Press `E` to export screen grabs of all the levels. Enter the name
-stem, and 4 files will be saved (with suffixes `0` ... `3`). These are
-simply MODE 5 screen grabs, and you can *LOAD them (set colour 0 to
-black, 1 to red, 2 to yellow, and 3 to `?&7FFF`), or get them onto
-your PC and use them with `bin/screenshots.py` to create a PNG showing
-all 4 screens.
+prefix, and 4 files will be saved with using the prefix you supply and
+suffixes `0`...`3`. These are simply MODE 5 screen grabs, and you can
+*LOAD them in MODE 5 to see them. (Set colour 0 to black, 1 to red, 2
+to yellow, and 3 to `?&7FFF`.) Or get them onto your PC and use them
+with `bin/screenshots.py` to create a PNG showing all 4 screens.
+(`screenshots.py --help` will give some indication of how to use it.)
 
 Press `*` to get a prompt for entering OS commands. Change drive and
 dir and so on. Press ESCAPE to get back to the editor menu.

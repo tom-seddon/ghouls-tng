@@ -2502,7 +2502,7 @@ ed_shift_pressed:
 ed_ctrl_pressed:
                 .byte 0
 ed_new_ovalues:
-                .fill len(otypes),0
+                .fill len(otypes),8
 
 ;-------------------------------------------------------------------------
 
@@ -3867,6 +3867,7 @@ ed_pack_ltype: .proc
                 bcc done
 
                 lda otypes_ltype_end,x
+                sbc #1          ; the range is inclusive/exclusive
 done:
                 rts
 

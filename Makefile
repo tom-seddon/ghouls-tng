@@ -122,6 +122,16 @@ clean:
 ##########################################################################
 ##########################################################################
 
+.PHONY:build
+ci_build: OUTPUT_SSD=$(error Must specify OUTPUT_SSD)
+ci_build:
+    $(_V)$(MAKE) build
+    $(_V)$(SHELLCMD) copy-file "$(SSD_OUTPUT)" "$(OUTPUT_SSD)"
+    $(_V)echo "$(OUTPUT_SSD)"
+
+##########################################################################
+##########################################################################
+
 .PHONY:_tom_laptop
 # _tom_laptop: CONFIG=Master 128 (MOS 3.20)
 _tom_laptop: CONFIG=B/Acorn 1770

@@ -122,12 +122,12 @@ clean:
 ##########################################################################
 ##########################################################################
 
-.PHONY:build
+.PHONY:ci_build
 ci_build: OUTPUT_SSD=$(error Must specify OUTPUT_SSD)
 ci_build:
-    $(_V)$(MAKE) build
-    $(_V)$(SHELLCMD) copy-file "$(SSD_OUTPUT)" "$(OUTPUT_SSD)"
-    $(_V)echo "$(OUTPUT_SSD)"
+	$(_V)$(MAKE) build
+	$(_V)$(SHELLCMD) copy-file "$(SSD_OUTPUT)" "$(OUTPUT_SSD)"
+	$(_V)echo "$(OUTPUT_SSD)"
 
 ##########################################################################
 ##########################################################################

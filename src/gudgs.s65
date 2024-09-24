@@ -24,76 +24,27 @@ char_loop:
                 bcc chars_loop
                 rts
                 
-; 224       = platform ==
-; 225       = spring, row 0
-; 226       = platform \=
-; 227       = platform =/
-; 228       = spikes
-; 229       = spring, row 1
 ; 230...239 = fancy digits
 ; 240...242 = "BONUS"
-; 243       = 2 dots
 
 udgs:
 ;224
-                .byte %11111111 
-                .byte %00011000 
-                .byte %11111111 
-                .byte %01100110 
-                .byte %01100110 
-                .byte %11111111 
-                .byte %00011000 
-                .byte %11111111 
+                .fill 8,0
 
 ;225
-                .byte %10101010 
-                .byte %11111100 
-                .byte %00000010 
-                .byte %01111001 
-                .byte %10000101 
-                .byte %01111110 
-                .byte %00000010 
-                .byte %01111001 
+                .fill 8,0
 
 ;226
-                .byte %11111111 
-                .byte %10011000 
-                .byte %01111111 
-                .byte %01100110 
-                .byte %00100110 
-                .byte %00111111 
-                .byte %00011000 
-                .byte %00000111 
+                .fill 8,0
 
 ;227
-                .byte %11111111 
-                .byte %00011001 
-                .byte %11111110 
-                .byte %01100110 
-                .byte %01100100 
-                .byte %11111100 
-                .byte %00011000 
-                .byte %11110000 
+                .fill 8,0
 
 ;228
-                .byte %10011001 
-                .byte %10011001 
-                .byte %10011001 
-                .byte %11011011 
-                .byte %11011011 
-                .byte %01011010 
-                .byte %01011010 
-                .byte %11111111 
+                .fill 8,0
 
 ;229
-                .byte %10000101 
-                .byte %01111110 
-                .byte %00000010 
-                .byte %01111001 
-                .byte %10000101 
-                .byte %01111110 
-                .byte %10000001 
-                .byte %01111110 
+                .fill 8,0
 
 ;230
                 .byte %11111110 
@@ -226,14 +177,8 @@ udgs:
                 .byte %11001110
 
 ;243
-                .byte %00000000 
-                .byte %00000000
-                .byte %00000000
-                .byte %00000000
-                .byte %00110011
-                .byte %00110011
-                .byte %00000000
-                .byte %00000000
+                .fill 8,0
+
 udgs_end:
                 .cerror *>$b00,'gudgs overflow'
                 

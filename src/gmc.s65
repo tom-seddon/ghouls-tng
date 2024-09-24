@@ -48,6 +48,8 @@ level_draw_ptr=$84
 ;L0084=$84
 L0085=$85
 level_draw_screen_addr=$86
+level_draw_sprite_src=$88
+level_draw_sprite_dest=$8a
                 
 ;-------------------------------------------------------------------------
 
@@ -77,6 +79,8 @@ object_var2s:
 
 ;-------------------------------------------------------------------------
 
+sprite_8x8: 
+                
 gmc_start:
                 
                 .if editor
@@ -501,62 +505,53 @@ level_name_y=28
 
 loop:
                 ldy #LevelData.map ;get the addition for free...
-                lda (level_draw_ptr),y
+                lda (level_draw_ptr),y ; get ltype
 
-                ldx #0
-find_loop:
-                ldy item_info,x
-                cpy #$ff
-                beq not_found
+                ; Special ltypes
+                ; cmp #ltype_spring_2_rows.index
+                ; beq spring_2_rows
                 
-                cmp item_info,x
-                beq found
-
-                inx
-                inx
-                inx
-                jmp find_loop
-
-not_found:
-                cmp #ltype_spring_2_rows.index
-                beq spring_2_rows
-                
-                cmp #ltype_pill.index
-                beq pill
+                ; cmp #ltype_pill.index
+                ; beq pill
 
                 cmp #ltype_conveyor.index
                 beq conveyor
 
                 cmp #ltype_platform.index
-                bcc +
+                bcc maybe_spider
                 cmp #ltype_platform.index+num_speeds
                 bcc platform
-+
-                
+
+maybe_spider:                
                 cmp #ltype_spider.index
-                bcc +
+                bcc maybe_spider2
                 cmp #ltype_spider.index+num_speeds
                 bcc spider
-+
 
+maybe_spider2:
                 cmp #ltype_spider2.index
-                bcc +
+                bcc maybe_ordinary_ltype
                 cmp #ltype_spider2.index+num_speeds
                 bcc spider2
-+
-                
-next:
-                ; pretend it was blank.
-                ldx #0
-                
-found:
-                lda #17
-                jsr oswrch
-                lda item_info+1,x
-                jsr oswrch
-                lda item_info+2,x
-                jsr oswrch
 
+maybe_ordinary_ltype:
+                ldx #len(otypes)-1
+find_ltype_loop:
+                cmp otypes_ltype_begin,x
+                bcc next_ltype
+                cmp otypes_ltype_end,x
+                bcc ordinary_ltype
+                
+next_ltype:
+                dex
+                bpl find_ltype_loop
+                
+                ; Not found. Pretend it was blank.
+                ldx #0
+ordinary_ltype:
+                jsr draw_level_sprite
+
+next:
                 inc level_draw_ptr+0
                 bne +
                 inc level_draw_ptr+1
@@ -588,18 +583,79 @@ done:
 
                 rts
 
-spring_2_rows:
-                ldx #0
-spring_2_rows_loop:
-                lda spring_2_rows_data,x
-                jsr oswrch
-                inx
-                cpx #size(spring_2_rows_data)
-                bne spring_2_rows_loop
-                jmp next
-spring_2_rows_data: .block
-                .text 17,1,$e1,8,10,$e5,11,8
-                .endblock
+draw_level_sprite:
+                lda otypes_sprite_data_lo,x
+                sta level_draw_sprite_src+0
+                lda otypes_sprite_data_hi,x
+                sta level_draw_sprite_src+1
+
+                lda level_draw_sprite_src+0
+                ora level_draw_sprite_src+1
+                beq draw_level_sprite_done
+
+                lda level_draw_screen_addr+0
+                sta level_draw_sprite_dest+0
+                lda level_draw_screen_addr+1
+                sta level_draw_sprite_dest+1
+
+                jsr draw_level_sprite_row
+
+                lda otypes_otype_flags,x
+                and #otype_flags_height2
+                beq draw_level_sprite_done
+
+                clc
+                lda level_draw_sprite_dest+0
+                adc #$40
+                sta level_draw_sprite_dest+0
+                lda level_draw_sprite_dest+1
+                adc #$01
+                sta level_draw_sprite_dest+1
+
+draw_level_sprite_row:
+                ldy #0
+                
+                jsr draw_level_sprite_8x8
+
+                lda otypes_otype_flags,x
+                and #otype_flags_width2
+                beq draw_level_sprite_done
+
+draw_level_sprite_8x8:
+                txa
+                pha
+                ldx #16
+draw_level_sprite_8x8_loop:                
+                sty draw_level_sprite_8x8_reldy+1
+                ldy #0
+                lda (level_draw_sprite_src),y
+draw_level_sprite_8x8_reldy:
+                ldy #$ff
+                inc level_draw_sprite_src+0
+                bne draw_level_sprite_8x8_write
+                inc level_draw_sprite_src+1
+draw_level_sprite_8x8_write:
+                sta (level_draw_sprite_dest),y
+                iny
+                dex
+                bne draw_level_sprite_8x8_loop
+                pla
+                tax
+draw_level_sprite_done:
+                rts
+                
+; spring_2_rows:
+;                 ldx #0
+; spring_2_rows_loop:
+;                 lda spring_2_rows_data,x
+;                 jsr oswrch
+;                 inx
+;                 cpx #size(spring_2_rows_data)
+;                 bne spring_2_rows_loop
+;                 jmp next
+; spring_2_rows_data: .block
+;                 .text 17,1,$e1,8,10,$e5,11,8
+;                 .endblock
                 
 platform:
                 ldy #otype_platform
@@ -725,24 +781,24 @@ item_info:
                 .item_info_entry ltype_spring_1_row
                 .byte $ff
 
-; C=0 on exit if found. X refers to item info table entry.
-find_item_info: .proc
-                ldx #0
-loop:
-                ldy item_info,x
-                cpy #$ff
-                beq not_found
-                cmp item_info,x
-                beq found
-                inx
-                inx
-                inx
-                jmp loop
-found:
-                clc
-not_found:
-                rts
-                .endproc
+; ; C=0 on exit if found. X refers to item info table entry.
+; find_item_info: .proc
+;                 ldx #0
+; loop:
+;                 ldy item_info,x
+;                 cpy #$ff
+;                 beq not_found
+;                 cmp item_info,x
+;                 beq found
+;                 inx
+;                 inx
+;                 inx
+;                 jmp loop
+; found:
+;                 clc
+; not_found:
+;                 rts
+;                 .endproc
                 
 ;-------------------------------------------------------------------------
 

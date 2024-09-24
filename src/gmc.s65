@@ -18,6 +18,11 @@ ed_basic_friendly_zp_start=$50
 ed_zp_end:
                 .cerror *>$70,'ed_zp overflow'
                 .endif
+
+;-------------------------------------------------------------------------
+
+udg_char_0=224
+udg_bonus=234
                 
 ;-------------------------------------------------------------------------
 
@@ -825,7 +830,7 @@ bonus_chars:    .byte 234, 238; 0
                 .byte ' '
                 .byte ' '
                 .byte '$'
-score_chars:    .byte 230, 230, 230, 238, 232; 0
+score_chars:    .byte udg_char_0, udg_char_0, udg_char_0, udg_char_0+8, udg_char_0+2; 0
                 .byte ' '
                 .byte ' '
                 .byte '$'
@@ -2124,7 +2129,7 @@ L15A2:
                 bpl L15A2
                 lda bonus_chars+1
                 sec
-                sbc #230
+                sbc #udg_char_0
                 beq L15BD
                 tax
                 jsr add_X_to_score
@@ -2132,7 +2137,7 @@ L15A2:
 L15BD:
                 lda bonus_chars
                 sec
-                sbc #230
+                sbc #udg_char_0
                 tay
                 beq L15DD
                 lda #0
@@ -2158,13 +2163,13 @@ L15DD:
 update_bonus:   .block
                 dec bonus_chars+1
                 lda bonus_chars+1
-                cmp #229
+                cmp #udg_char_0-1
                 bne L15FE
-                lda #239
+                lda #udg_char_0+9
                 sta bonus_chars+1
                 dec bonus_chars
                 lda bonus_chars
-                cmp #229
+                cmp #udg_char_0-1
                 bne L15FE
                 pla
                 pla
@@ -2175,7 +2180,7 @@ update_bonus:   .block
 L15FE:
                 ldy #1
                 lda bonus_chars
-                cmp #230
+                cmp #udg_char_0
                 bne L1617
                 lda #$95
                 sta L0AD0+4  ;pitch
@@ -2211,9 +2216,9 @@ L1636:
                 clc
                 adc #1
                 sta score_chars,y
-                cmp #240
+                cmp #udg_char_0+10
                 bne L164C
-                lda #230
+                lda #udg_char_0
                 sta score_chars,y
                 dey
                 jmp L1636
@@ -2259,7 +2264,7 @@ L166F:
                 dey
                 bpl L166F
                 ldy #4
-                lda #230
+                lda #udg_char_0
 
 L168A:
                 sta score_chars,y
@@ -4274,7 +4279,7 @@ level_name:
                 .byte 31,14,1
 
                 ; "BONUS"
-                .byte 240,241,242
+                .byte udg_bonus+0,udg_bonus+1,udg_bonus+2
 
                 ; COLOUR 2
                 .byte 17,2
@@ -4284,14 +4289,14 @@ level_name:
 
                 ; Default score
 initial_score:
-                .byte 230,230,230,230,230
+                .fill 5,udg_char_0
 
                 ; PRINT TAB(18,1)
                 .byte 31,18,1
 
                 ; Default bonus chars
 initial_bonus:
-                .byte 235,230
+                .byte udg_char_0+5,udg_char_0
 
                 .byte 0
 

@@ -3377,6 +3377,8 @@ update_stuff: .proc
 
                 sta ed_cur_ltype
 
+                jsr ed_coff
+
                 ldx #5
                 ldy #29
                 lda ed_cur_otype
@@ -3729,6 +3731,11 @@ redraw:
                 
                 jsr ed_print
                 .text 22,5
+                .byte 0
+
+                jsr ed_coff
+
+                jsr ed_print
                 .byte 19,3
 colour3_physical_colour:
                 .byte 7
@@ -3739,9 +3746,20 @@ colour3_physical_colour:
                 .text 31,8,27,'CVAL:'
                 .text 31,0,29,'CUR:'
                 .text 31,8,29,'CVAL:'
-                
+                .text 31,0,31
                 .byte 0
 
+                lda level_finished
+                beq died
+                jsr ed_print
+                .text 'WON: Y',0
+                jmp draw_level
+died:
+                jsr ed_print
+                .text 'WON: ',17,1,'N',17,2
+                .byte 0
+                
+draw_level:
                 jsr ed_draw_level
 
                 ldy #1

@@ -86,6 +86,10 @@ The creation value is a number associated with some types of object:
 There are two types of spider: a solid one (always present), and a
 masked/dimmed one (appears only when playing with 2+ ghosts).
 
+An indicator in the bottom left shows `WON: Y` or `WON: N` to indicate
+whether you completed the level or something else happened (you
+probably died,, but you might just have pressed ESCAPE).
+
 ----
 
 # Build

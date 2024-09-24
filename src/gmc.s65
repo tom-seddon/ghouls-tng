@@ -388,7 +388,7 @@ loop:
 
 ;-------------------------------------------------------------------------
 
-make_otype: .function ltypes_begin,ltypes_end,sprite_data,sprite_width,sprite_height,init_routine,update_routine,ed_flags
+make_otype: .function ltype,num_ltypes,sprite_data,sprite_width,sprite_height,init_routine,update_routine,ed_flags
                 .cerror !(sprite_width==1||sprite_width==2),'invalid sprite width'
                 .cerror !(sprite_height==1||sprite_height==2),'invalid sprite height'
                 
@@ -401,37 +401,37 @@ _otype_flags:=_otype_flags|otype_flags_width2
 _otype_flags:=_otype_flags|otype_flags_height2
                 .endif
 
-                .endfunction {.ltypes_begin:ltypes_begin,.ltypes_end:ltypes_end,.sprite_data:sprite_data,.otype_flags:_otype_flags,.init_routine:init_routine,.update_routine:update_routine,.ed_flags:ed_flags}
+                .endfunction {.ltype:ltype,.num_ltypes:num_ltypes,.sprite_data:sprite_data,.otype_flags:_otype_flags,.init_routine:init_routine,.update_routine:update_routine,.ed_flags:ed_flags}
 
 make_sta_otype: .function ltype,sprite_data,sprite_width,sprite_height,ed_flags=0
-                .endfunction make_otype(ltype,ltype+1,sprite_data,sprite_width,sprite_height,0,0,ed_flags)
+                .endfunction make_otype(ltype,1,sprite_data,sprite_width,sprite_height,0,0,ed_flags)
 
-make_dyn_otype: .function base_ltype,num_ltypes,sprite_data,sprite_width,sprite_height,init_routine,update_routine,ed_flags=0
-                .endfunction make_otype(base_ltype,base_ltype+num_ltypes,sprite_data,sprite_width,sprite_height,init_routine,update_routine,ed_flags)
+make_dyn_otype: .function ltype,num_ltypes,sprite_data,sprite_width,sprite_height,init_routine,update_routine,ed_flags=0
+                .endfunction make_otype(ltype,num_ltypes,sprite_data,sprite_width,sprite_height,init_routine,update_routine,ed_flags)
 
 _:=[]
-_..=[make_sta_otype(ltype_blank.index,0,1,1,ed_flags_repeat)]
-_..=[make_sta_otype(ltype_lblock.index,sprite_lblock,1,1)]
-_..=[make_sta_otype(ltype_rblock.index,sprite_rblock,1,1)]
-_..=[make_sta_otype(ltype_block.index,sprite_block,1,1,ed_flags_repeat)]
-_..=[make_sta_otype(ltype_spikes.index,sprite_spikes,1,1)]
-_..=[make_sta_otype(ltype_spring_1_row.index,sprite_spring_row0,1,1)]
-_..=[make_sta_otype(ltype_spring_2_rows.index,sprite_spring_row0,1,2)]
-_..=[make_sta_otype(ltype_dots.index,sprite_dots,1,1,ed_flags_repeat)]
-_..=[make_sta_otype(ltype_pill.index,sprite_power_pill,1,1)]
+_..=[make_sta_otype(ltype_blank,0,1,1,ed_flags_repeat)]
+_..=[make_sta_otype(ltype_lblock,sprite_lblock,1,1)]
+_..=[make_sta_otype(ltype_rblock,sprite_rblock,1,1)]
+_..=[make_sta_otype(ltype_block,sprite_block,1,1,ed_flags_repeat)]
+_..=[make_sta_otype(ltype_spikes,sprite_spikes,1,1)]
+_..=[make_sta_otype(ltype_spring_1_row,sprite_spring_row0,1,1)]
+_..=[make_sta_otype(ltype_spring_2_rows,sprite_spring_row0,1,2)]
+_..=[make_sta_otype(ltype_dots,sprite_dots,1,1,ed_flags_repeat)]
+_..=[make_sta_otype(ltype_pill,sprite_power_pill,1,1)]
 otype_conveyor=len(_)           ;temp
-_..=[make_dyn_otype(ltype_conveyor.index,1,sprite_conveyor,1,1,0,update_conveyor)]
+_..=[make_dyn_otype(ltype_conveyor,1,sprite_conveyor,1,1,0,update_conveyor)]
 otype_platform=len(_)           ;temp
-_..=[make_dyn_otype(ltype_platform.index,num_speeds,sprite_floating_platform,2,1,0,update_platform)]
+_..=[make_dyn_otype(ltype_platform,num_speeds,sprite_floating_platform,2,1,0,update_platform)]
 otype_spider=len(_)             ;temp
-_..=[make_dyn_otype(ltype_spider.index,num_speeds,sprite_spider_0_row0,2,2,0,update_spider)]
-_..=[make_dyn_otype(ltype_spider2.index,num_speeds,sprite_spider_0_row0,2,2,0,update_spider,ed_flags_masked)]
+_..=[make_dyn_otype(ltype_spider,num_speeds,sprite_spider_0_row0,2,2,0,update_spider)]
+_..=[make_dyn_otype(ltype_spider2,num_speeds,sprite_spider_0_row0,2,2,0,update_spider,ed_flags_masked)]
 otypes=_
 
 otypes_ltype_begin:
-                .byte otypes.ltypes_begin
+                .byte otypes.ltype.index
 otypes_ltype_end:
-                .byte otypes.ltypes_end
+                .byte otypes.ltype.index+otypes.num_ltypes
 otypes_sprite_data_lo:
                 .byte <otypes.sprite_data
 otypes_sprite_data_hi:

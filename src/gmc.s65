@@ -410,22 +410,22 @@ make_dyn_otype: .function base_ltype,num_ltypes,sprite_data,sprite_width,sprite_
                 .endfunction make_otype(base_ltype,base_ltype+num_ltypes,sprite_data,sprite_width,sprite_height,init_routine,update_routine,ed_flags)
 
 _:=[]
-_..=[make_sta_otype(type_blank.index,0,1,1,ed_flags_repeat)]
-_..=[make_sta_otype(type_lblock.index,sprite_lblock,1,1)]
-_..=[make_sta_otype(type_rblock.index,sprite_rblock,1,1)]
-_..=[make_sta_otype(type_block.index,sprite_block,1,1,ed_flags_repeat)]
-_..=[make_sta_otype(type_spikes.index,sprite_spikes,1,1)]
-_..=[make_sta_otype(type_spring_1_row.index,sprite_spring_row0,1,1)]
-_..=[make_sta_otype(type_spring_2_rows.index,sprite_spring_row0,1,2)]
-_..=[make_sta_otype(type_dots.index,sprite_dots,1,1,ed_flags_repeat)]
-_..=[make_sta_otype(type_pill.index,sprite_power_pill,1,1)]
+_..=[make_sta_otype(ltype_blank.index,0,1,1,ed_flags_repeat)]
+_..=[make_sta_otype(ltype_lblock.index,sprite_lblock,1,1)]
+_..=[make_sta_otype(ltype_rblock.index,sprite_rblock,1,1)]
+_..=[make_sta_otype(ltype_block.index,sprite_block,1,1,ed_flags_repeat)]
+_..=[make_sta_otype(ltype_spikes.index,sprite_spikes,1,1)]
+_..=[make_sta_otype(ltype_spring_1_row.index,sprite_spring_row0,1,1)]
+_..=[make_sta_otype(ltype_spring_2_rows.index,sprite_spring_row0,1,2)]
+_..=[make_sta_otype(ltype_dots.index,sprite_dots,1,1,ed_flags_repeat)]
+_..=[make_sta_otype(ltype_pill.index,sprite_power_pill,1,1)]
 otype_conveyor=len(_)           ;temp
-_..=[make_dyn_otype(type_conveyor.index,1,sprite_conveyor,1,1,0,update_conveyor)]
+_..=[make_dyn_otype(ltype_conveyor.index,1,sprite_conveyor,1,1,0,update_conveyor)]
 otype_platform=len(_)           ;temp
-_..=[make_dyn_otype(type_platform.index,num_speeds,sprite_floating_platform,2,1,0,update_platform)]
+_..=[make_dyn_otype(ltype_platform.index,num_speeds,sprite_floating_platform,2,1,0,update_platform)]
 otype_spider=len(_)             ;temp
-_..=[make_dyn_otype(type_spider.index,num_speeds,sprite_spider_0_row0,2,2,0,update_spider)]
-_..=[make_dyn_otype(type_spider2.index,num_speeds,sprite_spider_0_row0,2,2,0,update_spider,ed_flags_masked)]
+_..=[make_dyn_otype(ltype_spider.index,num_speeds,sprite_spider_0_row0,2,2,0,update_spider)]
+_..=[make_dyn_otype(ltype_spider2.index,num_speeds,sprite_spider_0_row0,2,2,0,update_spider,ed_flags_masked)]
 otypes=_
 
 otypes_ltype_begin:
@@ -504,30 +504,30 @@ find_loop:
                 jmp find_loop
 
 not_found:
-                cmp #type_spring_2_rows.index
+                cmp #ltype_spring_2_rows.index
                 beq spring_2_rows
                 
-                cmp #type_pill.index
+                cmp #ltype_pill.index
                 beq pill
 
-                cmp #type_conveyor.index
+                cmp #ltype_conveyor.index
                 beq conveyor
 
-                cmp #type_platform.index
+                cmp #ltype_platform.index
                 bcc +
-                cmp #type_platform.index+num_speeds
+                cmp #ltype_platform.index+num_speeds
                 bcc platform
 +
                 
-                cmp #type_spider.index
+                cmp #ltype_spider.index
                 bcc +
-                cmp #type_spider.index+num_speeds
+                cmp #ltype_spider.index+num_speeds
                 bcc spider
 +
 
-                cmp #type_spider2.index
+                cmp #ltype_spider2.index
                 bcc +
-                cmp #type_spider2.index+num_speeds
+                cmp #ltype_spider2.index+num_speeds
                 bcc spider2
 +
                 
@@ -591,7 +591,7 @@ platform:
                 ldy #otype_platform
                 jsr add_object
                 sec
-                sbc #type_platform.index
+                sbc #ltype_platform.index
                 sta object_var1s,x ;speed
                 sta object_var2s,x ;update timer
                 lda #0
@@ -634,12 +634,12 @@ spider2:
                 ldx go
                 beq next
                 sec
-                sbc #type_spider2.index
+                sbc #ltype_spider2.index
                 jmp spider_common
                 
 spider:
                 sec
-                sbc #type_spider.index
+                sbc #ltype_spider.index
 spider_common:
                 ldy #otype_spider
                 jsr add_object
@@ -702,13 +702,13 @@ item_info_entry: .macro item
                 .endmacro
                 
 item_info:
-                .item_info_entry type_blank
-                .item_info_entry type_lblock
-                .item_info_entry type_rblock
-                .item_info_entry type_block
-                .item_info_entry type_spikes
-                .item_info_entry type_dots
-                .item_info_entry type_spring_1_row
+                .item_info_entry ltype_blank
+                .item_info_entry ltype_lblock
+                .item_info_entry ltype_rblock
+                .item_info_entry ltype_block
+                .item_info_entry ltype_spikes
+                .item_info_entry ltype_dots
+                .item_info_entry ltype_spring_1_row
                 .byte $ff
 
 ; C=0 on exit if found. X refers to item info table entry.
@@ -2710,7 +2710,7 @@ x_loop:
                 ; Put blocks on the bottom row
                 ldx #level_width-1
                 ldy #level_height-1
-                lda #type_block.index
+                lda #ltype_block.index
 -
                 jsr ed_write_level
                 dex

@@ -74,41 +74,47 @@ LevelData_flags_has_ghost_rect=LevelData.flags.has_ghost_rect
 
 num_speeds=20
                 
-type_blank={.index:0,.char:9,.colour:3}
-type_lblock={.index:1,.char:$e2,.colour:3}
-type_rblock={.index:2,.char:$e3,.colour:3}
-type_block={.index:3,.char:$e0,.colour:3,}
-type_spikes={.index:4,.char:$e4,.colour:1,}
-type_spring_1_row={.index:5,.char:$e1,.colour:1,}
-type_spring_2_rows={.index:6}
-type_dots={.index:7,.char:$f3,.colour:2,}
-type_pill={.index:8,}
-type_conveyor={.index:9,}
-type_platform={.index:10}
-type_spider={.index:30}
-type_spider2={.index:50}
-type_index_max=70
+ltype_blank={.index:0,.char:9,.colour:3}
+ltype_lblock={.index:1,.char:$e2,.colour:3}
+ltype_rblock={.index:2,.char:$e3,.colour:3}
+ltype_block={.index:3,.char:$e0,.colour:3,}
+ltype_spikes={.index:4,.char:$e4,.colour:1,}
+ltype_spring_1_row={.index:5,.char:$e1,.colour:1,}
+ltype_spring_2_rows={.index:6}
+ltype_dots={.index:7,.char:$f3,.colour:2,}
+ltype_pill={.index:8,}
+ltype_conveyor={.index:9,}
+ltype_platform={.index:10}
+ltype_spider={.index:30}
+ltype_spider2={.index:50}
+ltype_lblocku={.index:70}
+ltype_rblocku={.index:71}
+ltype_ldot={.index:72}
+ltype_rdot={.index:73}
+ltype_lspike={.index:74}
+ltype_rsike={.index:75}
+ltype_index_max=76
                 
 speed_edef: .function prefix,speed
                 .cerror !(speed>=0 && speed<num_speeds)
                 .endfunction format('%s%c',prefix,char(speed>=0 && speed<10?'0'+speed:'a'+speed-10))
                 
 ghouls_level_enc: .encode
-                .edef '__',type_blank.index
-                .edef '\\',type_lblock.index
-                .edef '//',type_rblock.index
-                .edef '||',type_block.index
-                .edef 'XX',type_spikes.index
-                .edef '^1',type_spring_1_row.index
-                .edef '^2',type_spring_2_rows.index
-                .edef '..',type_dots.index
-                .edef '()',type_pill.index
-                .edef '<<',type_conveyor.index
+                .edef '__',ltype_blank.index
+                .edef '\\',ltype_lblock.index
+                .edef '//',ltype_rblock.index
+                .edef '||',ltype_block.index
+                .edef 'XX',ltype_spikes.index
+                .edef '^1',ltype_spring_1_row.index
+                .edef '^2',ltype_spring_2_rows.index
+                .edef '..',ltype_dots.index
+                .edef '()',ltype_pill.index
+                .edef '<<',ltype_conveyor.index
 
                 .for _i:=0,_i<num_speeds,_i+=1
-                .edef speed_edef('=',_i),type_platform.index+_i
-                .edef speed_edef('S',_i),type_spider.index+_i
-                .edef speed_edef('T',_i),type_spider2.index+_i
+                .edef speed_edef('=',_i),ltype_platform.index+_i
+                .edef speed_edef('S',_i),ltype_spider.index+_i
+                .edef speed_edef('T',_i),ltype_spider2.index+_i
                 .endfor
                 
                 .endencode

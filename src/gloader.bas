@@ -1,7 +1,7 @@
 CLOSE#0
 A%=&EA:X%=0:Y%=255:IF((USR&FFF4)AND&FF00)DIV256<>0:P."This game is not compatible with a second processor.":END
 MODE5
-HIMEM={&levels_org}
+HIMEM={&gmc_org}
 VDU23,1,0,0,0,0,0,0,0,0
 ?&FE00=8:?&FE01=&30
 *LOAD GSCREEN 5800

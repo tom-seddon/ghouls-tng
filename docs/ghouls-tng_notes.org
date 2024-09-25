@@ -576,6 +576,10 @@ This suggests as a first draft memory map:
 |   09 | Object arrays   |                  |
 |   0a |                 |                  |
 |------+-----------------+------------------|
+|   0b | ...             |                  |
+|------+-----------------+------------------|
+|   0c | UDGs (OS 1.20)  |                  |
+|------+-----------------+------------------|
 |   11 | GBAS            | PAGE=&1100       |
 |   12 |                 |                  |
 |   13 |                 |                  |
@@ -722,3 +726,17 @@ is a big advantage of changing HIMEM.)
   editor_routines_hi:
                 
 #+end_src
+
+* =wip/new_blocks=
+
+Before:
+
+#+begin_example
+  8827/10752 (1925 free) $.GBAS 79f00011c21370c4a3be122be6c16b122e770bb1
+  3953/4096 (143 free) $.GMC 107023ed9dc4c4e6d818ad96abd46c86ec4c48fb
+  8416/12032 (3616 free) $.GEDMC 09932d37ba23fc6a412675076b0854e3786ead0a
+  2304/2304 (0 free) $.GLEVELS 010b42ba8ef089822506b089165b927c852d4ac0
+  192/512 (320 free) $.GUDGS 6eb344ceb81177cec820cfc14db0ea7858ad8ec7
+#+end_example
+
+* EOF

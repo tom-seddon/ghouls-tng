@@ -1203,29 +1203,28 @@ L101C:
                 sta L0072+1
                 
                 lda player_jump_state
-                bne L1060
+                bne L1060       ; taken if jumping
                 
-                ; lda player_addr
-                ; clc
-                ; adc #$40
-                ; sta L0072
-                ; lda player_addr+1
-                ; adc #1
-                ; sta L0072+1
+                lda player_addr
+                clc
+                adc #$40
+                sta L0072
+                lda player_addr+1
+                adc #1
+                sta L0072+1
 
                 ldy #$F
 L103D:
                 lda (L0072),y
                 cmp #mode5_byte(3,3,3,3)
-                beq L104B
+                beq move_player_up_one_row
                 dey
                 bpl L103D
                 jmp L1082
 
 ;-------------------------------------------------------------------------
 
-L104B:
-                ; Move player up one row.
+move_player_up_one_row:
                 lda player_addr
                 sec
                 sbc #$40
@@ -1249,18 +1248,29 @@ L1060:
                 lda L0072+1
                 adc #1
                 sta L0072+1
+
+                ; detect blocks when jumping - allowing you to climb
+                ; towers of them by jumping repeatedly.
+                
                 ldy #0
                 lda (L0072),y
                 cmp #mode5_byte(3,3,3,3)
                 beq L107D       ; taken if block??
-                ; ldy #7
-                ; lda (L0072),y
-                ; cmp #mode5_byte(3,3,3,3)
-                ; beq L107D       ; taken if lblocku or rblocku
                 ldy #8
                 lda (L0072),y
                 cmp #mode5_byte(3,3,3,3)
-                bne L1082       ; taken if not lblock and not rblock??
+                beq L107D
+
+                ldy #7
+                lda (L0072),y
+                cmp #mode5_byte(3,3,3,3)
+                beq L107D       ; taken if lblocku or rblocku
+                ldy #15
+                lda (L0072),y
+                cmp #mode5_byte(3,3,3,3)
+                beq L107D       ; taken if lblocku or rblocku
+
+                jmp L1082       ; taken if not block of some kind?
 
 L107D:
                 lda #0
@@ -1272,7 +1282,7 @@ L1082:
                 cmp #mode5_byte(2,2,2,2)
                 bne L1092       ; taken if not end of level??
                 lda player_jump_state
-                bne L1092
+                bne L1092       ; taken if jumping
                 jmp L158E
 
 ;-------------------------------------------------------------------------
@@ -1300,7 +1310,8 @@ L1092:
                 jsr copy_data_behind_player
                 lda data_behind_player+4  ; copy of what was under player, row 0?
                 cmp #mode5_byte(0,0,2,2)
-                bne L10DD       ; taken if not power pill
+                bne L10DD       ; taken if not dot
+                ; erase the dot
                 lda #0
                 sta data_behind_player+4  ; copy of what was under player, row 0?
                 sta data_behind_player+5  ; copy of what was under player, row 0?
@@ -1325,7 +1336,7 @@ L10DD:
                 lda player_anim_frame
                 bne L10E6
                 lda #0
-                sta L0085
+                sta L0085       ; reset dot eating pitch?
 
 L10E6:
                 ldy #31
@@ -1333,13 +1344,13 @@ L10E6:
 L10E8:
                 lda data_behind_player,y  ; copy of what was under player, row 1?
                 cmp #mode5_byte(1,0,0,0)
-                beq L1104
+                beq L1104       ; taken if left edge
                 cmp #mode5_byte(0,0,0,1)
-                beq L1104
+                beq L1104       ; taken if right edge
                 cmp #mode5_byte(1,3,3,3)
-                beq L1104
+                beq L1104       ; taken if left edge + block
                 cmp #mode5_byte(3,3,3,1)
-                beq L1104
+                beq L1104       ; taken if right edge + black
                 dey
                 bne L10E8
                 jmp L1131
@@ -1377,9 +1388,10 @@ L1131:
 
 L1133:
                 lda (player_addr),y
-                beq L114B
-                cmp #mode5_byte(0,0,0,2)
-                bcs L114B
+                beq L114B                ; taken if all black pixels
+                cmp #mode5_byte(0,0,0,2) ; #$10; #%00010000
+                bcs L114B                ; taken if any colour 2 or 3
+                                         ; pixels
 
 L113B:
                 lda player_addr
@@ -1395,9 +1407,10 @@ L113B:
 
 L114B:
                 lda (L0072),y
-                beq L1153
+                beq L1153       ; taken if all black pixels
                 cmp #mode5_byte(0,0,0,2)
-                bcc L113B
+                bcc L113B       ; taken if only red+black pixels -
+                                ; kill player
 
 L1153:
                 dey
@@ -2045,14 +2058,21 @@ L14CA:
                 lda (L0076),y
                 cmp #mode5_byte(3,3,3,3)
                 beq L14FA
-                ; ldy #7
-                ; lda (L0076),y
-                ; cmp #mode5_byte(3,3,3,3)
-                ; beq L14FA
                 ldy #8
                 lda (L0076),y
                 cmp #mode5_byte(3,3,3,3)
                 beq L14FA
+                ; lblocku/rblocku addition
+                ldy #7
+                lda (L0076),y
+                cmp #mode5_byte(3,3,3,3)
+                beq L14FA
+                ldy #15
+                lda (L0076),y
+                cmp #mode5_byte(3,3,3,3)
+                beq L14FA
+                ; ...
+
                 lda player_addr
                 clc
                 adc #$40
@@ -2336,6 +2356,8 @@ L169A:
 
 ;-------------------------------------------------------------------------
 
+; die
+                
 L16B4:
                 lda #150
                 sta L0AD0+4  ;pitch

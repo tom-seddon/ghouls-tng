@@ -95,9 +95,6 @@ gmc_start:
                 jmp ed_mul_test ; cheezy crap for BASIC test
                 .endif
 
-sprite_blank:
-                .fill 16,0
-
 sprite_block:
                 .byte mode5_byte(3,3,3,3)
                 .byte mode5_byte(0,0,0,3)
@@ -109,6 +106,25 @@ sprite_block:
                 .byte mode5_byte(3,3,3,3)
 
                 .byte mode5_byte(3,3,3,3)
+                .byte mode5_byte(3,0,0,0)
+                .byte mode5_byte(3,3,3,3)
+                .byte mode5_byte(0,3,3,0)
+                .byte mode5_byte(0,3,3,0)
+                .byte mode5_byte(3,3,3,3)
+                .byte mode5_byte(3,0,0,0)
+                .byte mode5_byte(3,3,3,3)
+
+sprite_lblocku:
+                .byte mode5_byte(0,0,0,0)
+                .byte mode5_byte(0,0,0,3)
+                .byte mode5_byte(0,0,3,3)
+                .byte mode5_byte(0,0,3,0)
+                .byte mode5_byte(0,3,3,0)
+                .byte mode5_byte(0,3,3,3)
+                .byte mode5_byte(3,0,0,3)
+                .byte mode5_byte(3,3,3,3)
+
+                .byte mode5_byte(0,3,3,3)
                 .byte mode5_byte(3,0,0,0)
                 .byte mode5_byte(3,3,3,3)
                 .byte mode5_byte(0,3,3,0)
@@ -155,6 +171,65 @@ sprite_rblock:
                 .byte mode5_byte(3,0,0,0)
                 .byte mode5_byte(0,0,0,0)
 
+sprite_rblocku:
+                .byte mode5_byte(3,3,3,3)
+                .byte mode5_byte(0,0,0,3)
+                .byte mode5_byte(3,3,3,3)
+                .byte mode5_byte(0,3,3,0)
+                .byte mode5_byte(0,3,3,0)
+                .byte mode5_byte(3,3,3,3)
+                .byte mode5_byte(0,0,0,3)
+                .byte mode5_byte(3,3,3,3)
+
+                .byte mode5_byte(0,0,0,0)
+                .byte mode5_byte(3,0,0,0)
+                .byte mode5_byte(3,3,0,0)
+                .byte mode5_byte(0,3,0,0)
+                .byte mode5_byte(0,3,3,0)
+                .byte mode5_byte(3,3,3,0)
+                .byte mode5_byte(3,0,0,3)
+                .byte mode5_byte(3,3,3,3)
+
+sprite_rdot:
+                .byte mode5_byte(0,0,0,0)
+                .byte mode5_byte(0,0,0,0)
+                .byte mode5_byte(0,0,0,0)
+                .byte mode5_byte(0,0,0,0)
+                .byte mode5_byte(0,0,0,0)
+                .byte mode5_byte(0,0,0,0)
+                .byte mode5_byte(0,0,0,0)
+                .byte mode5_byte(0,0,0,0)
+
+sprite_dots:
+                .byte mode5_byte(0,0,0,0)
+                .byte mode5_byte(0,0,0,0)
+                .byte mode5_byte(0,0,0,0)
+                .byte mode5_byte(0,0,0,0)
+                .byte mode5_byte(0,0,2,2)
+                .byte mode5_byte(0,0,2,2)
+                .byte mode5_byte(0,0,0,0)
+                .byte mode5_byte(0,0,0,0)
+
+sprite_ldot:
+                .byte mode5_byte(0,0,0,0)
+                .byte mode5_byte(0,0,0,0)
+                .byte mode5_byte(0,0,0,0)
+                .byte mode5_byte(0,0,0,0)
+                .byte mode5_byte(0,0,2,2)
+                .byte mode5_byte(0,0,2,2)
+                .byte mode5_byte(0,0,0,0)
+                .byte mode5_byte(0,0,0,0)
+
+sprite_rspikes:
+                .byte mode5_byte(0,0,0,0)
+                .byte mode5_byte(0,0,0,0)
+                .byte mode5_byte(0,0,0,0)
+                .byte mode5_byte(0,0,0,0)
+                .byte mode5_byte(0,0,0,0)
+                .byte mode5_byte(0,0,0,0)
+                .byte mode5_byte(0,0,0,0)
+                .byte mode5_byte(0,0,0,0)
+                
 sprite_spikes:
                 .byte mode5_byte(1,0,0,1)
                 .byte mode5_byte(1,0,0,1)
@@ -165,6 +240,7 @@ sprite_spikes:
                 .byte mode5_byte(0,1,0,1)
                 .byte mode5_byte(1,1,1,1)
 
+sprite_lspikes:
                 .byte mode5_byte(1,0,0,1)
                 .byte mode5_byte(1,0,0,1)
                 .byte mode5_byte(1,0,0,1)
@@ -173,6 +249,15 @@ sprite_spikes:
                 .byte mode5_byte(1,0,1,0)
                 .byte mode5_byte(1,0,1,0)
                 .byte mode5_byte(1,1,1,1)
+
+                .byte mode5_byte(0,0,0,0)
+                .byte mode5_byte(0,0,0,0)
+                .byte mode5_byte(0,0,0,0)
+                .byte mode5_byte(0,0,0,0)
+                .byte mode5_byte(0,0,0,0)
+                .byte mode5_byte(0,0,0,0)
+                .byte mode5_byte(0,0,0,0)
+                .byte mode5_byte(0,0,0,0)
 
 sprite_spring_row0:
                 .byte mode5_byte(1,0,1,0)
@@ -211,25 +296,6 @@ sprite_spring_row1:
                 .byte mode5_byte(1,1,1,0)
                 .byte mode5_byte(0,0,0,1)
                 .byte mode5_byte(1,1,1,0)
-
-sprite_dots:
-                .byte mode5_byte(0,0,0,0)
-                .byte mode5_byte(0,0,0,0)
-                .byte mode5_byte(0,0,0,0)
-                .byte mode5_byte(0,0,0,0)
-                .byte mode5_byte(0,0,2,2)
-                .byte mode5_byte(0,0,2,2)
-                .byte mode5_byte(0,0,0,0)
-                .byte mode5_byte(0,0,0,0)
-
-                .byte mode5_byte(0,0,0,0)
-                .byte mode5_byte(0,0,0,0)
-                .byte mode5_byte(0,0,0,0)
-                .byte mode5_byte(0,0,0,0)
-                .byte mode5_byte(0,0,2,2)
-                .byte mode5_byte(0,0,2,2)
-                .byte mode5_byte(0,0,0,0)
-                .byte mode5_byte(0,0,0,0)
                 
 sprite_pl_right_0:.byte 0, $30, $70, $50,$F0,$E0,$F0, $70, 0, 0, $80,$C0, $80, 0, 0,$C0, $70, $30, $30, $20, $20,$C0, $80, 0, $80, 0, $80, $80,$C0, $80, 0, 0; 0
 sprite_pl_right_1:.byte 0, 0, $10, $10, $30, $30, $30, $10, 0,$C0,$E0, $60,$F0, $80,$F0,$E0, $10, 0, 0, 0, 0, 0, 0, 0,$E0,$C0,$C0,$C0,$C0, $80, $80,$C0; 0
@@ -424,6 +490,8 @@ _otype_flags:=_otype_flags|otype_flags_width2
 _otype_flags:=_otype_flags|otype_flags_height2
                 .endif
 
+                .cerror init_routine!=0 ; turned out unnecessary
+
                 .endfunction {.ltype:ltype,.num_ltypes:num_ltypes,.sprite_data:sprite_data,.otype_flags:_otype_flags,.init_routine:init_routine,.update_routine:update_routine,.ed_flags:ed_flags}
 
 make_sta_otype: .function ltype,sprite_data,sprite_width,sprite_height,ed_flags=0
@@ -432,15 +500,24 @@ make_sta_otype: .function ltype,sprite_data,sprite_width,sprite_height,ed_flags=
 make_dyn_otype: .function ltype,num_ltypes,sprite_data,sprite_width,sprite_height,init_routine,update_routine,ed_flags=0
                 .endfunction make_otype(ltype,num_ltypes,sprite_data,sprite_width,sprite_height,init_routine,update_routine,ed_flags)
 
+
+                ; Order in this array dictates the order things come
+                ; in the NEW list in the editor
 _:=[]
 _..=[make_sta_otype(ltype_blank,0,1,1,ed_flags_repeat)]
 _..=[make_sta_otype(ltype_lblock,sprite_lblock,1,1)]
 _..=[make_sta_otype(ltype_rblock,sprite_rblock,1,1)]
 _..=[make_sta_otype(ltype_block,sprite_block,1,1,ed_flags_repeat)]
+_..=[make_sta_otype(ltype_lblocku,sprite_lblocku,1,1)]
+_..=[make_sta_otype(ltype_rblocku,sprite_rblocku,1,1)]
 _..=[make_sta_otype(ltype_spikes,sprite_spikes,1,1)]
+_..=[make_sta_otype(ltype_lspikes,sprite_lspikes,1,1)]
+_..=[make_sta_otype(ltype_rspikes,sprite_rspikes,1,1)]
 _..=[make_sta_otype(ltype_spring_1_row,sprite_spring_row0,1,1)]
 _..=[make_sta_otype(ltype_spring_2_rows,sprite_spring_row0,1,2)]
 _..=[make_sta_otype(ltype_dots,sprite_dots,1,1,ed_flags_repeat)]
+_..=[make_sta_otype(ltype_ldot,sprite_ldot,1,1,ed_flags_repeat)]
+_..=[make_sta_otype(ltype_rdot,sprite_rdot,1,1,ed_flags_repeat)]
 _..=[make_sta_otype(ltype_pill,sprite_power_pill,1,1)]
 otype_conveyor=len(_)           ;temp
 _..=[make_dyn_otype(ltype_conveyor,1,sprite_conveyor,1,1,0,update_conveyor)]
@@ -450,6 +527,7 @@ otype_spider=len(_)             ;temp
 _..=[make_dyn_otype(ltype_spider,num_speeds,sprite_spider_0_row0,2,2,0,update_spider)]
 _..=[make_dyn_otype(ltype_spider2,num_speeds,sprite_spider_0_row0,2,2,0,update_spider,ed_flags_masked)]
 otypes=_
+                .cerror len(otypes)>=128 ; must be BMI-friendly
 
 otypes_ltype_begin:
                 .byte otypes.ltype.index
@@ -513,12 +591,6 @@ loop:
                 lda (level_draw_ptr),y ; get ltype
 
                 ; Special ltypes
-                ; cmp #ltype_spring_2_rows.index
-                ; beq spring_2_rows
-                
-                ; cmp #ltype_pill.index
-                ; beq pill
-
                 cmp #ltype_conveyor.index
                 beq conveyor
 
@@ -589,6 +661,7 @@ done:
                 rts
 
 draw_level_sprite:
+                pha
                 lda otypes_sprite_data_lo,x
                 sta level_draw_sprite_src+0
                 lda otypes_sprite_data_hi,x
@@ -617,6 +690,11 @@ draw_level_sprite:
                 adc #$01
                 sta level_draw_sprite_dest+1
 
+                jsr draw_level_sprite_row
+draw_level_sprite_done:
+                pla
+                rts
+
 draw_level_sprite_row:
                 ldy #0
                 
@@ -624,7 +702,7 @@ draw_level_sprite_row:
 
                 lda otypes_otype_flags,x
                 and #otype_flags_width2
-                beq draw_level_sprite_done
+                beq draw_level_sprite_8x8_done
 
 draw_level_sprite_8x8:
                 txa
@@ -646,23 +724,12 @@ draw_level_sprite_8x8_write:
                 bne draw_level_sprite_8x8_loop
                 pla
                 tax
-draw_level_sprite_done:
+draw_level_sprite_8x8_done:
                 rts
                 
-; spring_2_rows:
-;                 ldx #0
-; spring_2_rows_loop:
-;                 lda spring_2_rows_data,x
-;                 jsr oswrch
-;                 inx
-;                 cpx #size(spring_2_rows_data)
-;                 bne spring_2_rows_loop
-;                 jmp next
-; spring_2_rows_data: .block
-;                 .text 17,1,$e1,8,10,$e5,11,8
-;                 .endblock
-                
 platform:
+                ldx #otype_platform
+                jsr draw_level_sprite
                 ldy #otype_platform
                 jsr add_object
                 sec
@@ -671,40 +738,19 @@ platform:
                 sta object_var2s,x ;update timer
                 lda #0
                 sta object_var0s,x ;direction
-
-                ldy #31
-platform_loop:
-                lda sprite_floating_platform,y
-                sta (level_draw_screen_addr),y
-                dey
-                bpl platform_loop
                 jmp next
                 
 conveyor:
+                ldx #otype_conveyor
+                jsr draw_level_sprite
                 ldy #otype_conveyor
                 jsr add_object
                 lda #2
                 sta object_var2s,x ;update timer
                 lda #1
                 sta object_var0s,x ;direction
-
-                ldy #15
-conveyor_loop:
-                lda sprite_conveyor,y
-                sta (level_draw_screen_addr),y
-                dey
-                bpl conveyor_loop
                 jmp next
                 
-pill:
-                ldy #15
-pill_loop:
-                lda sprite_power_pill,y
-                sta (level_draw_screen_addr),y
-                dey
-                bpl pill_loop
-                jmp next
-
 spider2:
                 ldx go
                 beq next
@@ -716,29 +762,14 @@ spider:
                 sec
                 sbc #ltype_spider.index
 spider_common:
+                ldx #otype_spider
+                jsr draw_level_sprite
                 ldy #otype_spider
                 jsr add_object
                 sta object_var1s,x ;speed
                 sta object_var2s,x ;update timer
                 lda #1
                 sta object_var0s,x ;direction
-
-                clc
-                lda level_draw_screen_addr+0
-                adc #$40
-                sta L0074+0
-                lda level_draw_screen_addr+1
-                adc #$01
-                sta L0074+1
-                ldy #31
-spider_loop:
-                lda sprite_spider_0_row0,y
-                sta (level_draw_screen_addr),y
-                lda sprite_spider_0_row1,y
-                sta (L0074),y
-                dey
-                bpl spider_loop
-                
                 jmp next
 
 add_object:
@@ -1221,11 +1252,15 @@ L1060:
                 ldy #0
                 lda (L0072),y
                 cmp #mode5_byte(3,3,3,3)
-                beq L107D
+                beq L107D       ; taken if block??
+                ; ldy #7
+                ; lda (L0072),y
+                ; cmp #mode5_byte(3,3,3,3)
+                ; beq L107D       ; taken if lblocku or rblocku
                 ldy #8
                 lda (L0072),y
                 cmp #mode5_byte(3,3,3,3)
-                bne L1082
+                bne L1082       ; taken if not lblock and not rblock??
 
 L107D:
                 lda #0
@@ -1235,7 +1270,7 @@ L1082:
                 ldy #$F
                 lda (L0074),y
                 cmp #mode5_byte(2,2,2,2)
-                bne L1092
+                bne L1092       ; taken if not end of level??
                 lda player_jump_state
                 bne L1092
                 jmp L158E
@@ -1265,7 +1300,7 @@ L1092:
                 jsr copy_data_behind_player
                 lda data_behind_player+4  ; copy of what was under player, row 0?
                 cmp #mode5_byte(0,0,2,2)
-                bne L10DD
+                bne L10DD       ; taken if not power pill
                 lda #0
                 sta data_behind_player+4  ; copy of what was under player, row 0?
                 sta data_behind_player+5  ; copy of what was under player, row 0?
@@ -2010,6 +2045,10 @@ L14CA:
                 lda (L0076),y
                 cmp #mode5_byte(3,3,3,3)
                 beq L14FA
+                ; ldy #7
+                ; lda (L0076),y
+                ; cmp #mode5_byte(3,3,3,3)
+                ; beq L14FA
                 ldy #8
                 lda (L0076),y
                 cmp #mode5_byte(3,3,3,3)
@@ -2257,9 +2296,9 @@ L166F:
                 sec
                 sbc #1
                 sta score_chars,y
-                cmp #229
+                cmp #udg_char_0-1
                 bne L1695
-                lda #239
+                lda #udg_char_0+9
                 sta score_chars,y
                 dey
                 bpl L166F

@@ -91,8 +91,8 @@ ltype_lblocku={.index:70}
 ltype_rblocku={.index:71}
 ltype_ldot={.index:72}
 ltype_rdot={.index:73}
-ltype_lspike={.index:74}
-ltype_rsike={.index:75}
+ltype_lspikes={.index:74}
+ltype_rspikes={.index:75}
 ltype_index_max=76
                 
 speed_edef: .function prefix,speed

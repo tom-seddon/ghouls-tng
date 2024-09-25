@@ -296,7 +296,10 @@ sprite_spring_row1:
                 .byte mode5_byte(1,1,1,0)
                 .byte mode5_byte(0,0,0,1)
                 .byte mode5_byte(1,1,1,0)
-                
+
+sprite_solid_red:
+                .fill 16,mode5_byte(1,1,1,1)
+
 sprite_pl_right_0:.byte 0, $30, $70, $50,$F0,$E0,$F0, $70, 0, 0, $80,$C0, $80, 0, 0,$C0, $70, $30, $30, $20, $20,$C0, $80, 0, $80, 0, $80, $80,$C0, $80, 0, 0; 0
 sprite_pl_right_1:.byte 0, 0, $10, $10, $30, $30, $30, $10, 0,$C0,$E0, $60,$F0, $80,$F0,$E0, $10, 0, 0, 0, 0, 0, 0, 0,$E0,$C0,$C0,$C0,$C0, $80, $80,$C0; 0
 sprite_pl_left_0:.byte 0, 0, $10, $30, $10, 0, 0, $30, 0,$C0,$E0,$A0,$F0, $70,$F0,$E0, $10, 0, $10, $10, $30, $10, 0, 0,$E0,$C0,$C0, $40, $40, $30, $10, 0; 0
@@ -519,6 +522,7 @@ _..=[make_sta_otype(ltype_dots,sprite_dots,1,1,ed_flags_repeat)]
 _..=[make_sta_otype(ltype_ldot,sprite_ldot,1,1,ed_flags_repeat)]
 _..=[make_sta_otype(ltype_rdot,sprite_rdot,1,1,ed_flags_repeat)]
 _..=[make_sta_otype(ltype_pill,sprite_power_pill,1,1)]
+_..=[make_sta_otype(ltype_solid_red,sprite_solid_red,1,1,ed_flags_repeat)]
 otype_conveyor=len(_)           ;temp
 _..=[make_dyn_otype(ltype_conveyor,1,sprite_conveyor,1,1,0,update_conveyor)]
 otype_platform=len(_)           ;temp

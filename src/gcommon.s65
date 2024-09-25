@@ -94,7 +94,8 @@ ltype_ldot={.index:72}
 ltype_rdot={.index:73}
 ltype_lspikes={.index:74}
 ltype_rspikes={.index:75}
-ltype_index_max=76
+ltype_solid_red={.index:76}
+; ltype_index_max=77
                 
 speed_edef: .function prefix,speed
                 .cerror !(speed>=0 && speed<num_speeds)

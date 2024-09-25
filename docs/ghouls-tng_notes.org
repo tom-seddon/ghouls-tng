@@ -505,25 +505,33 @@ An object can exist just a stationary sprite drawn in screen memory.
 It can also be a dynamic object, that has an entry in the object
 arrays allowing it to be updated each frame.
 
-The object arrays hold 6 bytes per object: type (aka otype), screen
-address, var0, var1 and var2.
+The object arrays hold 6 bytes per object: type (aka otype - this is
+not serialized, and doesn't need to be consistent), screen address,
+var0, var1 and var2.
 
 otype 0 is the blank object, but the other numbers are arbitrary.
 
-| otype | What              | Sprite   | W | H | Dyn? | var0      | var1  | var2     |
-|-------+-------------------+----------+---+---+------+-----------+-------+----------|
-|     0 | Blank             | empty    | 1 | 1 |      |           |       |          |
-|     1 | Left Block        | lblock   | 1 | 1 |      |           |       |          |
-|     2 | Right Block       | rblock   | 1 | 1 |      |           |       |          |
-|     3 | Block             | block    | 1 | 1 |      |           |       |          |
-|     4 | Spikes            | spikes   | 1 | 1 |      |           |       |          |
-|     5 | Spring (1 row)    | spring   | 1 | 1 |      |           |       |          |
-|     6 | Spring (2 rows)   | spring   | 1 | 2 |      |           |       |          |
-|     7 | Dots              | dots     | 1 | 1 |      |           |       |          |
-|     8 | Pill              | pill     | 1 | 1 |      |           |       |          |
-|     9 | Conveyor RtL      | conveyor | 1 | 1 | y    | dir       |       | ucounter |
-|    10 | Floating platform | platform | 2 | 1 | y    | dir       | speed | ucounter |
-|    11 | Spider            | spider   | 2 | 2 | y    | frame/dir | speed | ucounter |
+| otype | What              | Sprite    | W | H | Dyn? | var0      | var1  | var2     |
+|-------+-------------------+-----------+---+---+------+-----------+-------+----------|
+|     0 | Blank             | empty     | 1 | 1 |      |           |       |          |
+|       | Left Block        | lblock    | 1 | 1 |      |           |       |          |
+|       | Right Block       | rblock    | 1 | 1 |      |           |       |          |
+|       | Left Block U      | lblocku   | 1 | 1 |      |           |       |          |
+|       | Right Block U     | rblocku   | 1 | 1 |      |           |       |          |
+|       | Block             | block     | 1 | 1 |      |           |       |          |
+|       | Spikes            | spikes    | 1 | 1 |      |           |       |          |
+|       | Left Spikes       | lspikes   | 1 | 1 |      |           |       |          |
+|       | Right Spikes      | rspikes   | 1 | 1 |      |           |       |          |
+|       | Solid Red         | solid_red | 1 | 1 |      |           |       |          |
+|       | Spring (1 row)    | spring    | 1 | 1 |      |           |       |          |
+|       | Spring (2 rows)   | spring    | 1 | 2 |      |           |       |          |
+|       | Dots              | dots      | 1 | 1 |      |           |       |          |
+|       | Left Dot          | ldot      | 1 | 1 |      |           |       |          |
+|       | Right Dot         | rdot      | 1 | 1 |      |           |       |          |
+|       | Pill              | pill      | 1 | 1 |      |           |       |          |
+|       | Conveyor RtL      | conveyor  | 1 | 1 | y    | dir       |       | ucounter |
+|       | Floating Platform | platform  | 2 | 1 | y    | dir       | speed | ucounter |
+|       | Spider            | spider    | 2 | 2 | y    | frame/dir | speed | ucounter |
 
 - dir :: bit 0 = direction: 0=left/up, 1=right/down
 - frame/dir :: bit 1 = anim frame; bit 0 = direction (as above)
@@ -539,21 +547,28 @@ A 20 wide x 26 high grid of bytes. Bytes as follows:
 
 (As with the otypes, ltype 0 is the blank one, and the rest are arbitrary.)
 
-|  LType | OType | Notes                                 |
-|--------+-------+---------------------------------------|
-|      0 |     0 |                                       |
-|      1 |     1 |                                       |
-|      2 |     2 |                                       |
-|      3 |     3 |                                       |
-|      4 |     4 |                                       |
-|      5 |     5 |                                       |
-|      6 |     6 |                                       |
-|      7 |     7 |                                       |
-|      8 |     8 |                                       |
-|      9 |     9 |                                       |
-|  10-29 |    10 | 20 speeds, 1-20                       |
-|  30-49 |    11 | 20 speeds                             |
-|  50-69 |    11 | 20 speeds. Appears only when >1 ghost |
+| LType | OType             | Notes                                 |
+|-------+-------------------+---------------------------------------|
+|     0 | 0                 |                                       |
+|     1 | Left Block        |                                       |
+|     2 | Right Block       |                                       |
+|     3 | Block             |                                       |
+|     4 | Spikes            |                                       |
+|     5 | Spring (1 row)    |                                       |
+|     6 | Spring (2 rows)   |                                       |
+|     7 | Dots              |                                       |
+|     8 | Pill              |                                       |
+|     9 | Conveyor RtL      |                                       |
+| 10-29 | Floating Platform | 20 speeds, 1-20                       |
+| 30-49 | Spider            | 20 speeds                             |
+| 50-69 | Spider            | 20 speeds. Appears only when >1 ghost |
+|    70 | Left Block U      |                                       |
+|    71 | Right Block U     |                                       |
+|    72 | Left Dot          |                                       |
+|    73 | Right Dot         |                                       |
+|    74 | Left Spikes       |                                       |
+|    75 | Right Spikes      |                                       |
+|    76 | Solid Red         |                                       |
 
 * New memory map
 
@@ -745,5 +760,24 @@ Before:
   2304/2304 (0 free) $.GLEVELS 010b42ba8ef089822506b089165b927c852d4ac0
   192/512 (320 free) $.GUDGS 6eb344ceb81177cec820cfc14db0ea7858ad8ec7
 #+end_example
+
+* Level text
+
+Default instruction text:
+
+: 0123456789012345678901234567890123456789
+:   Situated in a deadly haunted mansion,
+:  you have to rescue your power jewels
+:  from the horrid ghost that stole them.
+
+Lines are cyan (134). "haunted" is red (129).
+
+Default ending text:
+
+: 01234567890123456789
+:  YOU TOOK THE POWER
+:       JEWELS
+:  AND ESCAPED TO GET
+:    SOME MORE.....
 
 * EOF

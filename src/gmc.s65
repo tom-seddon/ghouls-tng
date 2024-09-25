@@ -3168,6 +3168,17 @@ load_levels:
 
                 jsr init_levels_file_osfile_block_for_load_or_save
 
+                ; Clear out the buffer, in case the loaded levels are
+                ; the old type with the slightly smaller data.
+                lda #0
+                ldx #0
+clear_levels_data_loop:
+                .for _i=0,_i<level_data_pages,_i+=1
+                sta levels_org+_i*256,x
+                .endfor
+                inx
+                bne clear_levels_data_loop
+
                 ; load file to address given in control block
                 lda #$00
                 sta levels_file_osfile_block.exec+0

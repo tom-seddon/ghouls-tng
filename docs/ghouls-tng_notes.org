@@ -445,6 +445,9 @@ Offsets are relative to the start of the file.
 The magic number is =&0e73d760= when read with BBC BASIC's `!`
 operator.
 
+The header is followed by 4 sets of level data, then optional text
+data.
+
 ** Level data
 
 Offsets are relative to the start of the level data.
@@ -466,8 +469,8 @@ Offsets are relative to the start of the level data.
 |   +575 |              |             | level total size                     |
 
 (So total level data size is header size+4*level size = 4+4*575 = 2304
-(0x900) - the size of ~spare~ being chosen to allow this total to be a
-round number)
+(0x900), or 2560 (0xa00) if text data is present too - the size of
+~spare~ being chosen to allow this total to be a round number)
 
 The player start pos is stored as X/Y, with (0,0) as top left of
 level, as that's how the editor manages everything internally. It's
@@ -491,6 +494,10 @@ Flags are:
 
 If ghost rect not valid, the ghost position is the previous default
 behaviour: initial address is =&6000+RND(300)*16=.
+
+** Text data
+
+TBC
 
 ** Object types
 
@@ -571,94 +578,94 @@ input buffer at $700 could be available for emergency use.
 
 This suggests as a first draft memory map:
 
-| Page | What            | Notes            |
-|------+-----------------+------------------|
-|   09 | Object arrays   |                  |
-|   0a |                 |                  |
-|------+-----------------+------------------|
-|   0b | ...             |                  |
-|------+-----------------+------------------|
-|   0c | UDGs (OS 1.20)  |                  |
-|------+-----------------+------------------|
-|   11 | GBAS            | PAGE=&1100       |
-|   12 |                 |                  |
-|   13 |                 |                  |
-|   14 |                 |                  |
-|   15 |                 |                  |
-|   16 |                 |                  |
-|   17 |                 |                  |
-|   18 |                 |                  |
-|   19 |                 |                  |
-|   1a |                 |                  |
-|   1b |                 |                  |
-|   1c |                 |                  |
-|   1d |                 |                  |
-|   1e |                 |                  |
-|   1f |                 |                  |
-|   20 |                 |                  |
-|   21 |                 |                  |
-|   22 |                 |                  |
-|   23 |                 |                  |
-|   24 |                 |                  |
-|   25 |                 |                  |
-|   26 |                 |                  |
-|   27 |                 |                  |
-|   28 |                 |                  |
-|   29 |                 |                  |
-|   2a |                 |                  |
-|   2b |                 |                  |
-|   2c |                 |                  |
-|   2d |                 |                  |
-|   2e |                 |                  |
-|   2f |                 |                  |
-|   30 |                 |                  |
-|   31 |                 |                  |
-|   32 |                 |                  |
-|   33 |                 | TOP=approx &3400 |
-|------+-----------------+------------------|
-|   34 | BASIC variables |                  |
-|   35 |                 |                  |
-|   36 |                 |                  |
-|   37 |                 |                  |
-|   38 |                 |                  |
-|   39 |                 |                  |
-|   3a |                 |                  |
-|   3b |                 |                  |
-|   3c |                 |                  |
-|   3d | BASIC stack     | HIMEM=&3E00      |
-|------+-----------------+------------------|
-|   3e | GMC             |                  |
-|   3f |                 |                  |
-|   40 |                 |                  |
-|   41 |                 |                  |
-|   42 |                 |                  |
-|   43 |                 |                  |
-|   44 |                 |                  |
-|   45 |                 |                  |
-|   46 |                 |                  |
-|   47 |                 |                  |
-|   48 |                 |                  |
-|   49 |                 |                  |
-|   4a |                 |                  |
-|   4b |                 |                  |
-|   4c |                 |                  |
-|   4d |                 |                  |
-|------+-----------------+------------------|
-|   4e | Levels          |                  |
-|   4f |                 |                  |
-|   50 |                 |                  |
-|   51 |                 |                  |
-|   52 |                 |                  |
-|   53 |                 |                  |
-|   54 |                 |                  |
-|   55 |                 |                  |
-|   56 |                 |                  |
-|   57 |                 |                  |
-|------+-----------------+------------------|
-|   58 | Screen          |                  |
-|  ... |                 |                  |
-|   7f |                 |                  |
-|------+-----------------+------------------|
+| Page | What            | Notes                               |
+|------+-----------------+-------------------------------------|
+|   09 | Object arrays   |                                     |
+|   0a |                 |                                     |
+|------+-----------------+-------------------------------------|
+|   0b | ...             |                                     |
+|------+-----------------+-------------------------------------|
+|   0c | UDGs (OS 1.20)  |                                     |
+|------+-----------------+-------------------------------------|
+|   11 | GBAS            | PAGE=&1100                          |
+|   12 |                 |                                     |
+|   13 |                 |                                     |
+|   14 |                 |                                     |
+|   15 |                 |                                     |
+|   16 |                 |                                     |
+|   17 |                 |                                     |
+|   18 |                 |                                     |
+|   19 |                 |                                     |
+|   1a |                 |                                     |
+|   1b |                 |                                     |
+|   1c |                 |                                     |
+|   1d |                 |                                     |
+|   1e |                 |                                     |
+|   1f |                 |                                     |
+|   20 |                 |                                     |
+|   21 |                 |                                     |
+|   22 |                 |                                     |
+|   23 |                 |                                     |
+|   24 |                 |                                     |
+|   25 |                 |                                     |
+|   26 |                 |                                     |
+|   27 |                 |                                     |
+|   28 |                 |                                     |
+|   29 |                 |                                     |
+|   2a |                 |                                     |
+|   2b |                 |                                     |
+|   2c |                 |                                     |
+|   2d |                 |                                     |
+|   2e |                 |                                     |
+|   2f |                 |                                     |
+|   30 |                 |                                     |
+|   31 |                 |                                     |
+|   32 |                 |                                     |
+|   33 |                 | TOP=approx &3400                    |
+|------+-----------------+-------------------------------------|
+|   34 | BASIC variables | currently don't even reach $3600... |
+|   35 |                 |                                     |
+|   36 |                 |                                     |
+|   37 |                 |                                     |
+|   38 |                 |                                     |
+|   39 |                 |                                     |
+|   3a |                 |                                     |
+|   3b | BASIC stack     | HIMEM=&3C00                         |
+|------+-----------------+-------------------------------------|
+|   3c | GMC             |                                     |
+|   3d |                 |                                     |
+|   3e |                 |                                     |
+|   3f |                 |                                     |
+|   40 |                 |                                     |
+|   41 |                 |                                     |
+|   42 |                 |                                     |
+|   43 |                 |                                     |
+|   44 |                 |                                     |
+|   45 |                 |                                     |
+|   46 |                 |                                     |
+|   47 |                 |                                     |
+|   48 |                 |                                     |
+|   49 |                 |                                     |
+|   4a |                 |                                     |
+|   4b |                 |                                     |
+|   4c |                 |                                     |
+|   4d |                 |                                     |
+|------+-----------------+-------------------------------------|
+|   4e | Levels          |                                     |
+|   4f |                 |                                     |
+|   50 |                 |                                     |
+|   51 |                 |                                     |
+|   52 |                 |                                     |
+|   53 |                 |                                     |
+|   54 |                 |                                     |
+|   55 |                 |                                     |
+|   56 |                 |                                     |
+|   57 |                 |                                     |
+|------+-----------------+-------------------------------------|
+|   58 | Screen          |                                     |
+|  ... |                 |                                     |
+|   7f |                 |                                     |
+|------+-----------------+-------------------------------------|
 
 GBAS changes mode somewhat often, but this is fixable - set HIMEM on
 startup and use VDU22 to switch mode after.

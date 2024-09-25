@@ -2,8 +2,8 @@
 
 ;-------------------------------------------------------------------------
 
-max_gmc_pages=16
-level_data_pages=9
+max_gmc_pages=18
+level_data_pages=10
 
 himem=$5800
 levels_org=himem-level_data_pages*256
@@ -11,6 +11,7 @@ gmc_org=levels_org-max_gmc_pages*256
 
 ; Importing only happens in Mode 7. Plenty of space free!
 import_levels_org=himem
+                .cerror import_levels_org+level_data_pages*256>$7c00
                 
 gedmc_org=$2000;levels_org-max_gedmc_pages*256
 max_gedmc_pages=(levels_org-gedmc_org)/256

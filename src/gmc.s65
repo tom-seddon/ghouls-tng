@@ -492,7 +492,7 @@ loop:
 
 ;-------------------------------------------------------------------------
 
-make_otype: .function ltype,num_ltypes,sprite_data,sprite_width,sprite_height,init_routine,update_routine,ed_flags
+make_otype: .function ltype,num_ltypes,sprite_data,sprite_width,sprite_height,update_routine,ed_flags
                 .cerror !(sprite_width==1||sprite_width==2),'invalid sprite width'
                 .cerror !(sprite_height==1||sprite_height==2),'invalid sprite height'
                 
@@ -505,15 +505,13 @@ _otype_flags:=_otype_flags|otype_flags_width2
 _otype_flags:=_otype_flags|otype_flags_height2
                 .endif
 
-                .cerror init_routine!=0 ; turned out unnecessary
-
-                .endfunction {.ltype:ltype,.num_ltypes:num_ltypes,.sprite_data:sprite_data,.otype_flags:_otype_flags,.init_routine:init_routine,.update_routine:update_routine,.ed_flags:ed_flags}
+                .endfunction {.ltype:ltype,.num_ltypes:num_ltypes,.sprite_data:sprite_data,.otype_flags:_otype_flags,.update_routine:update_routine,.ed_flags:ed_flags}
 
 make_sta_otype: .function ltype,sprite_data,sprite_width,sprite_height,ed_flags=0
-                .endfunction make_otype(ltype,1,sprite_data,sprite_width,sprite_height,0,0,ed_flags)
+                .endfunction make_otype(ltype,1,sprite_data,sprite_width,sprite_height,0,ed_flags)
 
-make_dyn_otype: .function ltype,num_ltypes,sprite_data,sprite_width,sprite_height,init_routine,update_routine,ed_flags=0
-                .endfunction make_otype(ltype,num_ltypes,sprite_data,sprite_width,sprite_height,init_routine,update_routine,ed_flags)
+make_dyn_otype: .function ltype,num_ltypes,sprite_data,sprite_width,sprite_height,update_routine,ed_flags=0
+                .endfunction make_otype(ltype,num_ltypes,sprite_data,sprite_width,sprite_height,update_routine,ed_flags)
 
 
                 ; Order in this array dictates the order things come
@@ -543,12 +541,12 @@ _..=[make_sta_otype(ltype_treasure,sprite_goal_row0,2,2)]
 otype_treasure2=len(_)
 _..=[make_sta_otype(ltype_treasure2,sprite_goal_row1,2,1)]
 otype_conveyor=len(_)           ;temp
-_..=[make_dyn_otype(ltype_conveyor,1,sprite_conveyor,1,1,0,update_conveyor)]
+_..=[make_dyn_otype(ltype_conveyor,1,sprite_conveyor,1,1,update_conveyor)]
 otype_platform=len(_)           ;temp
-_..=[make_dyn_otype(ltype_platform,num_speeds,sprite_floating_platform,2,1,0,update_platform)]
+_..=[make_dyn_otype(ltype_platform,num_speeds,sprite_floating_platform,2,1,update_platform)]
 otype_spider=len(_)             ;temp
-_..=[make_dyn_otype(ltype_spider,num_speeds,sprite_spider_0_row0,2,2,0,update_spider)]
-_..=[make_dyn_otype(ltype_spider2,num_speeds,sprite_spider_0_row0,2,2,0,update_spider,ed_flags_masked)]
+_..=[make_dyn_otype(ltype_spider,num_speeds,sprite_spider_0_row0,2,2,update_spider)]
+_..=[make_dyn_otype(ltype_spider2,num_speeds,sprite_spider_0_row0,2,2,update_spider,ed_flags_masked)]
 otypes=_
                 .cerror len(otypes)>=128 ; must be BMI-friendly
 
@@ -560,10 +558,6 @@ otypes_sprite_data_lo:
                 .byte <otypes.sprite_data
 otypes_sprite_data_hi:
                 .byte >otypes.sprite_data
-otypes_init_routine_lo:
-                .byte <otypes.init_routine
-otypes_init_routine_hi:
-                .byte >otypes.init_routine
 otypes_update_routine_lo:
                 .byte <otypes.update_routine
 otypes_update_routine_hi:

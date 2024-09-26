@@ -492,61 +492,49 @@ loop:
 
 ;-------------------------------------------------------------------------
 
-make_otype: .function ltype,num_ltypes,sprite_data,sprite_width,sprite_height,update_routine,ed_flags
-                .cerror !(sprite_width==1||sprite_width==2),'invalid sprite width'
-                .cerror !(sprite_height==1||sprite_height==2),'invalid sprite height'
-                
-_otype_flags:=0
-                .if sprite_width==2
-_otype_flags:=_otype_flags|otype_flags_width2
-                .endif
+make_otype: .function ltype,num_ltypes,sprite_data,update_routine,otype_flags,ed_flags
+                .endfunction {.ltype:ltype,.num_ltypes:num_ltypes,.sprite_data:sprite_data,.otype_flags:otype_flags,.update_routine:update_routine,.ed_flags:ed_flags}
 
-                .if sprite_height==2
-_otype_flags:=_otype_flags|otype_flags_height2
-                .endif
+make_sta_otype: .function ltype,sprite_data,otype_flags=0,ed_flags=0
+                .endfunction make_otype(ltype,1,sprite_data,0,otype_flags,ed_flags)
 
-                .endfunction {.ltype:ltype,.num_ltypes:num_ltypes,.sprite_data:sprite_data,.otype_flags:_otype_flags,.update_routine:update_routine,.ed_flags:ed_flags}
-
-make_sta_otype: .function ltype,sprite_data,sprite_width,sprite_height,ed_flags=0
-                .endfunction make_otype(ltype,1,sprite_data,sprite_width,sprite_height,0,ed_flags)
-
-make_dyn_otype: .function ltype,num_ltypes,sprite_data,sprite_width,sprite_height,update_routine,ed_flags=0
-                .endfunction make_otype(ltype,num_ltypes,sprite_data,sprite_width,sprite_height,update_routine,ed_flags)
+make_dyn_otype: .function ltype,num_ltypes,sprite_data,update_routine,otype_flags=0,ed_flags=0
+                .endfunction make_otype(ltype,num_ltypes,sprite_data,update_routine,otype_flags,ed_flags)
 
 
                 ; Order in this array dictates the order things come
                 ; in the NEW list in the editor
 _:=[]
-_..=[make_sta_otype(ltype_blank,0,1,1,ed_flags_repeat)]
-_..=[make_sta_otype(ltype_lblock,sprite_lblock,1,1)]
-_..=[make_sta_otype(ltype_rblock,sprite_rblock,1,1)]
-_..=[make_sta_otype(ltype_block,sprite_block,1,1,ed_flags_repeat)]
-_..=[make_sta_otype(ltype_lblocku,sprite_lblocku,1,1)]
-_..=[make_sta_otype(ltype_rblocku,sprite_rblocku,1,1)]
-_..=[make_sta_otype(ltype_spikes,sprite_spikes,1,1)]
-_..=[make_sta_otype(ltype_lspikes,sprite_lspikes,1,1)]
-_..=[make_sta_otype(ltype_rspikes,sprite_rspikes,1,1)]
-_..=[make_sta_otype(ltype_spring_1_row,sprite_spring_row0,1,1)]
-_..=[make_sta_otype(ltype_spring_2_rows,sprite_spring_row0,1,2)]
-_..=[make_sta_otype(ltype_dots,sprite_dots,1,1,ed_flags_repeat)]
-_..=[make_sta_otype(ltype_ldot,sprite_ldot,1,1,ed_flags_repeat)]
-_..=[make_sta_otype(ltype_rdot,sprite_rdot,1,1,ed_flags_repeat)]
-_..=[make_sta_otype(ltype_pill,sprite_power_pill,1,1)]
-_..=[make_sta_otype(ltype_solid_red,sprite_solid_red,1,1,ed_flags_repeat)]
-_..=[make_sta_otype(ltype_lrope,sprite_lrope,1,1)]
-_..=[make_sta_otype(ltype_rrope,sprite_rrope,1,1)]
-_..=[make_sta_otype(ltype_goal,sprite_goal,1,1)]
+_..=[make_sta_otype(ltype_blank,0,0,ed_flags_repeat)]
+_..=[make_sta_otype(ltype_lblock,sprite_lblock)]
+_..=[make_sta_otype(ltype_rblock,sprite_rblock)]
+_..=[make_sta_otype(ltype_block,sprite_block,0,ed_flags_repeat)]
+_..=[make_sta_otype(ltype_lblocku,sprite_lblocku)]
+_..=[make_sta_otype(ltype_rblocku,sprite_rblocku)]
+_..=[make_sta_otype(ltype_spikes,sprite_spikes)]
+_..=[make_sta_otype(ltype_lspikes,sprite_lspikes)]
+_..=[make_sta_otype(ltype_rspikes,sprite_rspikes)]
+_..=[make_sta_otype(ltype_spring_1_row,sprite_spring_row0)]
+_..=[make_sta_otype(ltype_spring_2_rows,sprite_spring_row0,otype_flags_height2)]
+_..=[make_sta_otype(ltype_dots,sprite_dots,0,ed_flags_repeat)]
+_..=[make_sta_otype(ltype_ldot,sprite_ldot,0,ed_flags_repeat)]
+_..=[make_sta_otype(ltype_rdot,sprite_rdot,0,ed_flags_repeat)]
+_..=[make_sta_otype(ltype_pill,sprite_power_pill)]
+_..=[make_sta_otype(ltype_solid_red,sprite_solid_red,0,ed_flags_repeat)]
+_..=[make_sta_otype(ltype_lrope,sprite_lrope)]
+_..=[make_sta_otype(ltype_rrope,sprite_rrope)]
+_..=[make_sta_otype(ltype_goal,sprite_goal)]
 otype_treasure=len(_)
-_..=[make_sta_otype(ltype_treasure,sprite_goal_row0,2,2)]
+_..=[make_sta_otype(ltype_treasure,sprite_goal_row0,otype_flags_width2|otype_flags_height2)]
 otype_treasure2=len(_)
-_..=[make_sta_otype(ltype_treasure2,sprite_goal_row1,2,1)]
+_..=[make_sta_otype(ltype_treasure2,sprite_goal_row1,otype_flags_width2)]
 otype_conveyor=len(_)           ;temp
-_..=[make_dyn_otype(ltype_conveyor,1,sprite_conveyor,1,1,update_conveyor)]
+_..=[make_dyn_otype(ltype_conveyor,1,sprite_conveyor,update_conveyor)]
 otype_platform=len(_)           ;temp
-_..=[make_dyn_otype(ltype_platform,num_speeds,sprite_floating_platform,2,1,update_platform)]
+_..=[make_dyn_otype(ltype_platform,num_speeds,sprite_floating_platform,update_platform,otype_flags_width2)]
 otype_spider=len(_)             ;temp
-_..=[make_dyn_otype(ltype_spider,num_speeds,sprite_spider_0_row0,2,2,update_spider)]
-_..=[make_dyn_otype(ltype_spider2,num_speeds,sprite_spider_0_row0,2,2,update_spider,ed_flags_masked)]
+_..=[make_dyn_otype(ltype_spider,num_speeds,sprite_spider_0_row0,update_spider,otype_flags_width2|otype_flags_height2)]
+_..=[make_dyn_otype(ltype_spider2,num_speeds,sprite_spider_0_row0,update_spider,otype_flags_width2|otype_flags_height2,ed_flags_masked)]
 otypes=_
                 .cerror len(otypes)>=128 ; must be BMI-friendly
 

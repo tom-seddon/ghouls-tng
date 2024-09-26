@@ -481,19 +481,22 @@ Same applies to the ghost rect.
 
 Flags are:
 
-| Bit | What                       |
-|-----+----------------------------|
-|   7 |                            |
-|   6 |                            |
-|   5 |                            |
-|   4 |                            |
-|   3 |                            |
-|   2 |                            |
-|   1 |                            |
-|   0 | Set if ghost rect is valid |
+| Bit | What                             |
+|-----+----------------------------------|
+|   7 |                                  |
+|   6 |                                  |
+|   5 |                                  |
+|   4 |                                  |
+|   3 |                                  |
+|   2 |                                  |
+|   1 | Set if no standard goal in level |
+|   0 | Set if ghost rect is valid       |
 
 If ghost rect not valid, the ghost position is the previous default
 behaviour: initial address is =&6000+RND(300)*16=.
+
+If there is a standard goal in the level, it will be drawn in the top
+right as per the original game.
 
 ** Text data
 
@@ -545,7 +548,9 @@ holding index of the object.
 
 A 20 wide x 26 high grid of bytes. Bytes as follows:
 
-(As with the otypes, ltype 0 is the blank one, and the rest are arbitrary.)
+(As with the otypes, ltype 0 is the blank one, and the rest are
+arbitrary. But unlike the otypes, these values are saved in the level
+file, and must remain consistent.)
 
 | LType | OType             | Notes                                 |
 |-------+-------------------+---------------------------------------|
@@ -569,6 +574,11 @@ A 20 wide x 26 high grid of bytes. Bytes as follows:
 |    74 | Left Spikes       |                                       |
 |    75 | Right Spikes      |                                       |
 |    76 | Solid Red         |                                       |
+|    77 | Left Rope         |                                       |
+|    78 | Right Rope        |                                       |
+|    79 | Goal              |                                       |
+|    80 | Treasure          |                                       |
+|    81 | Treasure          | Positioned by bottom row              |
 
 * New memory map
 
@@ -779,5 +789,36 @@ Default ending text:
 :       JEWELS
 :  AND ESCAPED TO GET
 :    SOME MORE.....
+
+Budgets:
+
+- Instruction text: 3*40=120
+- Ending text: 5*20=100
+
+120+100=220... that's then 36 bytes for the level name.
+
+But if packing 1 char into 7 bits. 256 bytes = 2048 bits. 2048/7 = 292
+chars.
+
+Then 5*20+4*40=260. 32 chars left for level name. But the data will
+need quantizing to byte boundaries I guess. LCM of 8 (bits per byte)
+and 7 (bits per char) = 56. 7 (56/8) bytes = 8 (56/7) chars.
+
+160 (4*40) chars for instructions = 160*7 = 1120 bits = 1120/8 = 140.0
+bytes.
+
+100 (5*20) chars for ending text = 100*7 = 700 bits = 700/8 = 87.5
+bytes. So 88 bytes.
+
+256-228=28 bytes left. 28*8/7 = 32 chars for level name.
+
+For some reason I didn't think to book any per file flags :( - d'oh.
+But it's salvageable: reserve 1 level flag bit for file flags, and now
+there are 4 flags, 1 per level. A bit ugly but not the end of the
+world.
+
+To print this stuff, have a routine that unpacks a stream of 7-bit
+chars and prints via OSWRCH, with chars<32 being printed as 128+N so
+that Mode 7 control codes can get through.
 
 * EOF

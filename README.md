@@ -26,7 +26,8 @@ Press `N` to set a level's name. Select level number then type in its
 new name. There's a limit of 16 chars.
 
 Press `R` to reset a level's data. The level will be emptied, leaving
-just a row of blocks along the bottom.
+just a row of blocks along the bottom and a few blocks underneath the
+treasure in the top right.
 
 Press `L` to load levels. Enter file name.
 
@@ -56,14 +57,15 @@ When editing:
 - `↑`/`↓` select the NEW thing's creation value (see below)
 - `RETURN` adds an instance of the NEW thing to the level
 - `C` changes the level-specific colour
-- `R` redraws the level (since the editor isn't particularly careful
-  about tidily redrawing everything while editing)
-- `SHIFT+S` sets the player's start position
 - `G` sets one corner of the ghost start position area (the position
   is automatically clamped if necessary)
 - `SHIFT+G` sets the other corner of the ghost start position area
 - `CTRL+G` unsets the ghost start position area
+- `R` redraws the level (since the editor isn't particularly careful
+  about tidily redrawing everything while editing)
 - `S` sets the player's test start position
+- `SHIFT+S` sets the player's start position
+- `T` toggles presence of standard treasure or not (see below)
 - `TAB` lets you test the level. If the test start position is set,
   the player starts there. Testing ends with `ESCAPE` or when you die
   or complete the level
@@ -73,11 +75,6 @@ When editing:
 The test start position is shown in red. It isn't saved. It's there to
 make it quicker to iterate on sections of the level.
 
-The ghost start area, if set, is indicated by a dotted red rectangle.
-Ghosts will start from some position in this area. (If not set, the
-ghost will start at some random point in the level.) When testing in
-the editor, you will only ever get 1 ghost.
-
 The creation value is a number associated with some types of object:
 
 - For moving platforms: the platform's speed
@@ -86,9 +83,37 @@ The creation value is a number associated with some types of object:
 There are two types of spider: a solid one (always present), and a
 masked/dimmed one (appears only when playing with 2+ ghosts).
 
-An indicator in the bottom left shows `WON: Y` or `WON: N` to indicate
-whether you completed the level or something else happened (you
-probably died,, but you might just have pressed ESCAPE).
+The bottom row contains some indicators:
+
+- `VI` ("victorious") - `Y` or `N` depending on whether you completed the
+  level in the last test run, or something else happened. (You
+  probably died! But you might just have pressed ESCAPE)
+- `ST` ("standard treasure") - `Y` or `N` depending no whether there's
+  a standard goal in the top right (as per the original levels - the
+  game will automatically arrange for this to appear), or whether you
+  have free choice of were they go (see below)
+  
+## Ghost start area
+
+The ghost start area, if set, is indicated by a dotted red rectangle.
+Ghosts will start from some position in this area.
+
+If not set, ghosts will start at some random point in the level.
+
+When testing in the editor, you will only ever get 1 ghost.
+
+## Level goals
+
+One of the objects looks like a yellow horizontal line. That's the
+goal. If you step on it, you win the level.
+
+The two vertical red lines are the rope type of thing next to the
+standard goal, if you want to reproduce its appearance.
+
+There are two types of treasure: the one that is just the bottom half
+is just positioned by its bottom row rather than its top row, so you
+can put it in the top row of the level. They both look the same in
+game. (Configurable goals were a late addition...)
 
 ----
 

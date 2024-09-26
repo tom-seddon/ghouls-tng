@@ -300,6 +300,18 @@ sprite_spring_row1:
 sprite_solid_red:
                 .fill 16,mode5_byte(1,1,1,1)
 
+sprite_lrope:
+                .fill 8,mode5_byte(1,0,0,0)
+sprite_rrope:
+                .fill 8,0
+                .fill 8,mode5_byte(0,0,0,1)
+
+sprite_goal:
+                .fill 7,0
+                .byte mode5_byte(2,2,2,2)
+                .fill 7,0
+                .byte mode5_byte(2,2,2,2)
+
 sprite_pl_right_0:.byte 0, $30, $70, $50,$F0,$E0,$F0, $70, 0, 0, $80,$C0, $80, 0, 0,$C0, $70, $30, $30, $20, $20,$C0, $80, 0, $80, 0, $80, $80,$C0, $80, 0, 0; 0
 sprite_pl_right_1:.byte 0, 0, $10, $10, $30, $30, $30, $10, 0,$C0,$E0, $60,$F0, $80,$F0,$E0, $10, 0, 0, 0, 0, 0, 0, 0,$E0,$C0,$C0,$C0,$C0, $80, $80,$C0; 0
 sprite_pl_left_0:.byte 0, 0, $10, $30, $10, 0, 0, $30, 0,$C0,$E0,$A0,$F0, $70,$F0,$E0, $10, 0, $10, $10, $30, $10, 0, 0,$E0,$C0,$C0, $40, $40, $30, $10, 0; 0
@@ -523,6 +535,13 @@ _..=[make_sta_otype(ltype_ldot,sprite_ldot,1,1,ed_flags_repeat)]
 _..=[make_sta_otype(ltype_rdot,sprite_rdot,1,1,ed_flags_repeat)]
 _..=[make_sta_otype(ltype_pill,sprite_power_pill,1,1)]
 _..=[make_sta_otype(ltype_solid_red,sprite_solid_red,1,1,ed_flags_repeat)]
+_..=[make_sta_otype(ltype_lrope,sprite_lrope,1,1)]
+_..=[make_sta_otype(ltype_rrope,sprite_rrope,1,1)]
+_..=[make_sta_otype(ltype_goal,sprite_goal,1,1)]
+otype_treasure=len(_)
+_..=[make_sta_otype(ltype_treasure,sprite_goal_row0,2,2)]
+otype_treasure2=len(_)
+_..=[make_sta_otype(ltype_treasure2,sprite_goal_row1,2,1)]
 otype_conveyor=len(_)           ;temp
 _..=[make_dyn_otype(ltype_conveyor,1,sprite_conveyor,1,1,0,update_conveyor)]
 otype_platform=len(_)           ;temp
@@ -666,6 +685,24 @@ done:
 
 draw_level_sprite:
                 pha
+                lda level_draw_screen_addr+0
+                sta level_draw_sprite_dest+0
+                lda level_draw_screen_addr+1
+                sta level_draw_sprite_dest+1
+
+                ; Bleargh
+                cpx #otype_treasure2
+                bne +
+                ldx #otype_treasure
+                sec
+                lda level_draw_sprite_dest+0
+                sbc #$40
+                sta level_draw_sprite_dest+0
+                lda level_draw_sprite_dest+1
+                sbc #$01
+                sta level_draw_sprite_dest+1
++
+                
                 lda otypes_sprite_data_lo,x
                 sta level_draw_sprite_src+0
                 lda otypes_sprite_data_hi,x
@@ -674,11 +711,6 @@ draw_level_sprite:
                 lda level_draw_sprite_src+0
                 ora level_draw_sprite_src+1
                 beq draw_level_sprite_done
-
-                lda level_draw_screen_addr+0
-                sta level_draw_sprite_dest+0
-                lda level_draw_screen_addr+1
-                sta level_draw_sprite_dest+1
 
                 jsr draw_level_sprite_row
 
@@ -2570,7 +2602,7 @@ test_key:
                 .if editor
 ;-------------------------------------------------------------------------
 
-ed_keys=[key_z,key_x,key_slash,key_colon,key_return,key_delete,key_tab,key_r,key_s,key_escape,key_left,key_right,key_up,key_down,key_c,key_g]
+ed_keys=[key_z,key_x,key_slash,key_colon,key_return,key_delete,key_tab,key_r,key_s,key_escape,key_left,key_right,key_up,key_down,key_c,key_g,key_t]
 
 ed_key_index: .function k
                 .for _i:=0,_i<len(ed_keys),_i+=1
@@ -3601,6 +3633,7 @@ _..=[key_action(key_delete,ed_key_flag_down,erase_object)]
 _..=[key_action(key_tab,ed_key_flag_newly_down,test_level)]
 _..=[key_action(key_c,ed_key_flag_newly_down,next_colour)]
 _..=[key_action(key_g,ed_key_flag_newly_down,set_ghost_rect)]
+_..=[key_action(key_t,ed_key_flag_newly_down,toggle_no_standard_treasure)]
 key_actions=_
 
 key_indexes: .byte key_actions.key_index
@@ -3608,6 +3641,15 @@ key_masks: .byte key_actions.mask
 key_routines_lo: .byte <key_actions.routine
 key_routines_hi: .byte >key_actions.routine
 
+toggle_no_standard_treasure: .proc
+                ldy #LevelData.flags
+                lda (ed_level_addr),y
+                eor #LevelData.flags.no_standard_treasure
+                sta (ed_level_addr),y
+                jsr redraw
+                rts
+                .endproc
+                
 set_ghost_rect: .proc
                 bit ed_ctrl_pressed
                 bmi unset
@@ -3915,16 +3957,21 @@ colour3_physical_colour:
                 .text 31,0,31
                 .byte 0
 
+                jsr ed_print
+                .text 'VI:',0
+
                 lda level_finished
-                beq died
+                jsr print_yn
+
                 jsr ed_print
-                .text 'WON: Y',0
-                jmp draw_level
-died:
-                jsr ed_print
-                .text 'WON: ',17,1,'N',17,2
-                .byte 0
-                
+                .text ' ST:',0
+
+                ldy #LevelData.flags
+                lda (ed_level_addr),y
+                and #LevelData.flags.no_standard_treasure
+                eor #LevelData.flags.no_standard_treasure ; *sigh*
+                jsr print_yn
+
 draw_level:
                 jsr ed_draw_level
 
@@ -3966,6 +4013,20 @@ draw_level:
                 jsr ed_box
 ghost_rect_done:
                 
+                rts
+
+print_yn:
+                cmp #0
+                beq print_n
+print_y:
+                jsr ed_print
+                .text 'Y'
+                .byte 0
+                rts
+print_n:
+                jsr ed_print
+                .text 17,1,'N',17,2
+                .byte 0
                 rts
                 
 move_left:
@@ -4340,17 +4401,7 @@ level_name:
                 .byte 25,5
                 .word 1279,952
 
-                ; Red rope thing next o the goal
-                
-                ; MOVE 1080,800
-                .byte 25,4
-                .word 1080,800
-                
-                ; DRAW 1080,860
-                .byte 25,5
-                .word 1080,860
-
-                ; Dottend line across the top
+                ; Dotted line across the top
                 
                 ; GCOL 0,2
                 .byte 18,0,2
@@ -4362,16 +4413,6 @@ level_name:
                 ; PLOT 21,1279,952
                 .byte 25,21
                 .word 1279,952
-
-                ; Yellow line under the goal
-                
-                ; MOVE 1092,864
-                .byte 25,4
-                .word 1092,864
-                
-                ; DRAW 1270,864
-                .byte 25,5
-                .word 1270,864
 
                 ; COLOUR 1
                 .byte 17,1
@@ -4404,15 +4445,50 @@ initial_bonus:
                 ; VDU 4 switches the cursor back on.
                 jsr ed_coff
 
-                ; Copy goal sprite
+                ; Do standard goal stuff
+                ldy #LevelData.flags
+                lda (ed_level_addr),y
+                and #LevelData.flags.no_standard_treasure
+                bne standard_treasure_done
+
+                jsr ed_print
+                ; Red rope thing next to the goal
+                
+                ; GCOL 0,1
+                .byte 18,0,1
+                
+                ; MOVE 1080,800
+                .byte 25,4
+                .word 1080,800
+                
+                ; DRAW 1080,860
+                .byte 25,5
+                .word 1080,860
+
+                ; Yellow line under the goal
+                
+                ; GCOL 0,2
+                .byte 18,0,2
+                
+                ; MOVE 1092,864
+                .byte 25,4
+                .word 1092,864
+                
+                ; DRAW 1270,864
+                .byte 25,5
+                .word 1270,864
+
+                .byte 0
+                
                 ldx #31
-copy_goal_sprite:
+copy_treasure_sprite:
                 lda sprite_goal_row0,x
                 sta $5ce0,x
                 lda sprite_goal_row1,x
                 sta $5e20,x
                 dex
-                bpl copy_goal_sprite
+                bpl copy_treasure_sprite
+standard_treasure_done:
                 
                 jsr entry_game_2
 
@@ -4482,6 +4558,11 @@ x_loop:
                 jsr draw_pl_start
 pl_start_drawn:
 
+                ldy #LevelData.flags
+                lda (ed_level_addr),y
+                and #LevelData.flags.no_standard_treasure
+                bne standard_goal_drawn
+                
                 ldx #17
 draw_goal_yellow:
                 ldy #0
@@ -4501,6 +4582,7 @@ draw_goal_yellow:
                 jsr draw_goal_red
                 ldy #2
                 jsr draw_goal_red
+standard_goal_drawn:
                 
                 rts
 

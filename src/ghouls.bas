@@ -16,13 +16,13 @@ FORF=1TO3:VDU19,F,0;0;:NEXT
 PRINTTAB(0,5);:COLOUR3:GCOL0,1
 LDATA={&levels_org}+4+(SC-1)*{$LevelData_size}:!{&level_draw_ptr}=LDATA:A%=0:X%=GO:CALL{&entry_init_level}:VDU5:MOVE(20-LEN($(LDATA+{$LevelData_name_offset})))*64,28:PRINT$(LDATA+{$LevelData_name_offset}):VDU4
 !{&ghosts_table}=0:!{&ghosts_table+3}=0:COLOUR1:PRINTTAB(14,1);:VDU{$udg_bonus+0},{$udg_bonus+1},{$udg_bonus+2}{# TODO: ghosts_table+3 should probably be ghosts_table+4...
-GCOL0,1:MOVE0,60:DRAW0,952:MOVE1279,60:DRAW1279,860:MOVE1080,800:DRAW1080,860:GCOL0,2:MOVE0,952:PLOT21,1279,952:GCOL0,2:MOVE1092,864:DRAW1270,864
+GCOL0,1:MOVE0,60:DRAW0,952:MOVE1279,60:DRAW1279,952:GCOL0,2:MOVE0,952:PLOT21,1279,952
+IF(LDATA?{$LevelData_flags_offset}AND{$LevelData_flags_no_standard_treasure})=0:GCOL0,1:MOVE1080,800:DRAW1080,860:GCOL0,2:MOVE1092,864:DRAW1270,864:FORF=0TO31STEP4:F!&5CE0=F!{&sprite_goal_row0}:F!&5E20=F!{&sprite_goal_row1}:NEXT
 IFLI=1GOTO{$L160}
 FORF=0TO((LI-2)*16)STEP16:FORG=0TO15STEP4:G!(F+&7D80)=G!{&sprite_pl_facing}:G!(F+&7EC0)=G!{&sprite_pl_facing+16}:NEXT,
 {:L160}
 ?{&bonus_chars}={$udg_char_0+5}:?{&bonus_chars+1}={$udg_char_0}:COLOUR2:PRINTTAB(18,1);:VDU{$udg_char_0+5},{$udg_char_0}
 FORF=0TO31:F?{&data_behind_player}=0:NEXT:FORF=0TO4:PRINTTAB(F,1);CHR$(F?{&score_chars}):NEXT
-FORF=0TO31STEP4:F!&5CE0=F!{&sprite_goal_row0}:F!&5E20=F!{&sprite_goal_row1}:NEXT
 VDU23,0,1,0;0;0;0;:VDU19,1,1;0;19,2,3;0;19,3,LDATA?{$LevelData_colour3_offset};0;
 SOUND&12,4,0,18:SOUND&13,4,1,18:FORF=1TO40:VDU23,0,1,F;0;0;0;:*FX19
 NEXT

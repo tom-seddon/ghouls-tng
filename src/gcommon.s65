@@ -103,7 +103,10 @@ ltype_goal={.index:79}
 ltype_treasure={.index:80}
 ltype_treasure2={.index:81}
 ; ltype_index_max=77
-                
+ltype_spikesu={.index:82}
+ltype_lspikesu={.index:83}
+ltype_rspikesu={.index:84}
+
 speed_edef: .function prefix,speed
                 .cerror !(speed>=0 && speed<num_speeds)
                 .endfunction format('%s%c',prefix,char(speed>=0 && speed<10?'0'+speed:'a'+speed-10))
@@ -132,6 +135,8 @@ ghouls_level_enc: .encode
 
 otype_flags_width2=$80          ;set if 2xN rather than 1xN
 otype_flags_height2=$40         ;set if Nx2 rather than Nx1
+otype_flags_flip_x=$10          ;set to draw mirrored - 1x1 only
+otype_flags_flip_y=$01          ;set to draw upside down - 1x1 only
 
 ;-------------------------------------------------------------------------
 

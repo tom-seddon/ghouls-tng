@@ -114,25 +114,6 @@ sprite_block:
                 .byte mode5_byte(3,0,0,0)
                 .byte mode5_byte(3,3,3,3)
 
-sprite_lblocku:
-                .byte mode5_byte(0,0,0,0)
-                .byte mode5_byte(0,0,0,3)
-                .byte mode5_byte(0,0,3,3)
-                .byte mode5_byte(0,0,3,0)
-                .byte mode5_byte(0,3,3,0)
-                .byte mode5_byte(0,3,3,3)
-                .byte mode5_byte(3,0,0,3)
-                .byte mode5_byte(3,3,3,3)
-
-                .byte mode5_byte(0,3,3,3)
-                .byte mode5_byte(3,0,0,0)
-                .byte mode5_byte(3,3,3,3)
-                .byte mode5_byte(0,3,3,0)
-                .byte mode5_byte(0,3,3,0)
-                .byte mode5_byte(3,3,3,3)
-                .byte mode5_byte(3,0,0,0)
-                .byte mode5_byte(3,3,3,3)
-
 sprite_lblock:
                 .byte mode5_byte(3,3,3,3)
                 .byte mode5_byte(3,0,0,3)
@@ -152,43 +133,25 @@ sprite_lblock:
                 .byte mode5_byte(3,0,0,0)
                 .byte mode5_byte(0,3,3,3)
 
-sprite_rblock:
-                .byte mode5_byte(3,3,3,3)
-                .byte mode5_byte(0,0,0,3)
-                .byte mode5_byte(3,3,3,3)
-                .byte mode5_byte(0,3,3,0)
-                .byte mode5_byte(0,3,3,0)
-                .byte mode5_byte(3,3,3,3)
-                .byte mode5_byte(0,0,0,3)
-                .byte mode5_byte(3,3,3,3)
+sprite_spikes:
+                .byte mode5_byte(1,0,0,1)
+                .byte mode5_byte(1,0,0,1)
+                .byte mode5_byte(1,0,0,1)
+                .byte mode5_byte(1,1,0,1)
+                .byte mode5_byte(1,1,0,1)
+                .byte mode5_byte(0,1,0,1)
+                .byte mode5_byte(0,1,0,1)
+                .byte mode5_byte(1,1,1,1)
 
-                .byte mode5_byte(3,3,3,3)
-                .byte mode5_byte(3,0,0,3)
-                .byte mode5_byte(3,3,3,0)
-                .byte mode5_byte(0,3,3,0)
-                .byte mode5_byte(0,3,0,0)
-                .byte mode5_byte(3,3,0,0)
-                .byte mode5_byte(3,0,0,0)
-                .byte mode5_byte(0,0,0,0)
-
-sprite_rblocku:
-                .byte mode5_byte(3,3,3,3)
-                .byte mode5_byte(0,0,0,3)
-                .byte mode5_byte(3,3,3,3)
-                .byte mode5_byte(0,3,3,0)
-                .byte mode5_byte(0,3,3,0)
-                .byte mode5_byte(3,3,3,3)
-                .byte mode5_byte(0,0,0,3)
-                .byte mode5_byte(3,3,3,3)
-
-                .byte mode5_byte(0,0,0,0)
-                .byte mode5_byte(3,0,0,0)
-                .byte mode5_byte(3,3,0,0)
-                .byte mode5_byte(0,3,0,0)
-                .byte mode5_byte(0,3,3,0)
-                .byte mode5_byte(3,3,3,0)
-                .byte mode5_byte(3,0,0,3)
-                .byte mode5_byte(3,3,3,3)
+sprite_lspikes:
+                .byte mode5_byte(1,0,0,1)
+                .byte mode5_byte(1,0,0,1)
+                .byte mode5_byte(1,0,0,1)
+                .byte mode5_byte(1,0,1,1)
+                .byte mode5_byte(1,0,1,1)
+                .byte mode5_byte(1,0,1,0)
+                .byte mode5_byte(1,0,1,0)
+                .byte mode5_byte(1,1,1,1)
 
 sprite_rdot:
                 .byte mode5_byte(0,0,0,0)
@@ -220,7 +183,8 @@ sprite_ldot:
                 .byte mode5_byte(0,0,0,0)
                 .byte mode5_byte(0,0,0,0)
 
-sprite_rspikes:
+                .byte mode5_byte(0,0,0,0)
+sprite_goal:
                 .byte mode5_byte(0,0,0,0)
                 .byte mode5_byte(0,0,0,0)
                 .byte mode5_byte(0,0,0,0)
@@ -228,36 +192,9 @@ sprite_rspikes:
                 .byte mode5_byte(0,0,0,0)
                 .byte mode5_byte(0,0,0,0)
                 .byte mode5_byte(0,0,0,0)
-                .byte mode5_byte(0,0,0,0)
-                
-sprite_spikes:
-                .byte mode5_byte(1,0,0,1)
-                .byte mode5_byte(1,0,0,1)
-                .byte mode5_byte(1,0,0,1)
-                .byte mode5_byte(1,1,0,1)
-                .byte mode5_byte(1,1,0,1)
-                .byte mode5_byte(0,1,0,1)
-                .byte mode5_byte(0,1,0,1)
-                .byte mode5_byte(1,1,1,1)
-
-sprite_lspikes:
-                .byte mode5_byte(1,0,0,1)
-                .byte mode5_byte(1,0,0,1)
-                .byte mode5_byte(1,0,0,1)
-                .byte mode5_byte(1,0,1,1)
-                .byte mode5_byte(1,0,1,1)
-                .byte mode5_byte(1,0,1,0)
-                .byte mode5_byte(1,0,1,0)
-                .byte mode5_byte(1,1,1,1)
-
-                .byte mode5_byte(0,0,0,0)
-                .byte mode5_byte(0,0,0,0)
-                .byte mode5_byte(0,0,0,0)
-                .byte mode5_byte(0,0,0,0)
-                .byte mode5_byte(0,0,0,0)
-                .byte mode5_byte(0,0,0,0)
-                .byte mode5_byte(0,0,0,0)
-                .byte mode5_byte(0,0,0,0)
+                .byte mode5_byte(2,2,2,2)
+                .fill 7,0
+                .byte mode5_byte(2,2,2,2)
 
 sprite_spring_row0:
                 .byte mode5_byte(1,0,1,0)
@@ -297,20 +234,12 @@ sprite_spring_row1:
                 .byte mode5_byte(0,0,0,1)
                 .byte mode5_byte(1,1,1,0)
 
-sprite_solid_red:
-                .fill 16,mode5_byte(1,1,1,1)
-
 sprite_lrope:
                 .fill 8,mode5_byte(1,0,0,0)
-sprite_rrope:
                 .fill 8,0
-                .fill 8,mode5_byte(0,0,0,1)
 
-sprite_goal:
-                .fill 7,0
-                .byte mode5_byte(2,2,2,2)
-                .fill 7,0
-                .byte mode5_byte(2,2,2,2)
+sprite_solid_red:
+                .fill 16,mode5_byte(1,1,1,1)
 
 sprite_pl_right_0:.byte 0, $30, $70, $50,$F0,$E0,$F0, $70, 0, 0, $80,$C0, $80, 0, 0,$C0, $70, $30, $30, $20, $20,$C0, $80, 0, $80, 0, $80, $80,$C0, $80, 0, 0; 0
 sprite_pl_right_1:.byte 0, 0, $10, $10, $30, $30, $30, $10, 0,$C0,$E0, $60,$F0, $80,$F0,$E0, $10, 0, 0, 0, 0, 0, 0, 0,$E0,$C0,$C0,$C0,$C0, $80, $80,$C0; 0
@@ -493,6 +422,7 @@ loop:
 ;-------------------------------------------------------------------------
 
 make_otype: .function ltype,num_ltypes,sprite_data,update_routine,otype_flags,ed_flags
+                .cerror ((otype_flags&(otype_flags_width2|otype_flags_height2))!=0||update_routine!=0)&&(otype_flags&(otype_flags_flip_x|otype_flags_flip_y))!=0,'only 1x1 static sprites can be flipped'
                 .endfunction {.ltype:ltype,.num_ltypes:num_ltypes,.sprite_data:sprite_data,.otype_flags:otype_flags,.update_routine:update_routine,.ed_flags:ed_flags}
 
 make_sta_otype: .function ltype,sprite_data,otype_flags=0,ed_flags=0
@@ -507,13 +437,16 @@ make_dyn_otype: .function ltype,num_ltypes,sprite_data,update_routine,otype_flag
 _:=[]
 _..=[make_sta_otype(ltype_blank,0,0,ed_flags_repeat)]
 _..=[make_sta_otype(ltype_lblock,sprite_lblock)]
-_..=[make_sta_otype(ltype_rblock,sprite_rblock)]
+_..=[make_sta_otype(ltype_rblock,sprite_lblock,otype_flags_flip_x)]
 _..=[make_sta_otype(ltype_block,sprite_block,0,ed_flags_repeat)]
-_..=[make_sta_otype(ltype_lblocku,sprite_lblocku)]
-_..=[make_sta_otype(ltype_rblocku,sprite_rblocku)]
+_..=[make_sta_otype(ltype_lblocku,sprite_lblock,otype_flags_flip_y)]
+_..=[make_sta_otype(ltype_rblocku,sprite_lblock,otype_flags_flip_y|otype_flags_flip_x)]
 _..=[make_sta_otype(ltype_spikes,sprite_spikes)]
 _..=[make_sta_otype(ltype_lspikes,sprite_lspikes)]
-_..=[make_sta_otype(ltype_rspikes,sprite_rspikes)]
+_..=[make_sta_otype(ltype_rspikes,sprite_lspikes,otype_flags_flip_x)]
+_..=[make_sta_otype(ltype_spikesu,sprite_spikes,otype_flags_flip_y)]
+_..=[make_sta_otype(ltype_lspikesu,sprite_lspikes,otype_flags_flip_y)]
+_..=[make_sta_otype(ltype_rspikesu,sprite_lspikes,otype_flags_flip_x|otype_flags_flip_y)]
 _..=[make_sta_otype(ltype_spring_1_row,sprite_spring_row0)]
 _..=[make_sta_otype(ltype_spring_2_rows,sprite_spring_row0,otype_flags_height2)]
 _..=[make_sta_otype(ltype_dots,sprite_dots,0,ed_flags_repeat)]
@@ -522,7 +455,7 @@ _..=[make_sta_otype(ltype_rdot,sprite_rdot,0,ed_flags_repeat)]
 _..=[make_sta_otype(ltype_pill,sprite_power_pill)]
 _..=[make_sta_otype(ltype_solid_red,sprite_solid_red,0,ed_flags_repeat)]
 _..=[make_sta_otype(ltype_lrope,sprite_lrope)]
-_..=[make_sta_otype(ltype_rrope,sprite_rrope)]
+_..=[make_sta_otype(ltype_rrope,sprite_lrope,otype_flags_flip_x)]
 _..=[make_sta_otype(ltype_goal,sprite_goal)]
 otype_treasure=len(_)
 _..=[make_sta_otype(ltype_treasure,sprite_goal_row0,otype_flags_width2|otype_flags_height2)]
@@ -631,7 +564,14 @@ next_ltype:
                 ; Not found. Pretend it was blank.
                 ldx #0
 ordinary_ltype:
+                lda otypes_otype_flags,x
+                pha             ; save otype flags for this one
+                
                 jsr draw_level_sprite
+
+                ; flip if necessary
+                pla
+                jsr draw_level_flip_8x8_sprite
 
 next:
                 inc level_draw_ptr+0
@@ -820,6 +760,120 @@ colour:
 counter:
                 .word 0
                 .endblock
+
+;-------------------------------------------------------------------------
+;
+; Entry:
+; (level_draw_screen_addr) - address of sprite
+; A = otype flags
+
+; yflip offsets:
+;
+; 0 -> 7
+; 1 -> 6
+; 2 -> 5
+; 3 -> 4
+; 4 -> 3
+; 5 -> 2
+; 6 -> 1
+; 7 -> 0
+; 8 -> 15
+; 9 -> 14
+; 10 -> 13
+; 11 -> 12
+; 12 -> 11
+; 13 -> 10
+; 14 -> 9
+; 15 -> 8
+
+; xflip offsets: (also invert pixels...)
+;
+; 0 -> 8
+; 1 -> 9
+; 2 -> 10
+; 3 -> 11
+; 4 -> 12
+; 5 -> 13
+; 6 -> 14
+; 7 -> 15
+; 8 -> 0
+; 9 -> 1
+; 10 -> 2
+; 11 -> 3
+; 12 -> 4
+; 13 -> 5
+; 14 -> 6
+; 15 -> 7
+
+; xflip bits: abcdefgh -> dcbahgfe
+                
+draw_level_flip_8x8_sprite: .proc
+                .cerror otype_flags_flip_y!=$01||otype_flags_flip_x!=$10
+                and #otype_flags_flip_y|otype_flags_flip_x
+                beq done
+                lsr a           ; C=flip Y; bit 3=flipx
+                bcc +
+                ora #7          ; 7/15 if flipy else 0/8
++
+                sta flip_eorvalue
+
+                ; read sprite bytes from screen memory and push on
+                ; stack in source address order.
+                ldy #0
+read_loop:
+                lda flip_eorvalue
+                and #8
+                cmp #1          ; C=1 if xflip
+                
+                lda (level_draw_screen_addr),y
+
+                bcc got_byte    ; taken if not xflip
+
+                ; abcdefgh -> efghabcd
+
+                ldx #4
+xflip_loop1:
+                cmp #$80        ; abcdefgh C=a
+                rol a           ; bcdefgha C=a
+                dex
+                bne xflip_loop1
+
+                ; efghabcd -> dcbahgfe
+
+                ldx #8
+xflip_loop:
+                asl a
+                ror flip_tmp
+                dex
+                bne xflip_loop
+
+                lda flip_tmp
+
+got_byte:
+                pha
+                iny
+                cpy #16
+                bne read_loop
+
+                ; 
+                ldx #15
+write_loop:
+                txa
+                eor flip_eorvalue
+                tay
+                pla
+                sta (level_draw_screen_addr),y
+                dex
+                bpl write_loop
+done:
+                rts
+
+flip_tmp: .fill 1
+flip_eorvalue: .fill 1
+                
+                .endproc
+                
+;-------------------------------------------------------------------------
 
 item_info_entry: .macro item
                 .byte \item.index,\item.colour,\item.char
@@ -4824,6 +4878,13 @@ part_loop:
                 dey
 
                 bpl part_loop
+
+                lda ed_write_addr+0
+                sta level_draw_screen_addr+0
+                lda ed_write_addr+1
+                sta level_draw_screen_addr+1
+                lda otype_flags
+                jsr draw_level_flip_8x8_sprite
 
 next_part:
                 lda #16

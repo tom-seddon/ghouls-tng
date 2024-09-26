@@ -2856,6 +2856,18 @@ x_loop:
                 dex
                 bpl -
 
+                ; Put 3 blocks below the end
+                ldx #17
+                ldy #1
+                lda #ltype_lblock.index
+                jsr ed_write_level
+
+                lda #ltype_block.index
+                inx
+                jsr ed_write_level
+                inx
+                jsr ed_write_level
+
                 ; Clear header
                 ldy #0
                 ldx #LevelData.map
@@ -4308,6 +4320,8 @@ level_name:
                 ; VDU 4
                 .byte 4
 
+                ; Left border
+
                 ; MOVE 0,60
                 .byte 25,4
                 .word 0,60
@@ -4315,6 +4329,8 @@ level_name:
                 ; DRAW 0,952
                 .byte 25,5
                 .word 0,952
+
+                ; Right border
 
                 ; MOVE 1279,60
                 .byte 25,4
@@ -4324,6 +4340,8 @@ level_name:
                 .byte 25,5
                 .word 1279,952
 
+                ; Red rope thing next o the goal
+                
                 ; MOVE 1080,800
                 .byte 25,4
                 .word 1080,800
@@ -4331,6 +4349,8 @@ level_name:
                 ; DRAW 1080,860
                 .byte 25,5
                 .word 1080,860
+
+                ; Dottend line across the top
                 
                 ; GCOL 0,2
                 .byte 18,0,2
@@ -4342,6 +4362,8 @@ level_name:
                 ; PLOT 21,1279,952
                 .byte 25,21
                 .word 1279,952
+
+                ; Yellow line under the goal
                 
                 ; MOVE 1092,864
                 .byte 25,4
@@ -4381,6 +4403,16 @@ initial_bonus:
 
                 ; VDU 4 switches the cursor back on.
                 jsr ed_coff
+
+                ; Copy goal sprite
+                ldx #31
+copy_goal_sprite:
+                lda sprite_goal_row0,x
+                sta $5ce0,x
+                lda sprite_goal_row1,x
+                sta $5e20,x
+                dex
+                bpl copy_goal_sprite
                 
                 jsr entry_game_2
 
@@ -4444,12 +4476,47 @@ x_loop:
                 jsr draw_pl_start
 
                 ldx ed_test_pl_start_x
-                bmi done        ; taken if test start pos invalid
+                bmi pl_start_drawn ; taken if test start pos invalid
                 ldy ed_test_pl_start_y
                 lda #$0f
                 jsr draw_pl_start
+pl_start_drawn:
 
-done:
+                ldx #17
+draw_goal_yellow:
+                ldy #0
+                jsr ed_get_screen_write_addr
+
+                lda #mode5_byte(2,2,2,2)
+                ldy #7
+                sta (ed_write_addr),y
+                ldy #15
+                sta (ed_write_addr),y
+
+                inx
+                cpx #20
+                bne draw_goal_yellow
+
+                ldy #1
+                jsr draw_goal_red
+                ldy #2
+                jsr draw_goal_red
+                
+                rts
+
+draw_goal_red:
+                ldx #16
+                jsr ed_get_screen_write_addr
+
+                ldy #15
+draw_goal_red_loop:
+                lda (ed_write_addr),y
+                and #mode5_byte(3,3,3,0)
+                ora #mode5_byte(0,0,0,1)
+                sta (ed_write_addr),y
+                dey
+                cpy #7
+                bne draw_goal_red_loop
                 rts
 
 draw_pl_start:

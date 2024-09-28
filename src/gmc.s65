@@ -2655,6 +2655,9 @@ ed_key_flag_rept_4=$20
 ed_key_flag_rept_8=$10
 
 ed_file_name_buffer=$700        ; quite safe when in the editor
+ed_oscli_buffer=$700            ; quite safe when in the editor
+ed_input_buffer=$700            ; quite safe when in the editor
+ed_text_buffer=$700
                 
                 .section ed_zp
 ed_read_addr: .fill 2
@@ -2680,6 +2683,16 @@ ed_test_pl_start_x: .fill 1
 ed_test_pl_start_y: .fill 1
 ed_random_frac_table_index: .fill 1
 ed_random_ghost_addr_table_index: .fill 1
+ed_text_x: .fill 1
+ed_text_y: .fill 1
+ed_text_max_x: .fill 1
+ed_text_max_y: .fill 1
+ed_text_result: .block
+changed=$80
+handled=$40                     ; if not set, see ?ed_text_input_char
+                .fill 1
+                .endblock
+ed_text_input_char: .fill 1
                 .endsection
 
                 .section ed_basic_friendly_zp
@@ -2711,6 +2724,15 @@ ed_ctrl_pressed:
                 .byte 0
 ed_new_ovalues:
                 .fill len(otypes),8
+
+;-------------------------------------------------------------------------
+
+OSWORD0: .struct _addr,_len,_min_char,_max_char
+addr: .word (\_addr)
+max_len: .byte (\_len)
+min_char: .byte (\_min_char)
+max_char: .byte (\_max_char)
+                .endstruct
 
 ;-------------------------------------------------------------------------
 
@@ -2774,15 +2796,21 @@ done:
                 
 ;-------------------------------------------------------------------------
 
-ed_main_menu: .proc
+ed_main_menu_banner:
                 jsr ed_print
-
+                
                 .text 22,7
                 .text 129,157,131,141,10,13,129,157,131,141
                 .text 31,12,0,"GHOULS: ARCHITECT"
                 .text 31,12,1,"GHOULS: ARCHITECT"
                 .text 31,0,3
                 .byte 0
+
+                rts
+;-------------------------------------------------------------------------
+                
+ed_main_menu: .proc
+                jsr ed_main_menu_banner
 
                 lda ed_brk_addr+0
                 ora ed_brk_addr+1
@@ -2796,6 +2824,12 @@ ed_main_menu: .proc
                 jsr osnewl
                 jsr osnewl
 brk_checked:
+
+                jsr ed_print
+                .text 133,'T:',131,'Set levels title',10,13
+                .text 32,32,32,134,'<<TODO>>'
+                .byte 10,13
+                .byte 0
                 
                 ldy #0
 levels_loop:
@@ -2831,8 +2865,9 @@ edit_number_insert_2:
                 bne levels_loop
 
                 jsr ed_print
-
                 .text 133,'N:',131,'Set level name',10,13
+                .text 133,'U:',131,'Set levels instruction text',10,13
+                .text 133,'C:',131,'Set levels completion text',10,13
                 .text 133,'R:',131,'Reset level',10,13
                 .text 133,'L:',131,'Load levels',10,13
                 .text 133,'I:',131,'Import level',10,13
@@ -2872,6 +2907,12 @@ not_lower:
 
                 cmp #'*'
                 beq ed_oscli_prompt
+
+                cmp #'T'
+                beq ed_levels_title
+
+                cmp #'U'
+                beq ed_levels_instruction_text
 
                 jsr is_ascii_level_number
                 bcs edit_level
@@ -2972,26 +3013,440 @@ x_loop:
                 jmp ed_main_menu
 
                 .endproc
+
+ed_levels_title: .proc
+                jsr ed_print
+                .text 131,'Title:'
+                .byte 0
+
+                lda input_block.max_len ; max length
+                jsr print_input_box
+
+                ldx #<input_block
+                ldy #>input_block
+                jsr ed_osword0
+                bcs ed_main_loop
+
+                jmp ed_main_loop
+
+input_block: .dstruct OSWORD0,ed_input_buffer,27,32,126
+                .endproc
+
+ed_levels_instruction_text: .proc
+text_y=4
+text_width=39
+text_height=4
+                jsr ed_main_menu_banner
+
+                jsr print_margin
+
+                jsr ed_print
+                .byte 31,0,text_y+text_height
+                .byte 0
+
+                jsr print_margin
+
+                jsr ed_text_clear
+
+                jsr ed_reset
+                lda #text_width-1
+                sta ed_text_max_x
+                lda #text_height-1
+                sta ed_text_max_y
+
+                ; Get things started...
+                lda #ed_text_result.changed
+                sta ed_text_result
+
+                jsr redraw_colours
+
+edit_loop:
+                lda ed_text_result
+                and #ed_text_result.changed
+                beq text_drawn
+                jsr redraw_text
+text_drawn:
+
+                ldx #0
+                ldy #24
+                jsr ed_gotoxy
+                lda ed_text_x
+                jsr ed_print_hex
+                lda ed_text_y
+                jsr ed_print_hex
+                lda ed_text_result
+                jsr ed_print_hex
+                lda ed_mul_result+0
+                jsr ed_print_hex
                 
+                ldx ed_text_x
+                inx
+                lda ed_text_y
+                clc
+                adc #text_y
+                tay
+                jsr ed_gotoxy
+
+                jsr ed_text_edit
+
+                lda ed_text_result
+                and #ed_text_result.handled
+                bne edit_loop
+
+                ; Handle additional keys
+                lda ed_text_input_char
+                cmp #129
+                bcc not_colour
+                cmp #135+1
+                bcs not_colour
+
+                jsr ed_text_edit.insert
+                jmp edit_loop
+                
+not_colour:
+                cmp #145
+                bcc not_line_colour
+                cmp #145+text_height
+                bcs not_line_colour
+
+                and #7
+                tax
+                ; -1 as line 0 is f1
+                ldy line_colours-1,x
+                iny
+                cpy #8
+                bcc +
+                ldy #1
++
+                tya
+                sta line_colours-1,x
+
+                jsr redraw_colours
+                jmp edit_loop
+
+not_line_colour:
+                jmp edit_loop
+
+redraw_text: .proc
+                lda #0
+                sta offset
+                lda #text_y
+                sta yc
+row:
+                lda #text_width
+                sta x_left
+                ldx #1
+                ldy yc
+                jsr ed_gotoxy
+                
+loop:
+                ldy offset
+                lda ed_text_buffer,y
+                cmp #127
+                beq space
+                cmp #32
+                bcs print
+space:
+                lda #32
+print:
+                jsr oswrch
+                
+                inc offset
+                beq redrawn
+                
+                dec x_left
+                bne loop
+
+                inc yc
+
+                sec
+                lda ed_text_max_y
+                adc #text_y
+                cmp yc
+                bne row
+redrawn:
+                rts
+
+x_left: .byte 0
+yc: .byte 0
+offset: .byte 0
+                .endproc
+
+redraw_colours:
+                ldy #0
+redraw_colours_loop:
+                tya
+                pha
+                clc
+                adc #text_y
+                tay
+                ldx #0
+                jsr ed_gotoxy
+
+                pla
+                tay
+
+                lda line_colours,y
+                and #7
+                ora #128
+                jsr oswrch
+
+                iny
+                cpy #text_height
+                bne redraw_colours_loop
+
+                rts
+                
+line_colours: .fill text_height,6
+
+print_margin:
+                jsr ed_print
+                .text '*<------------------------------------->'
+                .byte 0
+                rts
+
+                .endproc
+
+;-------------------------------------------------------------------------
+;
+; Text "editor"
+;
+
+ed_reset: .proc
+                lda #0
+                sta ed_text_x
+                sta ed_text_y
+                lda #1
+                sta ed_text_max_x
+                sta ed_text_max_y
+                rts
+                .endproc                
+                
+ed_text_clear: .proc
+                lda #0
+                tax
+loop:
+                sta ed_text_buffer,x
+                inx
+                bne loop
+                rts
+                .endproc
+
+ed_text_edit: .proc
+                lda #ed_text_result.handled
+                sta ed_text_result
+
+                lda #4
+                ldx #1
+                jsr osbyte      ; cursor keys = keys (AUG p120)
+                
+                jsr osrdch
+
+                pha
+                lda #4
+                ldx #2
+                jsr osbyte      ; cursor keys = F keys (AUG p120)
+                pla
+                
+                ;jsr ed_print_hex
+                
+                cmp #13
+                beq newline
+                cmp #32
+                bcc unhandled
+                cmp #135
+                beq forwards_delete
+                cmp #136
+                beq left
+                cmp #137
+                beq right
+                cmp #138
+                beq down
+                cmp #139
+                beq up
+
+                cmp #127
+                beq backwards_delete
+                bcc insert
+
+unhandled:
+                sta ed_text_input_char
+                
+                lda ed_text_result
+                and #~ed_text_result.handled
+                sta ed_text_result
+                rts
+
+; puts result in ed_mul_result+0
+get_offset:
+                lda ed_text_y
+                sta ed_mul_a
+                ldx ed_text_max_x
+                inx
+                stx ed_mul_b
+                jsr ed_mul_8x8_16
+                ; The top 8 bits of the multiply result are ignored.
+                ; This just has to work!
+
+                clc
+                lda ed_mul_result+0
+                adc ed_text_x
+                sta ed_mul_result+0
+                rts
+
+insert:
+                pha             ; save char to insert
+                jsr get_offset
+                
+                ; insert char
+
+                ldx #$ff
+insert_loop:
+                lda ed_text_buffer-1,x
+                sta ed_text_buffer,x
+                dex
+                cpx ed_mul_result+0
+                bne insert_loop
+
+                pla             ; restore char to insert
+                sta ed_text_buffer,x
+
+                jsr right
+
+changed:
+                lda ed_text_result
+                ora #ed_text_result.changed
+                sta ed_text_result
+                rts
+
+newline:
+                rts
+                
+backwards_delete:
+                jsr left
+                bcc forwards_delete
+                rts
+
+forwards_delete:
+                jsr get_offset
+                ldx ed_mul_result+0
+forwards_delete_loop:
+                lda ed_text_buffer+1,x
+                sta ed_text_buffer,x
+                inx
+                bne forwards_delete_loop
+                jmp changed
+
+; returns with C=0 if cursor moved
+left:
+                lda ed_text_x
+                bne left_move   ; taken if X>0
+                jsr up
+                bcs left_done   ; return with C=1 if X=0 and at top
+                lda ed_text_max_x
+                sta ed_text_x
+left_done:
+                rts
+left_move:
+                clc
+                dec ed_text_x
+                rts
+
+right:
+                lda ed_text_x
+                cmp ed_text_max_x
+                beq right_next_line ; taken if X=max
+                inc ed_text_x
+                rts
+right_next_line:
+                jsr down
+                bcs right_done  ; taken if X=max and at bottom
+                lda #0
+                sta ed_text_x
+right_done:
+                rts
+
+; returns with C=0 if cursor moved
+up:
+                sec
+                lda ed_text_y
+                beq up_done
+                dec ed_text_y
+                clc
+up_done:
+                rts
+
+; returns with C=0 if cursor moved
+down:
+                lda ed_text_y
+                cmp ed_text_max_y
+                beq down_done   ; and C=1
+                inc ed_text_y
+                clc
+down_done:
+                rts
+                .endproc
+                
+;-------------------------------------------------------------------------
+;
+; ed_pack_text: .proc
+;                 lda #$80
+;                 sta ed_pack_write_mask
+;                 lda #$40
+;                 sta ed_pack_read_mask
+
+;                 ; read
+;                 ldx #ed_pack_src
+;                 lda (0,x)
+;                 and ed_pack_read_mask
+;                 cmp #1
+
+;                 ; write
+;                 lda ed_pack_write_mask
+;                 eor #$ff
+;                 ldx #ed_pack_dest
+;                 and (0,x)
+;                 bcc +
+;                 ora ed_pack_write_mask
+; +
+;                 sta (0,x)
+
+                
+                
+;                 .endproc
+
+; ed_write_pack_bit:
+;                 cmp #1          ; C=0 if A==0; C=1 if A!=0
+;                 lda ed_write_pack_mask
+;                 eor #$ff
+;                 ldx #ed_pack_dest
+;                 and (0,x)
+;                 bcc +
+;                 ora ed_write_pack_mask
+; +
+;                 sta (0,x)
+;                 lsr ed_write_pack_mask
+;                 bcc +
+;                 jsr ed_incz
+; +
+;                 rts
+                
+;-------------------------------------------------------------------------
+
 name_levels:
                 jsr select_level
                 
                 jsr ed_print
-                .text 131,'Enter name:',132,157,135
-                .fill 16+2,' '
-                .text 156
-                .fill 16+3,8
+                .text 131,'Enter name:'
+                ; .byte 132,157,135
+                ; .fill size(LevelData.name)-1+2,' '
+                ; .text 156
+                ; .fill size(LevelData.name)-1+3,8
                 .byte 0
 
-;                 ldy #LevelData.name
-;                 ldx #17
-;                 lda #13
-; -
-;                 sta (ed_level_addr),y
-;                 iny
-;                 dex
-;                 bne -
-                
+                lda #size(LevelData.name)-1
+                jsr print_input_box
+
                 clc
                 lda ed_level_addr+0
                 adc #LevelData.name
@@ -3002,9 +3457,10 @@ name_levels:
 
                 ldx #<name_level_block
                 ldy #>name_level_block
-                lda #0
-                jsr osword
-                bcs ed_main_menu ; taken if ESCAPE pressed
+                jsr ed_osword0
+                ; lda #0
+                ; jsr osword
+                bcs ed_main_loop ; taken if ESCAPE pressed
 
                 lda #size(LevelData.name)
                 tya
@@ -3025,6 +3481,34 @@ name_level_block:
                 .byte size(LevelData.name)-1 ;max length (excl CR)
                 .byte 32        ;min char
                 .byte 126       ;max char
+
+print_input_box:
+                clc
+                adc #2
+                pha
+                
+                jsr ed_print
+                .byte 132,157,135
+                .byte 0
+
+                pla
+                pha
+                tax
+                lda #' '
+                jsr print_input_box_chars
+
+                jsr ed_print
+                .byte 156,8
+                .byte 0
+
+                pla
+                tax
+                lda #8
+print_input_box_chars:
+                jsr oswrch
+                dex
+                bne print_input_box_chars
+                rts
                 
 edit_level:
                 sec
@@ -3330,25 +3814,13 @@ enter_file_name:
                 .text 131,'Enter file name:',135
                 .byte 0
 
-                jsr ed_enable_escape
-
                 ldx #<file_name_block
                 ldy #>file_name_block
-                lda #0
-                jsr osword
-
-                php
-                jsr ed_disable_escape
-                plp
-                
+                jsr ed_osword0
                 bcs ed_main_loop
                 rts
 
-file_name_block:
-                .word ed_file_name_buffer
-                .byte 250       ;max length
-                .byte 32        ;min char
-                .byte 126       ;max char
+file_name_block: .dstruct OSWORD0,ed_file_name_buffer,250,32,127
 
 levels_file_osfile_block: .block
 name:
@@ -3482,7 +3954,27 @@ end:
                 
                 .endproc
 
+;-------------------------------------------------------------------------
 
+ed_osword0: .proc
+                stx reldx1+1
+                sty reldy1+1
+                jsr ed_enable_escape
+reldx1:
+                ldx #$ff
+reldy1:
+                ldy #$ff
+                lda #0
+                jsr osword
+                php
+                sty reldy2+1
+                jsr ed_disable_escape
+reldy2:
+                ldy #$ff
+                plp
+                rts
+                .endproc
+                
 ;-------------------------------------------------------------------------
 
 ed_enable_escape:
@@ -3521,8 +4013,9 @@ brk_checked:
 
                 ldx #<block
                 ldy #>block
-                lda #0          ;read line from input
-                jsr osword
+                jsr ed_osword0
+                ; lda #0          ;read line from input
+                ; jsr osword
                 bcs ed_main_loop
 
                 ldx block+0
@@ -3531,11 +4024,7 @@ brk_checked:
 
                 jmp ed_oscli_prompt
 
-block:
-                .word $7b00     ;definitely safe
-                .byte 255       ;max length
-                .byte 32        ;min char
-                .byte 126       ;max char
+block: .dstruct OSWORD0,ed_oscli_buffer,255,32,126
                 .endproc
 
 ;-------------------------------------------------------------------------

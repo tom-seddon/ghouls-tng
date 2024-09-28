@@ -819,6 +819,7 @@ world.
 
 To print this stuff, have a routine that unpacks a stream of 7-bit
 chars and prints via OSWRCH, with chars<32 being printed as 128+N so
-that Mode 7 control codes can get through.
+that Mode 7 control codes can get through. Don't allow embedded
+newlines or anything, as the text has a fixed budget vertically.
 
 * EOF

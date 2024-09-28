@@ -25,6 +25,11 @@ From the editor menu, press `1`/`2`/`3`/`4` to edit that level.
 Press `N` to set a level's name. Select level number then type in its
 new name. There's a limit of 16 chars.
 
+Press `U` to set the level set-specific instruction text, printed as
+part of the instructions. See the text editing section below.
+
+Press `C` to set the level set-specific completion text, printed as part of the ending screen. See the text editing section below.
+
 Press `R` to reset a level's data. The level will be emptied, leaving
 just a row of blocks along the bottom and a few blocks underneath the
 treasure in the top right.
@@ -114,6 +119,38 @@ There are two types of treasure: the one that is just the bottom half
 is just positioned by its bottom row rather than its top row, so you
 can put it in the top row of the level. They both look the same in
 game. (Configurable goals were a late addition...)
+
+## Text editing
+
+There's an extremely basic (if we're being polite) text editor kind of
+thing (for a very loose definition of "kind of thing") for editing
+completion text and instruction text. Navigate using the cursor keys,
+DELETE to delete backwards, COPY to delete forwards, and press keys to
+insert chars.
+
+The whole text is treated as one big string, rather than separate
+lines, so inserting text at the start will affect subsequent lines and
+you'll have to fix it all up by hand.
+
+There's an invisible runoff area after the end of the editor text, so
+anything that goes off the end is not lost! If you delete chars,
+you'll see it come back. What's visible is all that gets saved to the
+level data though.
+
+### Instructions text
+
+Press `SHIFT+F1` ... `SHIFT+F7` to insert teletext colour control
+codes.
+
+Press `CTRL+F1` ... `CTRL+F4` to set the control code used at the
+start of each line. These codes are treated separately, in an attempt
+to make things marginally less annoying.
+
+### Completion text
+
+Press `CTRL+P` to see the text in an approximation of the Mode 5
+screen it's shown as in game.
+
 
 ----
 

@@ -2801,8 +2801,8 @@ ed_main_menu_banner:
                 
                 .text 22,7
                 .text 129,157,131,141,10,13,129,157,131,141
-                .text 31,12,0,"GHOULS: ARCHITECT"
-                .text 31,12,1,"GHOULS: ARCHITECT"
+                .text 31,12,0,"GHOULS: ARCHITECT";,31,39,0,156
+                .text 31,12,1,"GHOULS: ARCHITECT";,31,39,1,156
                 .text 31,0,3
                 .byte 0
 
@@ -2913,6 +2913,9 @@ not_lower:
 
                 cmp #'U'
                 beq ed_levels_instruction_text
+
+                cmp #'C'
+                beq ed_levels_completion_text
 
                 jsr is_ascii_level_number
                 bcs edit_level
@@ -3032,23 +3035,156 @@ ed_levels_title: .proc
 input_block: .dstruct OSWORD0,ed_input_buffer,27,32,126
                 .endproc
 
+ed_levels_completion_text: .proc
+text_y=3
+text_width=20
+text_x=20-text_width/2
+text_height=5
+text_addr=$7c00+text_y*40+text_x
+                .cerror text_height*text_width>=256 ; lazy coding, sorry
+
+                jsr ed_text_clear
+                
+                jsr ed_text_reset
+                lda #text_width-1
+                sta ed_text_max_x
+                lda #text_height-1
+                sta ed_text_max_y
+
+completion_text_loop:
+                jsr ed_main_menu_banner
+
+                jsr ed_print
+                .byte 31,text_x-1,text_y-1
+                .text '+'
+                .fill text_width,'-'
+                .text '+'
+                .for _i=0,_i<text_height,_i+=1
+                .byte 31,text_x-1,text_y+_i
+                .text '|'
+                .fill text_width,' '
+                .text '|'
+                .endfor
+                .byte 31,text_x-1,text_y+text_height
+                .text '+'
+                .fill text_width,'-'
+                .text '+'
+                .byte 0
+
+                lda #ed_text_result.changed
+                sta ed_text_result
+
+edit_loop:
+                lda ed_text_result
+                and #ed_text_result.changed
+                beq text_drawn
+                jsr redraw_text
+text_drawn:
+                lda ed_text_x
+                clc
+                adc #text_x
+                tax
+                lda ed_text_y
+                clc
+                adc #text_y
+                tay
+                jsr ed_gotoxy
+
+                jsr ed_text_edit
+
+                lda ed_text_result
+                and #ed_text_result.handled
+                bne edit_loop
+
+                lda ed_text_input_char
+                cmp #16         ; Ctrl+P
+                beq preview
+
+                jmp edit_loop
+                
+                jmp ed_main_menu
+
+preview:
+                jsr ed_print
+
+                .byte 22,5
+                .byte 19,3,6,0,0,0
+                .byte 31,3,1
+                .text "GHOST GAVE UP."
+                .byte 31,0,3
+                .byte 0
+
+                jsr ed_coff
+                
+                ldx #0
+preview_loop:
+                jsr ed_text_read_buffer
+                jsr oswrch
+
+                inx
+                cpx #text_width*text_height
+                bne preview_loop
+
+                jsr ed_print
+                .byte 13,10
+                .text " AWARDED EXTRA LIFE"
+                .byte 0
+
+                jsr ed_clear_keyboard_buffer
+                jsr osrdch
+                jmp completion_text_loop
+
+redraw_text:
+                ldy #0
+                ldx #0
+row:
+                lda #text_width
+                sta x_left
+redraw_text_loop:
+                jsr ed_text_read_buffer
+                sta text_addr,y
+
+                inx
+                cpx #text_width*text_height
+                beq redraw_done
+
+                iny
+                dec x_left
+                bne redraw_text_loop
+
+                tya
+                clc
+                adc #40-text_width
+                tay
+                jmp row
+redraw_done:
+                rts
+
+x_left: .byte 0
+                .endproc
+
 ed_levels_instruction_text: .proc
 text_y=4
 text_width=39
 text_height=4
+text_addr=$7c00+text_y*40
+                .cerror text_height*40>=256 ; lazy coding, sorry
+                
                 jsr ed_main_menu_banner
 
-                jsr print_margin
-
                 jsr ed_print
+                .text '*<'
+                .fill text_width-2,'-'
+                .text '>'
                 .byte 31,0,text_y+text_height
+                .text '*<'
+                .fill text_width-2,'-'
+                .text '>'
                 .byte 0
-
-                jsr print_margin
 
                 jsr ed_text_clear
 
-                jsr ed_reset
+                jsr ed_text_reset
                 lda #text_width-1
                 sta ed_text_max_x
                 lda #text_height-1
@@ -3128,82 +3264,52 @@ not_line_colour:
                 jmp edit_loop
 
 redraw_text: .proc
-                lda #0
-                sta offset
-                lda #text_y
-                sta yc
+                ldx #0          ; src offset
+                ldy #0          ; dest offset
 row:
                 lda #text_width
                 sta x_left
-                ldx #1
-                ldy yc
-                jsr ed_gotoxy
-                
 loop:
-                ldy offset
-                lda ed_text_buffer,y
-                cmp #127
-                beq space
+                lda ed_text_buffer,x
+                and #$7f
                 cmp #32
-                bcs print
+                bcs store
+                cmp #1
+                bcc space
+                cmp #7+1
+                bcs store
 space:
                 lda #32
-print:
-                jsr oswrch
-                
-                inc offset
-                beq redrawn
-                
+store:
+                ; +1 as the left edge is column 1
+                sta text_addr+1,y
+
+                inx
+                cpx #text_height*text_width
+                beq done
+
+                iny
+
                 dec x_left
                 bne loop
 
-                inc yc
-
-                sec
-                lda ed_text_max_y
-                adc #text_y
-                cmp yc
-                bne row
-redrawn:
+                iny             ; skip another char
+                jmp row
+done:
                 rts
 
 x_left: .byte 0
-yc: .byte 0
-offset: .byte 0
                 .endproc
 
 redraw_colours:
-                ldy #0
-redraw_colours_loop:
-                tya
-                pha
-                clc
-                adc #text_y
-                tay
-                ldx #0
-                jsr ed_gotoxy
-
-                pla
-                tay
-
-                lda line_colours,y
+                .for _y=0,_y<text_height,_y+=1
+                lda line_colours+_y
                 and #7
-                ora #128
-                jsr oswrch
-
-                iny
-                cpy #text_height
-                bne redraw_colours_loop
-
+                sta text_addr+_y*40
+                .endfor
                 rts
                 
 line_colours: .fill text_height,6
-
-print_margin:
-                jsr ed_print
-                .text '*<------------------------------------->'
-                .byte 0
-                rts
 
                 .endproc
 
@@ -3212,7 +3318,7 @@ print_margin:
 ; Text "editor"
 ;
 
-ed_reset: .proc
+ed_text_reset: .proc
                 lda #0
                 sta ed_text_x
                 sta ed_text_y
@@ -3231,6 +3337,19 @@ loop:
                 bne loop
                 rts
                 .endproc
+
+ed_text_read_buffer: .proc
+                lda ed_text_buffer,x
+                cmp #127
+                beq space
+                cmp #32
+                bcc space
+                rts
+
+space:
+                lda #32
+                rts
+                .endproc        
 
 ed_text_edit: .proc
                 lda #ed_text_result.handled

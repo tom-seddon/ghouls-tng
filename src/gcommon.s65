@@ -40,8 +40,10 @@ flags: .block
 has_ghost_rect=1
 no_standard_treasure=2
 
-; Level 1 - set if file has text
-file_flag=4
+; Level 1 - set if file has instructions text
+; Level 2 - set if file has completion text
+; Level 3 - set if file has name
+text=4
                 .fill 1
                 .endblock
 ; only present if has_ghost_rect flag set. Otherwise, use default
@@ -58,7 +60,7 @@ map: .fill level_width*level_height
 
 TextData: .struct
 instructions: .fill 201
-ending: .fill 161
+completion: .fill 161
 name: .fill 31
 
                 ; bit wasteful!
@@ -79,11 +81,11 @@ LevelData_ghost_max_x_offset=LevelData.ghost_max_x
 LevelData_ghost_max_y_offset=LevelData.ghost_max_y
 LevelData_flags_has_ghost_rect=LevelData.flags.has_ghost_rect
 LevelData_flags_no_standard_treasure=LevelData.flags.no_standard_treasure
-LevelData_flags_file_flag=LevelData.flags.file_flag
+LevelData_flags_text=LevelData.flags.text
 
 TextData_offset=4+4*size(LevelData)
 TextData_instructions_offset=TextData.instructions
-TextData_ending_offset=TextData.ending
+TextData_completion_offset=TextData.completion
 TextData_name_offset=TextData.name
                 
 ; level_data_size=level_width*level_height
@@ -92,6 +94,10 @@ TextData_name_offset=TextData.name
 ; level_colour3_offset=level_name_offset+17
 ; level_pl_start_offset=level_colour3_offset+
 ; level_total_data_size=level_data_size+
+
+level_flags_text_instructions=levels_org+4+0*size(LevelData)+LevelData.flags
+level_flags_text_completion=levels_org+4+1*size(LevelData)+LevelData.flags
+level_flags_text_name=levels_org+4+2*size(LevelData)+LevelData.flags
                 
 ;-------------------------------------------------------------------------
 

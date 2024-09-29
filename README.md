@@ -25,10 +25,17 @@ From the editor menu, press `1`/`2`/`3`/`4` to edit that level.
 Press `N` to set a level's name. Select level number then type in its
 new name. There's a limit of 16 chars.
 
-Press `U` to set the level set-specific instruction text, printed as
-part of the instructions. See the text editing section below.
+Press `T` to set the level set title, printed in the double height
+banner in the instructions screen. If not set, a default `G H O U L S`
+will be used.
 
-Press `C` to set the level set-specific completion text, printed as part of the ending screen. See the text editing section below.
+Press `U` to set the level set-specific instruction text, printed as
+part of the instructions. If not set, obvious placeholder text will be
+shown. See the text editing section below.
+
+Press `C` to set the level set-specific completion text, printed as
+part of the ending screen. If not set, obvious placeholder text will
+be shown. See the text editing section below.
 
 Press `R` to reset a level's data. The level will be emptied, leaving
 just a row of blocks along the bottom and a few blocks underneath the
@@ -97,7 +104,7 @@ The bottom row contains some indicators:
   a standard goal in the top right (as per the original levels - the
   game will automatically arrange for this to appear), or whether you
   have free choice of were they go (see below)
-  
+
 ## Ghost start area
 
 The ghost start area, if set, is indicated by a dotted red rectangle.
@@ -133,24 +140,25 @@ lines, so inserting text at the start will affect subsequent lines and
 you'll have to fix it all up by hand.
 
 There's an invisible runoff area after the end of the editor text, so
-anything that goes off the end is not lost! If you delete chars,
-you'll see it come back. What's visible is all that gets saved to the
-level data though.
+anything that goes off the end is not immediately lost! If you delete
+chars, you'll see it come back. What's visible is all that gets saved
+to the level data though.
+
+The end of the text, if that comes before the end of the visible area,
+is indicated by a solid white square, which you can insert with
+`SHIFT+f0`. Anything after the first one will be discarded. This is
+more important for the instructions text as whatever comes next will
+follow on immediately.
 
 ### Instructions text
 
-Press `SHIFT+F1` ... `SHIFT+F7` to insert teletext colour control
+Press `SHIFT+f1` ... `SHIFT+f7` to insert teletext colour control
 codes.
-
-Press `CTRL+F1` ... `CTRL+F4` to set the control code used at the
-start of each line. These codes are treated separately, in an attempt
-to make things marginally less annoying.
 
 ### Completion text
 
 Press `CTRL+P` to see the text in an approximation of the Mode 5
 screen it's shown as in game.
-
 
 ----
 

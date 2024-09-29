@@ -14,7 +14,7 @@ level_data_0:
                 .text "SPECTRES' LAIR",13,13,13
                 .byte 4
                 .byte 4,23
-                .byte LevelData.flags.file_flag ; file has text
+                .byte LevelData.flags.text ; file has instruction text
                 .fill 34,0
                 .encode ghouls_level_enc
                 ;      0001020304050607080910111213141516171819
@@ -51,7 +51,8 @@ level_data_1:
                 .text "HORRID HALL",13,13,13,13,13,13
                 .byte 2
                 .byte 4,23
-                .fill 35,0
+                .byte LevelData.flags.text ; file has completion text
+                .fill 34,0
                 .encode ghouls_level_enc
                 ;      0001020304050607080910111213141516171819
                 .text '________________________________________' ;4 
@@ -88,7 +89,8 @@ level_data_2:
                 .text "SPIDERS PARLOUR",13,13
                 .byte 6
                 .byte 4,23
-                .fill 35,0
+                .byte 0         ; file does not have name
+                .fill 34,0
                 .encode ghouls_level_enc
                 ;      0001020304050607080910111213141516171819
                 .text '________________________________________' ;4 
@@ -167,7 +169,7 @@ text:
                 .cerror *-text!=TextData.instructions+120,"oops"
                 .byte 13
                 .fill 80,32
-                .cerror *-text!=TextData.ending,"oops"
+                .cerror *-text!=TextData.completion,"oops"
                 .text "   GHOST GAVE UP.   "
                 .text "                    "
                 .text " YOU TOOK THE POWER "

@@ -2653,7 +2653,7 @@ ed_key_flag_rept_4=$20
 ed_key_flag_rept_8=$10
 
 ed_file_name_buffer=$700        ; quite safe when in the editor
-ed_oscli_buffer=$700            ; quite safe when in the editor
+ed_oscli_buffer=$700            ; quite safe wgcomhen in the editor
 ed_input_buffer=$700            ; quite safe when in the editor
 ed_text_buffer=$700
                 
@@ -2808,7 +2808,7 @@ ed_main_menu_banner:
 
                 rts
 ;-------------------------------------------------------------------------
-                
+
 ed_main_menu: .proc
                 jsr ed_main_menu_banner
 
@@ -2827,10 +2827,35 @@ brk_checked:
 
                 jsr ed_print
                 .text 133,'T:',131,'Set levels title',10,13
-                .text 32,32,32,134,'<<TODO>>'
-                .byte 10,13
+                .byte 0
+
+                lda level_flags_text_name
+                and #LevelData.flags.text
+                bne print_levels_name
+
+                jsr print_not_set
+                jmp levels_items
+
+print_levels_name:
+                jsr ed_print
+                .text 134,32,32,32
                 .byte 0
                 
+                ldx #0
+print_levels_name_loop:
+                lda levels_org+TextData_offset+TextData.name,x
+                cmp #13
+                beq levels_name_printed
+                jsr oswrch
+                inx
+                bne print_levels_name_loop
+
+levels_name_printed:
+                jsr ed_print
+                .byte 10,13
+                .byte 0
+
+levels_items:
                 ldy #0
 levels_loop:
                 tya
@@ -2867,7 +2892,23 @@ edit_number_insert_2:
                 jsr ed_print
                 .text 133,'N:',131,'Set level name',10,13
                 .text 133,'U:',131,'Set levels instruction text',10,13
+                .byte 0
+
+                lda level_flags_text_instructions
+                and #LevelData.flags.text
+                bne +
+                jsr print_not_set
++
+                jsr ed_print
                 .text 133,'C:',131,'Set levels completion text',10,13
+                .byte 0
+
+                lda level_flags_text_completion
+                and #LevelData.flags.text
+                bne +
+                jsr print_not_set
++
+                jsr ed_print
                 .text 133,'R:',131,'Reset level',10,13
                 .text 133,'L:',131,'Load levels',10,13
                 .text 133,'I:',131,'Import level',10,13
@@ -2921,6 +2962,12 @@ not_lower:
                 bcs edit_level
 
                 jmp input_loop
+
+print_not_set:
+                jsr ed_print
+                .text 134,32,32,32,"(not set)",10,13
+                .byte 0
+                rts
 
 ; escaped:
 ;                 .text 0,17,'Escape',0
@@ -3030,16 +3077,48 @@ ed_levels_title: .proc
                 jsr ed_osword0
                 bcs ed_main_loop
 
-                jmp ed_main_loop
+                cpy #0
+                bne set_title
 
-input_block: .dstruct OSWORD0,ed_input_buffer,27,32,126
+                ; clear title
+                lda level_flags_text_name
+                and #~LevelData.flags.text&$ff
+                sta level_flags_text_name
+
+                ldx #0
+                jmp pad
+
+set_title:
+                lda level_flags_text_name
+                ora #LevelData.flags.text
+                sta level_flags_text_name
+
+                ldx #0
+loop:
+                lda ed_input_buffer,x
+                cmp #13
+                beq pad
+                sta levels_org+TextData_offset+TextData.name,x
+                inx
+                jmp loop
+
+pad:
+                lda #13
+pad_loop:
+                cpx #size(TextData.name)
+                beq ed_main_loop
+                sta levels_org+TextData_offset+TextData.name,x
+                inx
+                jmp pad_loop
+
+input_block: .dstruct OSWORD0,ed_input_buffer,size(TextData.name)-1,32,126
                 .endproc
 
 ed_levels_completion_text: .proc
 text_y=3
 text_width=20
 text_x=20-text_width/2
-text_height=5
+text_height=8
 text_addr=$7c00+text_y*40+text_x
                 .cerror text_height*text_width>=256 ; lazy coding, sorry
 
@@ -3050,6 +3129,8 @@ text_addr=$7c00+text_y*40+text_x
                 sta ed_text_max_x
                 lda #text_height-1
                 sta ed_text_max_y
+
+                jsr copy_file_completion_to_buffer
 
 completion_text_loop:
                 jsr ed_main_menu_banner
@@ -3071,9 +3152,6 @@ completion_text_loop:
                 .text '+'
                 .byte 0
 
-                lda #ed_text_result.changed
-                sta ed_text_result
-
 edit_loop:
                 lda ed_text_result
                 and #ed_text_result.changed
@@ -3093,6 +3171,14 @@ text_drawn:
                 jsr ed_text_edit
 
                 lda ed_text_result
+                and #ed_text_result.undo
+                bne undo
+
+                lda ed_text_result
+                and #ed_text_result.quit
+                bne quit
+
+                lda ed_text_result
                 and #ed_text_result.handled
                 bne edit_loop
 
@@ -3110,63 +3196,174 @@ preview:
                 .byte 22,5
                 .byte 19,3,6,0,0,0
                 .byte 31,3,1
-                .text "GHOST GAVE UP."
-                .byte 31,0,3
+                .byte 31,0,1
                 .byte 0
 
                 jsr ed_coff
                 
                 ldx #0
 preview_loop:
-                jsr ed_text_read_buffer
+                jsr read_buffer
                 jsr oswrch
 
                 inx
                 cpx #text_width*text_height
                 bne preview_loop
 
-                jsr ed_print
-                .byte 13,10
-                .text " AWARDED EXTRA LIFE"
-                .byte 0
-
                 jsr ed_clear_keyboard_buffer
                 jsr osrdch
+
+                lda ed_text_result
+                ora #ed_text_result.changed
+                sta ed_text_result
+                
                 jmp completion_text_loop
 
 redraw_text:
-                ldy #0
+                lda #<text_addr
+                sta sta_text_addr+1
+                lda #>text_addr
+                sta sta_text_addr+2
+
+                lda #text_height
+                sta num_rows_left
                 ldx #0
 row:
-                lda #text_width
-                sta x_left
+                ldy #text_width
 redraw_text_loop:
-                jsr ed_text_read_buffer
-                sta text_addr,y
+                jsr read_buffer
+sta_text_addr:
+                sta text_addr
 
+                inc sta_text_addr+1
+                bne +
+                inc sta_text_addr+2
++
                 inx
-                cpx #text_width*text_height
-                beq redraw_done
-
-                iny
-                dec x_left
+                dey
                 bne redraw_text_loop
 
-                tya
                 clc
+                lda sta_text_addr+1
                 adc #40-text_width
-                tay
-                jmp row
-redraw_done:
+                sta sta_text_addr+1
+                bcc +
+                inc sta_text_addr+2
++
+
+                dec num_rows_left
+                bne row
                 rts
 
-x_left: .byte 0
+num_rows_left: .byte 0
+
+read_buffer: .proc
+                lda ed_text_buffer,x
+                cmp #13
+                beq square
+                cmp #127
+                bcs space
+                cmp #32
+                bcc space
+                rts
+
+square:
+                lda #255
+                rts
+
+space:
+                lda #32
+                rts
+                .endproc        
+                
+undo:
+                jsr copy_file_completion_to_buffer
+                jmp edit_loop
+
+copy_file_completion_to_buffer: .proc
+                jsr ed_text_clear
+
+                lda ed_text_result
+                ora #ed_text_result.changed
+                sta ed_text_result
+
+                lda level_flags_text_completion
+                and #LevelData.flags.text
+                beq done
+
+                ldx #0
+loop:
+                lda @w levels_org+TextData_offset+TextData.completion,x
+                sta ed_text_buffer,x
+                inx
+                cpx #size(TextData.completion)
+                bne loop
+done:
+                rts
+                .endproc
+
+quit:
+                lda ed_text_buffer+0
+                cmp #13
+                beq quit_clear_completion
+
+quit_set_completion:
+                jsr clear_file_completion
+                jsr copy_buffer_to_file_completion
+
+                lda level_flags_text_completion
+                ora #LevelData.flags.text
+                sta level_flags_text_completion
+
+                jmp ed_main_loop
+
+quit_clear_completion:
+                lda level_flags_text_completion
+                and #~LevelData.flags.text&$ff
+                sta level_flags_text_completion
+
+                jsr clear_file_completion
+                jmp ed_main_loop
+
+clear_file_completion: .proc
+                lda #32
+                ldx #0
+loop:
+                sta @w levels_org+TextData_offset+TextData.completion,x
+                inx
+                cpx #size(TextData.completion)
+                bne loop
+
+                lda #13
+                sta levels_org+TextData_offset+TextData.completion+0
+                rts
+                .endproc
+
+copy_buffer_to_file_completion: .proc
+                jsr clear_file_completion
+
+                ldx #0
+loop:
+                lda ed_text_buffer,x
+                sta @w levels_org+TextData_offset+TextData.completion,x
+                cmp #13
+                beq done
+                inx
+                cpx #size(TextData.completion)
+                bne loop
+done:
+                ; Ensure it's definitely 13-terminated.
+                lda #13
+                sta levels_org+TextData_offset+TextData.completion+size(TextData.completion)-1
+                rts
+                .endproc
+                
                 .endproc
 
 ed_levels_instruction_text: .proc
 text_y=4
 text_width=40
-text_height=4
+text_height=5
 text_addr=$7c00+text_y*40
                 .cerror text_height*40>=256 ; lazy coding, sorry
                 
@@ -3190,11 +3387,7 @@ text_addr=$7c00+text_y*40
                 lda #text_height-1
                 sta ed_text_max_y
 
-                ; jsr undo
-
-                ; Get things started...
-                lda #ed_text_result.changed
-                sta ed_text_result
+                jsr copy_file_instructions_to_buffer
 
 edit_loop:
                 lda ed_text_result
@@ -3225,6 +3418,14 @@ text_drawn:
                 jsr ed_text_edit
 
                 lda ed_text_result
+                and #ed_text_result.undo
+                bne undo
+
+                lda ed_text_result
+                and #ed_text_result.quit
+                bne quit
+
+                lda ed_text_result
                 and #ed_text_result.handled
                 bne edit_loop
 
@@ -3238,22 +3439,80 @@ text_drawn:
                 jsr ed_text_edit.insert
 not_colour:
                 jmp edit_loop
+
+undo:
+                jsr copy_file_instructions_to_buffer
+                jmp edit_loop
+
+quit:
+                lda ed_text_buffer+0
+                cmp #13
+                beq quit_clear_instructions
+
+quit_set_instructions:
+                jsr clear_file_instructions
+                jsr copy_buffer_to_file_instructions
+
+                lda level_flags_text_instructions
+                ora #LevelData.flags.text
+                sta level_flags_text_instructions
+
+                jmp ed_main_loop
+
+quit_clear_instructions:
+                lda level_flags_text_instructions
+                and #~LevelData.flags.text&$ff
+                sta level_flags_text_instructions
+
+                jsr clear_file_instructions
+                jmp ed_main_loop
+                
+clear_file_instructions: .proc
+                lda #32
+                ldx #0
+loop:
+                sta @w levels_org+TextData_offset+TextData.instructions,x
+                inx
+                cpx #size(TextData.instructions)
+                bne loop
+
+                lda #13
+                sta levels_org+TextData_offset+TextData.instructions+0
+
+                rts
+                .endproc
+                
+copy_buffer_to_file_instructions: .proc
+                ldx #0
+loop:
+                lda ed_text_buffer,x
+                sta @w levels_org+TextData_offset+TextData.instructions,x
+                cmp #13
+                beq done
+                inx
+                cpx #size(TextData.instructions)
+                bne loop
+done:
+                ; Ensure it's definitely 13-terminated.
+                lda #13
+                sta levels_org+TextData_offset+TextData.instructions+size(TextData.instructions)-1
+
+                rts
+                .endproc                
                 
 redraw_text: .proc
                 ldx #0
 loop:
                 lda ed_text_buffer,x
-                and #$7f
+                cmp #13
+                beq square
                 cmp #32
                 bcs store
-                cmp #1
-                bcc space
-                cmp #7+1
-                bcc store
-space:
                 lda #32
+                jmp store
+square:
+                lda #255
 store:
-                ; +1 as the left edge is column 1
                 sta text_addr,x
 
                 inx
@@ -3261,15 +3520,30 @@ store:
                 bne loop
                 rts
                 .endproc
-
-; undo: .proc
-;                 ldy #>(levels_org+$900)
-;                 ldx #TextData.instructions_text
-;                 jsr ed_bit_read_init
-; row:
-;                 jsr ed_read_
                 
-                ;.endproc     
+copy_file_instructions_to_buffer: .proc
+                jsr ed_text_clear
+
+                lda ed_text_result
+                ora #ed_text_result.changed
+                sta ed_text_result
+
+                lda level_flags_text_instructions
+                and #LevelData.flags.text
+                beq done
+
+                ldx #0
+loop:
+                ; don't know why the @w is necessary here to pick the
+                ; correct addressing mode?
+                lda @w levels_org+TextData_offset+TextData.instructions,x
+                sta ed_text_buffer,x
+                inx
+                cpx #size(TextData.instructions)
+                bne loop
+done:
+                rts
+                .endproc
                 
                 .endproc
 
@@ -3295,21 +3569,11 @@ loop:
                 sta ed_text_buffer,x
                 inx
                 bne loop
+
+                lda #13
+                sta ed_text_buffer+0
                 rts
                 .endproc
-
-ed_text_read_buffer: .proc
-                lda ed_text_buffer,x
-                cmp #127
-                beq space
-                cmp #32
-                bcc space
-                rts
-
-space:
-                lda #32
-                rts
-                .endproc        
 
 ed_text_edit: .proc
                 lda #ed_text_result.handled
@@ -3331,8 +3595,6 @@ ed_text_edit: .proc
                 
                 cmp #13
                 beq newline
-                cmp #32
-                bcc unhandled
                 cmp #135
                 beq forwards_delete
                 cmp #136
@@ -3343,11 +3605,16 @@ ed_text_edit: .proc
                 beq down
                 cmp #139
                 beq up
-                ; cmp #26
-                ; beq undo
-                ; cmp #27
-                ; beq escape
+                cmp #128
+                beq insert_terminator
+                cmp #26         ; CTRL+Z
+                beq undo
+                cmp #27
+                beq escape
 
+                ; other unprintable chars ignored.
+                cmp #32
+                bcc unhandled
                 cmp #127
                 beq backwards_delete
                 bcc insert
@@ -3385,6 +3652,8 @@ get_offset:
                 sta ed_mul_result+0
                 rts
 
+insert_terminator:
+                lda #13
 insert:
                 pha             ; save char to insert
                 jsr get_offset

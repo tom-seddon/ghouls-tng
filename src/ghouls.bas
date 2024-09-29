@@ -1,5 +1,4 @@
 HIMEM={&gmc_org}
-TEXT=(?{&levels_org+4+LevelData_flags_offset} AND{$LevelData_flags_file_flag})<>0
 DIMHI(10),N$(10):FORF=0TO9:N$(F)=CHR$132+"Ghoul Basher "+STR$(F+1):HI(F)=(20-F)*10:NEXT
 {?not debug}ONERRORGOTO{$L1920}
 {?debug}ONERROR:MODE7:REPORT:PRINT" at line ";ERL:END
@@ -75,7 +74,7 @@ GCOL0,2:MOVE0,952:PLOT21,1279,952
 FORF=0TO15STEP4:F!&5CD0=F!{&sprite_pl_facing}:F!&5E10=F!{&sprite_pl_facing+16}:NEXT:FORF=1TO200:NEXT
 NEXT:FORF=0TO15STEP4:F!&5CD0=F!{&sprite_pl_right_0}:F!&5E10=F!{&sprite_pl_right_0+16}:NEXT
 {:finish_sequence}
-FORF=1TO3000:NEXT:CLS:VDU28,0,9,19,0,19,3,6;0;:COLOUR3:PRINTTAB(0,1);:IFTEXT:IFLEN(${$levels_org+TextData_offset+TextData_ending_offset})>0:PRINT${$levels_org+TextData_offset+TextData_ending_offset};:ELSE:PRINT"COMPLETION TEXT HERE";
+FORF=1TO3000:NEXT:CLS:VDU28,0,9,19,0,19,3,6;0;:COLOUR3:PRINTTAB(0,1);:IF((?{&level_flags_text_completion} AND{$LevelData_flags_text})<>0):IFLEN(${$levels_org+TextData_offset+TextData_completion_offset})>0:PRINT${$levels_org+TextData_offset+TextData_completion_offset};:ELSE:PRINT"COMPLETION TEXT HERE";
 FORG=-1TO-15STEP-.02:SOUND&11,G,0,30:SOUND&12,G,0,30:SOUND&13,G,2,30:NEXT
 VDU19,1,0;0;19,2,0;0;:GCOL0,2:MOVE300,700:FORF=0TO360STEP20:IFF=80ORF=120GCOL0,1 ELSEGCOL0,2
 IFF=100GCOL0,0
@@ -130,8 +129,7 @@ GOTO{$L70}
 REM*** INSTRUCTIONS **
 VDU22,7:VDU23,0,11;0;0;0;
 *FX15
-TITLE=TEXT:IFTITLE:IFLEN(${&levels_org+TextData_offset+TextData_name_offset})=0:TITLE=FALSE
-FORF=1TO2:IFTITLE:PRINTTAB(20-LEN(${&levels_org+TextData_offset+TextData_name_offset})DIV2-5,F)CHR$141CHR$(131-F)${&levels_org+TextData_offset+TextData_name_offset};:ELSE:PRINTTAB(10,F);CHR$141;CHR$(131-F);"G H O U L S"
+FORF=1TO2:IF((?{&level_flags_text_name} AND{$LevelData_flags_text})<>0):IFLEN(${&levels_org+TextData_offset+TextData_name_offset})>0:PRINTTAB(20-LEN(${&levels_org+TextData_offset+TextData_name_offset})DIV2-5,F)CHR$141CHR$(131-F)${&levels_org+TextData_offset+TextData_name_offset};:ELSE:PRINTTAB(10,F);CHR$141;CHR$(131-F);"G H O U L S"
 NEXT:PRINTTAB(10,3)CHR$147"``,,,ppp,,,``"
 SOUND&11,2,5,50:SOUND&12,2,5,50:SOUND&13,2,6,50:FORF=1TO2500:NEXT 
 IFINKEY(-255)=0GOTO{$L1470}
@@ -143,7 +141,8 @@ IFA$="N"ORA$="n" THEN !&262=1 ELSE !&262=0{#?&262 is the value set by OSBYTE 210
 REM***** BRIEF *****
 PROCCLR
 {:L1470}
-PRINTTAB(0,5);:IFNOTTEXT:PRINTCHR$134"LEVEL INSTRUCTIONS HERE":ELSE:PRINT${&levels_org+TextData_offset+TextData_instructions_offset};:IFPOS<>0:PRINT
+PRINTTAB(0,5);:IF((?{&level_flags_text_instructions} AND{$LevelData_flags_text})<>0):IFLEN(${&levels_org+TextData_offset+TextData_instructions_offset})>0:PRINT${&levels_org+TextData_offset+TextData_instructions_offset};:ELSE:PRINTCHR$134"LEVEL INSTRUCTIONS HERE";
+IFPOS<>0:PRINT
 {#PRINTTAB(1,5)CHR$134"Situated in a deadly"CHR$129"haunted"CHR$134"mansion,"'CHR$134"you have to rescue your power jewels"'CHR$134"from the horrid ghosts that stole them."
 PRINT" "CHR$130"But this is not as easy as it sounds!"'CHR$130"On your trek up the house you are"'CHR$130"confronted with spooky"CHR$129"ghosts,"CHR$130"cracked"'CHR$130"and contracting floor boards, moving"
 PRINTCHR$130"platforms, springs, and deadly spikes."

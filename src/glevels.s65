@@ -14,7 +14,8 @@ level_data_0:
                 .text "SPECTRES' LAIR",13,13,13
                 .byte 4
                 .byte 4,23
-                .fill 35,0
+                .byte LevelData.flags.file_flag ; file has text
+                .fill 34,0
                 .encode ghouls_level_enc
                 ;      0001020304050607080910111213141516171819
                 .text '__....______....________________________' ;4
@@ -156,8 +157,30 @@ level_data_3:
                 .endencode
                 .cerror *-level_data_3!=size(LevelData),'oops'
 
-                ; Spare for text. Ignored unless the appropriate flags
-                ; are present, which for this set they aren't.
-                .fill size(TextData),0
-
-                .cerror *-levels_data!=level_data_pages*256,"glevels is the wrong size"
+text:
+                .cerror *-text!=TextData.instructions
+                .text 134," Situated in a deadly",129,"haunted",134,"mansion, "
+                .cerror *-text!=TextData.instructions+40,"oops"
+                .text 134,"you have to rescue your power jewels   "
+                .cerror *-text!=TextData.instructions+80,"oops"
+                .text 134,"from the horrid ghost that stole them. "
+                .cerror *-text!=TextData.instructions+120,"oops"
+                .byte 13
+                .fill 80,32
+                .cerror *-text!=TextData.ending,"oops"
+                .text "   GHOST GAVE UP.   "
+                .text "                    "
+                .text " YOU TOOK THE POWER "
+                .text "      JEWELS        "
+                .text " AND ESCAPED TO GET "
+                .text "   SOME MORE.....   "
+                .text "                    "
+                .text " AWARDED EXTRA LIFE "
+                .byte 13
+                .cerror *-text!=TextData.name,"oops"
+name:
+                .byte 13
+                .fill name+31-*
+                .fill 119
+                
+                .cerror *-levels_data!=level_data_pages*256,format("glevels is the wrong size: %d",*-(levels_data+level_data_pages*256))

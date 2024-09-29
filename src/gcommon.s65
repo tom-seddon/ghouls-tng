@@ -57,7 +57,12 @@ map: .fill level_width*level_height
                 .cerror size(LevelData)!=575,'oops'
 
 TextData: .struct
-                .fill 512
+instructions: .fill 201
+ending: .fill 161
+name: .fill 31
+
+                ; bit wasteful!
+                .fill 119
                 .endstruct
                 .cerror size(TextData)!=512
 
@@ -74,6 +79,12 @@ LevelData_ghost_max_x_offset=LevelData.ghost_max_x
 LevelData_ghost_max_y_offset=LevelData.ghost_max_y
 LevelData_flags_has_ghost_rect=LevelData.flags.has_ghost_rect
 LevelData_flags_no_standard_treasure=LevelData.flags.no_standard_treasure
+LevelData_flags_file_flag=LevelData.flags.file_flag
+
+TextData_offset=4+4*size(LevelData)
+TextData_instructions_offset=TextData.instructions
+TextData_ending_offset=TextData.ending
+TextData_name_offset=TextData.name
                 
 ; level_data_size=level_width*level_height
 ; level_name_x_offset=level_data_size

@@ -500,7 +500,16 @@ right as per the original game.
 
 ** Text data
 
-TBC
+5*40+1 = 201 bytes for instruction text
+
+8*20+1 = 161 bytes for ending text
+
+30+1 = 31 bytes for level name
+
+201+161+31=393
+
+Decided against packing them in the end. The editor coding was
+supremely tedious.
 
 ** Object types
 

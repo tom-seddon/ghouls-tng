@@ -1,4 +1,5 @@
 HIMEM={&gmc_org}
+TEXT=(?{&levels_org+4+LevelData_flags_offset} AND{$LevelData_flags_file_flag})<>0
 DIMHI(10),N$(10):FORF=0TO9:N$(F)=CHR$132+"Ghoul Basher "+STR$(F+1):HI(F)=(20-F)*10:NEXT
 {?not debug}ONERRORGOTO{$L1920}
 {?debug}ONERROR:MODE7:REPORT:PRINT" at line ";ERL:END
@@ -52,7 +53,7 @@ ENVELOPE1,2,-1,1,-1,1,1,1,0,-3,0,-1,126,90:RESTORE{$L1830}:FORF=1TO39:READP
 SOUND&11,1,P,4:SOUND&12,1,P+1,4:SOUND&13,1,P-1,4:FORK=1TO200:NEXT
 NEXT:FORF=1TO4000:NEXT:CALL{&reset_envelopes}
 ?{&L0AF2}=?{&L0AF2}-5:IF?{&L0AF2}<20?{&L0AF2}=20
-SC=SC+1:IFSC=5:PROCtower:GOTO{$L100}
+SC=SC+1:IFSC=5:PROCtower(TRUE):GOTO{$L100}
 *FX15
 SOUND&11,2,2,50:SOUND&12,2,130,50:FORF=0TO15STEP4:F!&5CE0=F!{&sprite_ghost_happy_row0}:F!&5CF0=F!{&sprite_ghost_happy_row0}:F!&5E20=F!{&sprite_ghost_happy_row1}:F!&5E30=F!{&sprite_ghost_happy_row1}:NEXT
 FORF=1TO1000:NEXT:SOUND&10,1,2,2:FORF=0TO15STEP4:F!&5CD0=0:F!&5E10=0:NEXT:FORF=0TO15STEP4:F!&5A50=F!{&sprite_pl_facing}:F!&5B90=F!{&sprite_pl_facing+16}:NEXT:FORF=1TO500:NEXT:FORF=0TO15STEP4:F!&5A50=0:F!&5B90=0:NEXT
@@ -63,7 +64,8 @@ VDU30:FORF=0TO31:VDU11:*FX19
 NEXT:CLS
 CLS:GOTO{$L100}
 END
-DEFPROCtower:G=6:F=16:GO=GO+2:IFGO=6GO=4
+DEFPROCtower(FULL):G=6:F=16:GO=GO+2:IFGO=6GO=4
+IFNOTFULL:GOTO{$finish_sequence}
 FORG=0TO4STEP2:N=G?{&ghosts_table+1}*256+G?{&ghosts_table}:IFN>&5800 FORF=0TO15STEP4:F!N=0:F!(N+320)=0:NEXT, ELSENEXT
 SOUND&10,-15,7,255:FORJ=7TO0STEP-1:SOUND&11,-8,J*16,1:FORH=1TO200:NEXT
 FORG=0TO4STEP2:N=G?{&ghosts_table+1}*256+G?{&ghosts_table}:IFN>&5800 FORF=J TO15STEPJ+1:F?N=F?{&sprite_ghost_happy_row0}:F?(N+320)=F?{&sprite_ghost_angry_row1}:NEXT
@@ -72,9 +74,8 @@ FORF=1TO1000:NEXT:FORH=1TO5:SOUND&10,1,2,2:FORF=0TO15STEP4:F!&5CD0=0:F!&5E10=0:N
 GCOL0,2:MOVE0,952:PLOT21,1279,952
 FORF=0TO15STEP4:F!&5CD0=F!{&sprite_pl_facing}:F!&5E10=F!{&sprite_pl_facing+16}:NEXT:FORF=1TO200:NEXT
 NEXT:FORF=0TO15STEP4:F!&5CD0=F!{&sprite_pl_right_0}:F!&5E10=F!{&sprite_pl_right_0+16}:NEXT
-FORF=1TO3000:NEXT:CLS:VDU28,0,9,19,0,19,3,6;0;:COLOUR3:PRINTTAB(2,1);:IFGO-2=0PRINT" GHOST GAVE UP." ELSEPRINT" GHOSTS GAVE UP"
-PRINTTAB(1,3);"YOU TOOK THE POWER       JEWELS"'" AND ESCAPED TO GET    SOME MORE....."
-COLOUR3:PRINT'" AWARDED EXTRA LIFE"
+{:finish_sequence}
+FORF=1TO3000:NEXT:CLS:VDU28,0,9,19,0,19,3,6;0;:COLOUR3:PRINTTAB(0,1);:IFTEXT:IFLEN(${$levels_org+TextData_offset+TextData_ending_offset})>0:PRINT${$levels_org+TextData_offset+TextData_ending_offset};:ELSE:PRINT"COMPLETION TEXT HERE";
 FORG=-1TO-15STEP-.02:SOUND&11,G,0,30:SOUND&12,G,0,30:SOUND&13,G,2,30:NEXT
 VDU19,1,0;0;19,2,0;0;:GCOL0,2:MOVE300,700:FORF=0TO360STEP20:IFF=80ORF=120GCOL0,1 ELSEGCOL0,2
 IFF=100GCOL0,0
@@ -129,7 +130,9 @@ GOTO{$L70}
 REM*** INSTRUCTIONS **
 VDU22,7:VDU23,0,11;0;0;0;
 *FX15
-FORF=1TO2:PRINTTAB(10,F);CHR$141;CHR$(131-F);"G H O U L S":NEXT:PRINTTAB(10,3)CHR$147"``,,,ppp,,,``"
+TITLE=TEXT:IFTITLE:IFLEN(${&levels_org+TextData_offset+TextData_name_offset})=0:TITLE=FALSE
+FORF=1TO2:IFTITLE:PRINTTAB(20-LEN(${&levels_org+TextData_offset+TextData_name_offset})DIV2-5,F)CHR$141CHR$(131-F)${&levels_org+TextData_offset+TextData_name_offset};:ELSE:PRINTTAB(10,F);CHR$141;CHR$(131-F);"G H O U L S"
+NEXT:PRINTTAB(10,3)CHR$147"``,,,ppp,,,``"
 SOUND&11,2,5,50:SOUND&12,2,5,50:SOUND&13,2,6,50:FORF=1TO2500:NEXT 
 IFINKEY(-255)=0GOTO{$L1470}
 FORF=10TO11:PRINTTAB(0,F)CHR$141CHR$130"Do you want sound in the game?"CHR$134:NEXT
@@ -140,8 +143,9 @@ IFA$="N"ORA$="n" THEN !&262=1 ELSE !&262=0{#?&262 is the value set by OSBYTE 210
 REM***** BRIEF *****
 PROCCLR
 {:L1470}
-PRINTTAB(1,5)CHR$134"Situated in a deadly"CHR$129"haunted"CHR$134"mansion,"'CHR$134"you have to rescue your power jewels"'CHR$134"from the horrid ghosts that stole them."
-PRINTTAB(0,8)" "CHR$130"But this is not as easy as it sounds!"'CHR$130"On your trek up the house you are"'CHR$130"confronted with spooky"CHR$129"ghosts,"CHR$130"cracked"'CHR$130"and contracting floor boards, moving"
+PRINTTAB(0,5);:IFNOTTEXT:PRINTCHR$134"LEVEL INSTRUCTIONS HERE":ELSE:PRINT${&levels_org+TextData_offset+TextData_instructions_offset};:IFPOS<>0:PRINT
+{#PRINTTAB(1,5)CHR$134"Situated in a deadly"CHR$129"haunted"CHR$134"mansion,"'CHR$134"you have to rescue your power jewels"'CHR$134"from the horrid ghosts that stole them."
+PRINT" "CHR$130"But this is not as easy as it sounds!"'CHR$130"On your trek up the house you are"'CHR$130"confronted with spooky"CHR$129"ghosts,"CHR$130"cracked"'CHR$130"and contracting floor boards, moving"
 PRINTCHR$130"platforms, springs, and deadly spikes."
 PRINTCHR$130"There is also a nasty spider that jumps"CHR$130"up and down ready to catch you!!"
 PRINT" "CHR$131"By eating one of the stray power"'CHR$131"jewels you can over power and paralyse"'CHR$131"the ghosts for a few seconds helping"'CHR$131"you in your quest...."
@@ -158,6 +162,7 @@ FORF=20TO21:PRINTTAB(1,F)CHR$141CHR$133"DO YOU WANT TO SEE GAME OBJECTS?";TAB(13
 {:instructions_yn}
 *FX15,1
 I$=GET$:IFI$="Y" ORI$="y"VDU22,5:VDU23,0,11;0;0;0;:PROCSHOW
+{?debug}IFI$="C"ORI$="c":VDU22,5:VDU23;11;0;0;0;:PROCtower(FALSE):GOTO{$L100}
 {?debug}IFI$="G"ORI$="g":GOTO{$more_ghosts}
 {?debug}SC1=1:IFI$>="1"ANDI$<="4":SC1=VALI$
 GOTO{$L70}

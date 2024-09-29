@@ -3,10 +3,11 @@
 ;-------------------------------------------------------------------------
 
 max_gmc_pages=18
-level_data_pages=10
+level_data_pages=11
 
 himem=$5800
 levels_org=himem-level_data_pages*256
+                .cerror (<levels_org)!=0
 gmc_org=levels_org-max_gmc_pages*256
 
 ; Importing only happens in Mode 7. Plenty of space free!
@@ -38,6 +39,9 @@ pl_start_y: .fill 1
 flags: .block
 has_ghost_rect=1
 no_standard_treasure=2
+
+; Level 1 - set if file has text
+file_flag=4
                 .fill 1
                 .endblock
 ; only present if has_ghost_rect flag set. Otherwise, use default
@@ -51,6 +55,11 @@ map: .fill level_width*level_height
                 .endstruct
 
                 .cerror size(LevelData)!=575,'oops'
+
+TextData: .struct
+                .fill 512
+                .endstruct
+                .cerror size(TextData)!=512
 
 ; for BASIC's benefit. Don't know how to get 64tass to export these.
 LevelData_size=size(LevelData)

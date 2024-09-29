@@ -158,6 +158,6 @@ level_data_3:
 
                 ; Spare for text. Ignored unless the appropriate flags
                 ; are present, which for this set they aren't.
-                .fill 256,0
+                .fill size(TextData),0
 
                 .cerror *-levels_data!=level_data_pages*256,"glevels is the wrong size"

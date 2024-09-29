@@ -84,8 +84,6 @@ object_var2s:
 
 ;-------------------------------------------------------------------------
 
-sprite_8x8: 
-                
 gmc_start:
                 
                 .if editor
@@ -2690,6 +2688,8 @@ ed_text_max_y: .fill 1
 ed_text_result: .block
 changed=$80
 handled=$40                     ; if not set, see ?ed_text_input_char
+undo=$20
+quit=$10
                 .fill 1
                 .endblock
 ed_text_input_char: .fill 1
@@ -3165,7 +3165,7 @@ x_left: .byte 0
 
 ed_levels_instruction_text: .proc
 text_y=4
-text_width=39
+text_width=40
 text_height=4
 text_addr=$7c00+text_y*40
                 .cerror text_height*40>=256 ; lazy coding, sorry
@@ -3173,28 +3173,28 @@ text_addr=$7c00+text_y*40
                 jsr ed_main_menu_banner
 
                 jsr ed_print
-                .text '*<'
+                .text '<'
                 .fill text_width-2,'-'
                 .text '>'
                 .byte 31,0,text_y+text_height
-                .text '*<'
+                .text '<'
                 .fill text_width-2,'-'
                 .text '>'
                 .byte 0
 
                 jsr ed_text_clear
-
+                
                 jsr ed_text_reset
                 lda #text_width-1
                 sta ed_text_max_x
                 lda #text_height-1
                 sta ed_text_max_y
 
+                ; jsr undo
+
                 ; Get things started...
                 lda #ed_text_result.changed
                 sta ed_text_result
-
-                jsr redraw_colours
 
 edit_loop:
                 lda ed_text_result
@@ -3216,7 +3216,6 @@ text_drawn:
                 jsr ed_print_hex
                 
                 ldx ed_text_x
-                inx
                 lda ed_text_y
                 clc
                 adc #text_y
@@ -3237,38 +3236,11 @@ text_drawn:
                 bcs not_colour
 
                 jsr ed_text_edit.insert
+not_colour:
                 jmp edit_loop
                 
-not_colour:
-                cmp #145
-                bcc not_line_colour
-                cmp #145+text_height
-                bcs not_line_colour
-
-                and #7
-                tax
-                ; -1 as line 0 is f1
-                ldy line_colours-1,x
-                iny
-                cpy #8
-                bcc +
-                ldy #1
-+
-                tya
-                sta line_colours-1,x
-
-                jsr redraw_colours
-                jmp edit_loop
-
-not_line_colour:
-                jmp edit_loop
-
 redraw_text: .proc
-                ldx #0          ; src offset
-                ldy #0          ; dest offset
-row:
-                lda #text_width
-                sta x_left
+                ldx #0
 loop:
                 lda ed_text_buffer,x
                 and #$7f
@@ -3277,40 +3249,28 @@ loop:
                 cmp #1
                 bcc space
                 cmp #7+1
-                bcs store
+                bcc store
 space:
                 lda #32
 store:
                 ; +1 as the left edge is column 1
-                sta text_addr+1,y
+                sta text_addr,x
 
                 inx
                 cpx #text_height*text_width
-                beq done
-
-                iny
-
-                dec x_left
                 bne loop
-
-                iny             ; skip another char
-                jmp row
-done:
                 rts
-
-x_left: .byte 0
                 .endproc
 
-redraw_colours:
-                .for _y=0,_y<text_height,_y+=1
-                lda line_colours+_y
-                and #7
-                sta text_addr+_y*40
-                .endfor
-                rts
+; undo: .proc
+;                 ldy #>(levels_org+$900)
+;                 ldx #TextData.instructions_text
+;                 jsr ed_bit_read_init
+; row:
+;                 jsr ed_read_
                 
-line_colours: .fill text_height,6
-
+                ;.endproc     
+                
                 .endproc
 
 ;-------------------------------------------------------------------------
@@ -3383,6 +3343,10 @@ ed_text_edit: .proc
                 beq down
                 cmp #139
                 beq up
+                ; cmp #26
+                ; beq undo
+                ; cmp #27
+                ; beq escape
 
                 cmp #127
                 beq backwards_delete
@@ -3395,6 +3359,14 @@ unhandled:
                 and #~ed_text_result.handled
                 sta ed_text_result
                 rts
+
+undo:
+                lda #ed_text_result.undo
+                jmp set_text_result_flags
+
+escape:
+                lda #ed_text_result.quit
+                jmp set_text_result_flags
 
 ; puts result in ed_mul_result+0
 get_offset:
@@ -3433,8 +3405,9 @@ insert_loop:
                 jsr right
 
 changed:
-                lda ed_text_result
-                ora #ed_text_result.changed
+                lda #ed_text_result.changed
+set_text_result_flags:
+                ora ed_text_result
                 sta ed_text_result
                 rts
 

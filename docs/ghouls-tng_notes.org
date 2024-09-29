@@ -654,10 +654,10 @@ This suggests as a first draft memory map:
 |   37 |                 |                                     |
 |   38 |                 |                                     |
 |   39 |                 |                                     |
-|   3a |                 |                                     |
-|   3b | BASIC stack     | HIMEM=&3C00                         |
+|   3a | BASIC stack     | HIMEM=&3B00                         |
 |------+-----------------+-------------------------------------|
-|   3c | GMC             |                                     |
+|   3b | GMC             |                                     |
+|   3c |                 |                                     |
 |   3d |                 |                                     |
 |   3e |                 |                                     |
 |   3f |                 |                                     |
@@ -674,9 +674,9 @@ This suggests as a first draft memory map:
 |   4a |                 |                                     |
 |   4b |                 |                                     |
 |   4c |                 |                                     |
-|   4d |                 |                                     |
 |------+-----------------+-------------------------------------|
-|   4e | Levels          |                                     |
+|   4d | Levels          |                                     |
+|   4e |                 |                                     |
 |   4f |                 |                                     |
 |   50 |                 |                                     |
 |   51 |                 |                                     |
@@ -784,11 +784,15 @@ Lines are cyan (134). "haunted" is red (129).
 
 Default ending text:
 
-: 01234567890123456789
-:  YOU TOOK THE POWER
-:       JEWELS
-:  AND ESCAPED TO GET
-:    SOME MORE.....
+: 01234567890123456789|
+:    GHOST GAVE UP.   |1
+:                     |2
+:  YOU TOOK THE POWER |3
+:       JEWELS        |4
+:  AND ESCAPED TO GET |5
+:    SOME MORE.....   |6
+:                     |7
+:  AWARDED EXTRA LIFE |8
 
 Budgets:
 
@@ -821,5 +825,8 @@ To print this stuff, have a routine that unpacks a stream of 7-bit
 chars and prints via OSWRCH, with chars<32 being printed as 128+N so
 that Mode 7 control codes can get through. Don't allow embedded
 newlines or anything, as the text has a fixed budget vertically.
+
+: .pack_text x"06"..b" Situated in a deadly"..x"01"..b"haunted"..x"06"..b"mansion, "..x"06".."you have to rescue your power jewels   "..x"06"..b"from the horrid ghost that stole them.                                         "
+: .pack_text b" YOU TOOK THE POWER       JEWELS         AND ESCAPED TO GET    SOME MORE.....                       "
 
 * EOF

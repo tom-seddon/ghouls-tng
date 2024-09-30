@@ -1,3 +1,4 @@
+HIMEM={&gmc_org}
 CLOSE#0
 A%=&EA:X%=0:Y%=255:IF((USR&FFF4)AND&FF00)DIV256<>0:P."This game is not compatible with a second processor.":END
 MODE5

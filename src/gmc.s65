@@ -4021,30 +4021,43 @@ replace_input_loop:
 
                 sec
                 sbc #'1'
-                jsr ed_prepare_for_level_access
+                sta replace_level_index
 
+                lda import_level_index
+                jsr prepare_for_import_level_access
+                lda ed_level_addr+0
+                sta import_src_addr+0
+                lda ed_level_addr+1
+                sta import_src_addr+1
+
+                lda replace_level_index
+                jsr ed_prepare_for_level_access
                 lda ed_level_addr+0
                 sta import_dest_addr+0
                 lda ed_level_addr+1
                 sta import_dest_addr+1
-
-                lda import_level_index
-                jsr prepare_for_import_level_access
 
                 lda #<size(LevelData)
                 sta import_counter+0
                 lda #>size(LevelData)
                 sta import_counter+1
 
-replace_loop:
-                ldy #0
+                ; Save text flag. It belongs to the file rather than
+                ; the imported level. (Yes, this arrangement sucks...)
+                ldy #LevelData.flags
                 lda (ed_level_addr),y
+                and #LevelData.flags.text
+                pha
+
+replace_loop:
+import_src_addr=*+1
+                lda $ffff
 import_dest_addr=*+1
                 sta $ffff
 
-                inc ed_level_addr+0
+                inc import_src_addr+0
                 bne +
-                inc ed_level_addr+1
+                inc import_src_addr+1
 +
 
                 inc import_dest_addr+0
@@ -4062,6 +4075,17 @@ import_dest_addr=*+1
 
                 ora import_counter+1
                 bne replace_loop
+
+                ; Restore text flag.
+                ldy #LevelData.flags
+                lda (ed_level_addr),y
+                and #~LevelData.flags.text&$ff
+                sta (ed_level_addr),y
+                pla
+                ora (ed_level_addr),y
+                sta (ed_level_addr),y
+
+                ;jsr osrdch
 
                 jmp ed_main_loop
 
@@ -4081,6 +4105,8 @@ prepare_for_import_level_access:
 
                 rts
 
+replace_level_index:
+                .byte 0
 import_level_index:
                 .byte 0
 import_counter:
@@ -4114,6 +4140,7 @@ clear_levels_data_loop:
 
                 lda #$ff        ;load file
                 jsr levels_file_osfile
+
                 jmp ed_main_loop
                 
 save_levels:

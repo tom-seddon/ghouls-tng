@@ -2652,6 +2652,7 @@ ed_key_flag_down=$40
 ed_key_flag_rept_4=$20
 ed_key_flag_rept_8=$10
 
+ed_last_file_name=$600          ; quite safe when in the editor
 ed_file_name_buffer=$700        ; quite safe when in the editor
 ed_oscli_buffer=$700            ; quite safe wgcomhen in the editor
 ed_input_buffer=$700            ; quite safe when in the editor
@@ -2822,9 +2823,33 @@ ed_main_menu: .proc
                 
                 jsr ed_print_brk_message
                 jsr osnewl
-                jsr osnewl
 brk_checked:
+                jsr ed_print
+                .text 133,'File:',131
+                .byte 0
 
+                lda ed_last_file_name+0
+                cmp #13
+                bne print_last_file_name
+
+                jsr ed_print
+                .text '(data in memory)',10,13
+                .byte 0
+                jmp print_options
+
+print_last_file_name:
+                ldx #0
+print_last_file_name_loop:
+                lda ed_last_file_name,x
+                cmp #13
+                beq last_file_name_printed
+                jsr oswrch
+                inx
+                bne print_last_file_name_loop
+last_file_name_printed:
+                jsr osnewl
+
+print_options:
                 jsr ed_print
                 .text 133,'T:',131,'Set levels title',10,13
                 .byte 0
@@ -4121,7 +4146,11 @@ load_levels:
 
                 jsr enter_file_name
 
-                jsr init_levels_file_osfile_block_for_load_or_save
+                ldx #<import_levels_org
+                ldy #>import_levels_org
+                jsr init_levels_file_osfile_block
+                
+                ;jsr init_levels_file_osfile_block_for_load_or_save
 
                 ; Clear out the buffer, in case the loaded levels are
                 ; the old type with the slightly smaller data.
@@ -4129,7 +4158,7 @@ load_levels:
                 ldx #0
 clear_levels_data_loop:
                 .for _i=0,_i<level_data_pages,_i+=1
-                sta levels_org+_i*256,x
+                sta import_levels_org+_i*256,x
                 .endfor
                 inx
                 bne clear_levels_data_loop
@@ -4140,6 +4169,26 @@ clear_levels_data_loop:
 
                 lda #$ff        ;load file
                 jsr levels_file_osfile
+
+                ; If it didn't crap out with a BRK, copy the level
+                ; data from the import buffer.
+                ldx #0
+copy_levels_data_loop:
+                .for _i=0,_i<level_data_pages,_i+=1
+                lda import_levels_org+_i*256,x
+                sta levels_org+_i*256,x
+                .endfor
+                inx
+                bne copy_levels_data_loop
+
+                ; Copy the file name buffer.
+                ldx #0
+-
+                lda ed_file_name_buffer,x
+                sta ed_last_file_name,x
+                inx
+                bne -
+                
 
                 jmp ed_main_loop
                 
@@ -6277,23 +6326,29 @@ loop:
 done:
 
                 jsr ed_print
-                .text 10,13,129,'(Error addr: &',0
+                .text 129,'(&'
+                .byte 0
+
+                ldy #0
+                lda (ed_brk_addr),y
+                jsr ed_print_hex
+                jsr ed_print
+                .text '; &'
+                .byte 0
+
                 lda ed_brk_addr+1
                 jsr ed_print_hex
                 lda ed_brk_addr+0
                 jsr ed_print_hex
                 jsr ed_print
-                .text ')',10,13,129,'(Error number: &',0
-                ldy #0
-                lda (ed_brk_addr),y
-                jsr ed_print_hex
-                jsr ed_print
-                .text ')',10,13,0
+                .text ')',10,13
+                .byte 0
                 
                 lda #0
                 sta ed_brk_addr+0
                 sta ed_brk_addr+1
                 rts
+
                 .endproc
                 
 ;-------------------------------------------------------------------------
@@ -6315,6 +6370,17 @@ ed_one_time_init: .proc
                 inx
                 cpx #ed_zp_end
                 bne -
+
+                lda #13
+                sta ed_last_file_name+0
+                
+                ldx #1
+                lda #0
+-
+                sta ed_last_file_name,x
+                inx
+                bne -
+
 
                 lda #$80
                 sta ed_test_pl_start_x
@@ -6339,6 +6405,16 @@ ed_one_time_init: .proc
                 ldy #>load_glevels
                 jsr oscli
 
+                ; and sneak the file name into the last loaded file
+                ; buffer.
+                ldx #0
+-
+                lda glevels_name,x
+                sta ed_last_file_name,x
+                inx
+                cpx #size(glevels_name)
+                bne -
+
 levels_loaded:
                 rts
 
@@ -6346,7 +6422,8 @@ run_gudgs:
                 .text '/$.GUDGS',13
 
 load_glevels:
-                .text 'LOAD $.GLEVELS',13
+                .text 'LOAD '
+glevels_name: .text '$.GLEVELS',13
                 .endproc
 
 ;-------------------------------------------------------------------------

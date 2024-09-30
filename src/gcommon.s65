@@ -173,5 +173,5 @@ ed_flags_masked=$40 ;set if this object should have a masked/dimmed
 
 ;-------------------------------------------------------------------------
 
-levels_header_magic=$0e37d760
+levels_header_magic=$0e73d760
                 

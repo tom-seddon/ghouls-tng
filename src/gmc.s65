@@ -4138,6 +4138,15 @@ import_counter:
                 .word 0
 
                 .endproc
+
+save_file_name:
+                ldx #0
+-
+                lda ed_file_name_buffer,x
+                sta ed_last_file_name,x
+                inx
+                bne -
+                rts
                 
 load_levels:
                 jsr ed_print
@@ -4180,16 +4189,7 @@ copy_levels_data_loop:
                 .endfor
                 inx
                 bne copy_levels_data_loop
-
-                ; Copy the file name buffer.
-                ldx #0
--
-                lda ed_file_name_buffer,x
-                sta ed_last_file_name,x
-                inx
-                bne -
-                
-
+                jsr save_file_name
                 jmp ed_main_loop
                 
 save_levels:
@@ -4203,12 +4203,14 @@ save_levels:
 
                 lda #$00        ;save file
                 jsr levels_file_osfile
+                jsr save_file_name
                 jmp ed_main_loop
 
 levels_file_osfile:
                 ldx #<levels_file_osfile_block
                 ldy #>levels_file_osfile_block
-                jmp osfile
+                jsr osfile
+                rts
 
 init_levels_file_osfile_block_for_load_or_save:
                 ldx #<levels_org

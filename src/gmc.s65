@@ -341,7 +341,7 @@ bonus_update_timer:.byte 2
 ;spider_speed: .byte $C
 ;spider_update_timer: .byte $4D
 ;spider_direction: .byte 1
-L0AEE: .byte 0                  ;some kind of sound timer
+L0AEE: .byte 0                  ;power pill timer??
 ;conveyor_direction: .byte 1
 ;conveyor_update_timer: .byte $4D
 L0AF1: .byte 1                  ;update timer of some kind
@@ -2636,7 +2636,7 @@ test_key:
                 .if editor
 ;-------------------------------------------------------------------------
 
-ed_keys=[key_z,key_x,key_slash,key_colon,key_return,key_delete,key_tab,key_r,key_s,key_escape,key_left,key_right,key_up,key_down,key_c,key_g,key_t]
+ed_keys=[key_z,key_x,key_slash,key_colon,key_return,key_delete,key_tab,key_r,key_s,key_escape,key_left,key_right,key_up,key_down,key_c,key_g,key_t,key_3]
 
 ed_key_index: .function k
                 .for _i:=0,_i<len(ed_keys),_i+=1
@@ -2680,6 +2680,7 @@ ed_cur_ovalue: .fill 1
 ; should be used.
 ed_test_pl_start_x: .fill 1
 ed_test_pl_start_y: .fill 1
+ed_test_num_ghosts: .fill 1     ; 0-3
 ed_random_frac_table_index: .fill 1
 ed_random_ghost_addr_table_index: .fill 1
 ed_text_x: .fill 1
@@ -3909,6 +3910,10 @@ edit_level:
                 sec
                 ror ed_test_pl_start_x
 
+                ; Set 1 ghost.
+                lda #1
+                sta ed_test_num_ghosts
+
                 jmp ed_editor
 
 is_ascii_level_number:
@@ -4598,6 +4603,7 @@ _..=[key_action(key_tab,ed_key_flag_newly_down,test_level)]
 _..=[key_action(key_c,ed_key_flag_newly_down,next_colour)]
 _..=[key_action(key_g,ed_key_flag_newly_down,set_ghost_rect)]
 _..=[key_action(key_t,ed_key_flag_newly_down,toggle_no_standard_treasure)]
+_..=[key_action(key_3,ed_key_flag_newly_down,ghost_count)]
 key_actions=_
 
 key_indexes: .byte key_actions.key_index
@@ -4605,6 +4611,24 @@ key_masks: .byte key_actions.mask
 key_routines_lo: .byte <key_actions.routine
 key_routines_hi: .byte >key_actions.routine
 
+ghost_count: .proc
+                ; the shortcut key for this is actually '#', SHIFT+3
+                bit ed_shift_pressed
+                bpl done
+
+                ldx ed_test_num_ghosts
+                inx
+                cpx #3+1
+                bcc +
+                ldx #0
++
+                stx ed_test_num_ghosts
+                
+                jsr redraw
+done:
+                rts
+                .endproc
+                
 toggle_no_standard_treasure: .proc
                 ldy #LevelData.flags
                 lda (ed_level_addr),y
@@ -4936,6 +4960,15 @@ colour3_physical_colour:
                 eor #LevelData.flags.no_standard_treasure ; *sigh*
                 jsr print_yn
 
+                jsr ed_print
+                .text ' G#:'
+                .byte 0
+
+                clc
+                lda ed_test_num_ghosts
+                adc #'0'
+                jsr oswrch
+
 draw_level:
                 jsr ed_draw_level
 
@@ -5179,94 +5212,37 @@ got_start_pos:
 
                 ; Reset ghosts table
                 ldx #7
--
+reset_ghosts_table_loop:
                 lda #0
                 sta ghosts_table,x
                 dex
-                bpl -
-                
-                ldy #LevelData.flags
-                lda (ed_level_addr),y
-                and #LevelData.flags.has_ghost_rect
-                beq init_default_random_ghost
+                bpl reset_ghosts_table_loop
 
-                ; Pick position in ghost rect
-
-                ldy #LevelData.ghost_max_x
-                lda (ed_level_addr),y
-                ldy #LevelData.ghost_min_x
-                sec
-                sbc (ed_level_addr),y ; ghost rect width
-                jsr mul_random_frac   ; A = ghost X offset
-                clc
-                adc (ed_level_addr),y ; A = ghost X
-                pha             ; save ghost X
-
-                ldy #LevelData.ghost_max_y
-                lda (ed_level_addr),y
-                ldy #LevelData.ghost_min_y
-                sec
-                sbc (ed_level_addr),y ; ghost rect_height
-                jsr mul_random_frac   ; A = ghost Y offset
-                clc
-                adc (ed_level_addr),y ; A = ghost Y
-                tay             ; Y = ghost Y
-                pla             ; restore ghost X
-                tax             ; X = ghost X
-                
-                ; lda (ed_level_addr),y
-                ; sec
-                ; tax
-                ; ldy #LevelData.ghost_min_y
-                ; lda (ed_level_addr),y
-                ; tay
-                jsr ed_convert_to_game_coordinates
-                ; dey             ; ??? - not sure why necessary
-                jsr ed_get_screen_write_addr
-
+                ; Fill ghosts table
+                lda ed_test_num_ghosts
+                beq ghosts_table_filled
+                asl a
+                tax
+fill_ghosts_table_loop:
+                jsr ed_get_random_ghost_address
                 lda ed_write_addr+0
-                sta ghosts_table+0
+                sta ghosts_table+0-2,x
                 lda ed_write_addr+1
-                sta ghosts_table+1
-                jmp init_level
-
-mul_random_frac: .proc
-                sta ed_mul_a
-                ; get random 1.7 fixed point fraction - min $00 (0.0),
-                ; max $80 (1.0)
-                ldx ed_random_frac_table_index
-                lda ed_random_frac_table,x
-                inx
-                cpx #size(ed_random_frac_table)
-                bcc +
-                ldx #0
-+
-                stx ed_random_frac_table_index
-                sta ed_mul_b
-                jsr ed_mul_8x8_16
-                lda ed_mul_result+0
-                ldx #7
--
-                lsr ed_mul_result+1
-                ror a
+                sta ghosts_table+1-2,x
                 dex
-                bne -
-                rts
-                .endproc
+                dex
+                bne fill_ghosts_table_loop
+ghosts_table_filled:
 
-init_default_random_ghost:
-                ldx ed_random_ghost_addr_table_index
-                inc ed_random_ghost_addr_table_index
-                inc ed_random_ghost_addr_table_index ; it's a 2-byte
-                                                     ; table
-                lda ed_random_ghost_addr_table+0,x
-                sta ghosts_table+0
-                lda ed_random_ghost_addr_table+1,x
-                sta ghosts_table+1
-                ; fall through to init_level
-                
 init_level:
-                ldx #0
+                ; the GO value needs to be 0 (no spider2) or !=0
+                ; (spider2).
+                ldx #0          ; assume 1 or 0 ghosts - no spider2
+                ldx ed_test_num_ghosts
+                cmp #2
+                bcc +           ; taken if 1 or 0 ghosts
+                inx             ; X=1
++
                 jsr entry_init_level
 
                 jsr copy_data_behind_player
@@ -5467,7 +5443,99 @@ entry_game_2:
                 rts
 
                 .endproc
+
+;-------------------------------------------------------------------------
+;
+; Entry: (ed_level_addr) = current level
+;
+; Exit:
+; (ed_write_addr) = a random ghost address
+;
+; preserves: X
+ed_get_random_ghost_address: .proc
+                ldy #LevelData.flags
+                lda (ed_level_addr),y
+                and #LevelData.flags.has_ghost_rect
+                beq default_ghost
+
+                ; Pick position in ghost rect
+
+                txa
+                pha
+
+                ldy #LevelData.ghost_max_x
+                lda (ed_level_addr),y
+                ldy #LevelData.ghost_min_x
+                sec
+                sbc (ed_level_addr),y ; ghost rect width
+                jsr mul_random_frac   ; A = ghost X offset
+                clc
+                adc (ed_level_addr),y ; A = ghost X
+                pha             ; save ghost X
+
+                ldy #LevelData.ghost_max_y
+                lda (ed_level_addr),y
+                ldy #LevelData.ghost_min_y
+                sec
+                sbc (ed_level_addr),y ; ghost rect_height
+                jsr mul_random_frac   ; A = ghost Y offset
+                clc
+                adc (ed_level_addr),y ; A = ghost Y
+                tay             ; Y = ghost Y
+                pla             ; restore ghost X
+                tax             ; X = ghost X
                 
+                ; lda (ed_level_addr),y
+                ; sec
+                ; tax
+                ; ldy #LevelData.ghost_min_y
+                ; lda (ed_level_addr),y
+                ; tay
+                jsr ed_convert_to_game_coordinates
+                ; dey             ; ??? - not sure why necessary
+                jsr ed_get_screen_write_addr
+
+                pla
+                tax
+
+                rts
+
+default_ghost:
+                ldy ed_random_ghost_addr_table_index
+                inc ed_random_ghost_addr_table_index
+                inc ed_random_ghost_addr_table_index ; it's a 2-byte
+                                                     ; table
+                lda ed_random_ghost_addr_table+0,y
+                sta ed_write_addr+0
+                lda ed_random_ghost_addr_table+1,y
+                sta ed_write_addr+1
+
+                rts
+                
+mul_random_frac:
+                sta ed_mul_a
+                ; get random 1.7 fixed point fraction - min $00 (0.0),
+                ; max $80 (1.0)
+                ldx ed_random_frac_table_index
+                lda ed_random_frac_table,x
+                inx
+                cpx #size(ed_random_frac_table)
+                bcc +
+                ldx #0
++
+                stx ed_random_frac_table_index
+                sta ed_mul_b
+                jsr ed_mul_8x8_16
+                lda ed_mul_result+0
+                ldx #7
+-
+                lsr ed_mul_result+1
+                ror a
+                dex
+                bne -
+                rts
+                .endproc
+
 ;-------------------------------------------------------------------------
 ;
 ; Draw current level.
@@ -6592,6 +6660,8 @@ ed_osbyte_yff:
 ; Exit: 
 ;
 ; ed_mul_result.w = result
+;
+; Preserves: Y
 ed_mul_test:
                 stx ed_mul_a
                 sty ed_mul_b

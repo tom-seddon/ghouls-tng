@@ -81,6 +81,8 @@ When editing:
 - `TAB` lets you test the level. If the test start position is set,
   the player starts there. Testing ends with `ESCAPE` or when you die
   or complete the level
+- ` SHIFT+3` (`#`) cycles the number of ghosts when testing in the
+  editor
 - `SHIFT+TAB` tests the level, always using the level start position
 - `ESCAPE` takes you back to the main menu
 
@@ -103,7 +105,10 @@ The bottom row contains some indicators:
 - `ST` ("standard treasure") - `Y` or `N` depending no whether there's
   a standard goal in the top right (as per the original levels - the
   game will automatically arrange for this to appear), or whether you
-  have free choice of were they go (see below)
+  have free choice of were they go (see below). Use `T` to toggle this
+  value
+- `G#` ("ghost count") - number of ghosts for testing purposes. Use
+  `SHIFT+3` (`#`) to change this value
 
 ## Ghost start area
 
@@ -111,8 +116,6 @@ The ghost start area, if set, is indicated by a dotted red rectangle.
 Ghosts will start from some position in this area.
 
 If not set, ghosts will start at some random point in the level.
-
-When testing in the editor, you will only ever get 1 ghost.
 
 ## Level goals
 

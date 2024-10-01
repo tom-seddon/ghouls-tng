@@ -3776,55 +3776,39 @@ down_done:
                 
 ;-------------------------------------------------------------------------
 
-name_levels:
+name_levels: .proc
                 jsr select_level
                 
                 jsr ed_print
                 .text 131,'Enter name:'
-                ; .byte 132,157,135
-                ; .fill size(LevelData.name)-1+2,' '
-                ; .text 156
-                ; .fill size(LevelData.name)-1+3,8
                 .byte 0
 
                 lda #size(LevelData.name)-1
                 jsr print_input_box
 
-                clc
-                lda ed_level_addr+0
-                adc #LevelData.name
-                sta name_level_block+0
-                lda ed_level_addr+1
-                adc #0
-                sta name_level_block+1
-
                 ldx #<name_level_block
                 ldy #>name_level_block
                 jsr ed_osword0
-                ; lda #0
-                ; jsr osword
                 bcs ed_main_loop ; taken if ESCAPE pressed
 
-                lda #size(LevelData.name)
-                tya
-                clc
-                adc #LevelData.name
-                tay
-                lda #13
--
+                ldx #0
+                ldy #LevelData.name
+copy_name_loop:
+                lda ed_input_buffer,x
+                cmp #13
+                beq +
+                inx
++
                 sta (ed_level_addr),y
                 iny
-                cpy #LevelData.name+size(LevelData.name)
-                bne -
-                
+                cpy #size(LevelData.name)
+                bne copy_name_loop
+
                 jmp ed_main_menu
 
-name_level_block:
-                .word 0
-                .byte size(LevelData.name)-1 ;max length (excl CR)
-                .byte 32        ;min char
-                .byte 126       ;max char
-
+name_level_block: .dstruct OSWORD0,ed_input_buffer,size(LevelData.name)-1,32,126
+                .endproc
+                
 print_input_box:
                 clc
                 adc #2

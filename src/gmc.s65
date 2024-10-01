@@ -3775,50 +3775,6 @@ down_done:
                 .endproc
                 
 ;-------------------------------------------------------------------------
-;
-; ed_pack_text: .proc
-;                 lda #$80
-;                 sta ed_pack_write_mask
-;                 lda #$40
-;                 sta ed_pack_read_mask
-
-;                 ; read
-;                 ldx #ed_pack_src
-;                 lda (0,x)
-;                 and ed_pack_read_mask
-;                 cmp #1
-
-;                 ; write
-;                 lda ed_pack_write_mask
-;                 eor #$ff
-;                 ldx #ed_pack_dest
-;                 and (0,x)
-;                 bcc +
-;                 ora ed_pack_write_mask
-; +
-;                 sta (0,x)
-
-                
-                
-;                 .endproc
-
-; ed_write_pack_bit:
-;                 cmp #1          ; C=0 if A==0; C=1 if A!=0
-;                 lda ed_write_pack_mask
-;                 eor #$ff
-;                 ldx #ed_pack_dest
-;                 and (0,x)
-;                 bcc +
-;                 ora ed_write_pack_mask
-; +
-;                 sta (0,x)
-;                 lsr ed_write_pack_mask
-;                 bcc +
-;                 jsr ed_incz
-; +
-;                 rts
-                
-;-------------------------------------------------------------------------
 
 name_levels:
                 jsr select_level

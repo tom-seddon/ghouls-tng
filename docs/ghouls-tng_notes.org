@@ -838,4 +838,22 @@ newlines or anything, as the text has a fixed budget vertically.
 : .pack_text x"06"..b" Situated in a deadly"..x"01"..b"haunted"..x"06"..b"mansion, "..x"06".."you have to rescue your power jewels   "..x"06"..b"from the horrid ghost that stole them.                                         "
 : .pack_text b" YOU TOOK THE POWER       JEWELS         AND ESCAPED TO GET    SOME MORE.....                       "
 
+* Title screen compression
+
+| Compressor | Options  | Size (hex) | Notes                       |
+|------------+----------+------------+-----------------------------|
+| shrinkler  | -d -b -9 |       0f4a |                             |
+| shrinkler  | -d -9    |       0f6c |                             |
+| 7z         | -mx=9    |       105d | for comparison purposes     |
+| exo 3.0.2  |          |       1186 |                             |
+| exo 3.1.1  |          |       118f |                             |
+| zx5        |          |       119f | this took 10 minutes        |
+| zx5        | -b       |       11a8 | this took nearly 10 minutes |
+| zx0        |          |       1249 |                             |
+| zx02       |          |       1252 |                             |
+| zx0        | -b       |       1260 |                             |
+| zx02       | -b       |       1268 |                             |
+| zx7        |          |       131f |                             |
+| original   |          |       5000 |                             |
+
 * EOF

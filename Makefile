@@ -92,7 +92,7 @@ endif
 # Create a .ssd
 #
 # TODO: don't include everything!
-	$(_V)$(SSD_CREATE) -o $(SSD_OUTPUT) --dir $(BEEB_OUTPUT) $(BEEB_OUTPUT)/$$.!BOOT $(BEEB_OUTPUT)/$$.GLOADER $(BEEB_OUTPUT)/$$.GSCREEN $(BEEB_OUTPUT)/$$.GUDGS $(BEEB_OUTPUT)/$$.GMC $(BEEB_OUTPUT)/$$.GLEVELS $(BEEB_OUTPUT)/$$.GBAS $(BEEB_OUTPUT)/$$.GEDMC $(BEEB_VOLUME)/2/$$.KIERAN $(BEEB_VOLUME)/2/$$.KIERAN2 $(BEEB_VOLUME)/2/$$.KIERAN3 $(BEEB_VOLUME)/2/$$.EGYPT $(BEEB_VOLUME)/2/$$.KIERAN4 $(BEEB_VOLUME)/2/$$.TUTOR1 $(BEEB_VOLUME)/2/$$.DAVE $(BEEB_VOLUME)/2/$$.TOM
+	$(_V)$(SSD_CREATE) -o $(SSD_OUTPUT) --dir $(BEEB_OUTPUT) $(BEEB_OUTPUT)/$$.!BOOT $(BEEB_OUTPUT)/$$.GLOADER $(BEEB_OUTPUT)/$$.GSCREEN $(BEEB_OUTPUT)/$$.GUDGS $(BEEB_OUTPUT)/$$.GMC $(BEEB_OUTPUT)/$$.GLEVELS $(BEEB_OUTPUT)/$$.GBAS $(BEEB_OUTPUT)/$$.GEDMC $(BEEB_VOLUME)/2/$$.TUTOR1 $(BEEB_VOLUME)/2/$$.SPIDERS $(BEEB_VOLUME)/2/$$.HEIGHTS $(BEEB_VOLUME)/2/$$.ALTERN $(BEEB_VOLUME)/2/$$.EGYPT $(BEEB_VOLUME)/2/$$.DAVE $(BEEB_VOLUME)/2/$$.TOM
 
 ##########################################################################
 ##########################################################################

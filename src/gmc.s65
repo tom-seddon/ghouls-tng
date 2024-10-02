@@ -5178,7 +5178,7 @@ init_level:
                 ; the GO value needs to be 0 (no spider2) or !=0
                 ; (spider2).
                 ldx #0          ; assume 1 or 0 ghosts - no spider2
-                ldx ed_test_num_ghosts
+                lda ed_test_num_ghosts
                 cmp #2
                 bcc +           ; taken if 1 or 0 ghosts
                 inx             ; X=1

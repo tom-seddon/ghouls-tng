@@ -445,8 +445,8 @@ _..=[make_sta_otype(ltype_rspikes,sprite_lspikes,otype_flags_flip_x)]
 _..=[make_sta_otype(ltype_spikesu,sprite_spikes,otype_flags_flip_y)]
 _..=[make_sta_otype(ltype_lspikesu,sprite_lspikes,otype_flags_flip_y)]
 _..=[make_sta_otype(ltype_rspikesu,sprite_lspikes,otype_flags_flip_x|otype_flags_flip_y)]
-_..=[make_sta_otype(ltype_spring_1_row,sprite_spring_row0)]
-_..=[make_sta_otype(ltype_spring_2_rows,sprite_spring_row0,otype_flags_height2)]
+_..=[make_sta_otype(ltype_spring_1_row,sprite_spring_row0,otype_flags_spring)]
+_..=[make_sta_otype(ltype_spring_2_rows,sprite_spring_row0,otype_flags_height2|otype_flags_spring)]
 _..=[make_sta_otype(ltype_dots,sprite_dots,0,ed_flags_repeat)]
 _..=[make_sta_otype(ltype_ldot,sprite_ldot,0,ed_flags_repeat)]
 _..=[make_sta_otype(ltype_rdot,sprite_rdot,0,ed_flags_repeat)]
@@ -4719,6 +4719,19 @@ add_object: .proc
                 
 add:
                 ldx ed_new_otype
+
+                lda otypes_otype_flags,x
+                and #otype_flags_spring
+                beq add_ok      ; taken if not spring
+
+                ; Can't place a spring in the top 2 rows. The player
+                ; sprite ends up getting drawn <$5800 and makes a big
+                ; mess.
+                lda ed_cy
+                cmp #2
+                bcc done
+
+add_ok:
                 lda ed_new_ovalues,y
                 jsr ed_pack_ltype
                 

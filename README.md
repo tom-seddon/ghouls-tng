@@ -110,6 +110,12 @@ The bottom row contains some indicators:
 - `G#` ("ghost count") - number of ghosts for testing purposes. Use
   `SHIFT+3` (`#`) to change this value
 
+## Springs
+
+Springs can't be placed in the top 2 rows of the level. The resulting
+jump height would cause the player to go off the top of the screen,
+something that isn't handled properly.
+
 ## Ghost start area
 
 The ghost start area, if set, is indicated by a dotted red rectangle.

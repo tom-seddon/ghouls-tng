@@ -161,6 +161,8 @@ ghouls_level_enc: .encode
 
 otype_flags_width2=$80          ;set if 2xN rather than 1xN
 otype_flags_height2=$40         ;set if Nx2 rather than Nx1
+otype_flags_spring=$20          ;set if spring - can't position in top
+                                ;2 rows
 otype_flags_flip_x=$10          ;set to draw mirrored - 1x1 only
 otype_flags_flip_y=$01          ;set to draw upside down - 1x1 only
 

@@ -21,6 +21,10 @@ ed_zp_end:
 
 ;-------------------------------------------------------------------------
 
+ghost_address_collision=true
+                
+;-------------------------------------------------------------------------
+
 udg_char_0=224
 udg_bonus=234
                 
@@ -52,9 +56,14 @@ object_addr=$82
 level_draw_ptr=$84
 ;L0084=$84
 L0085=$85
+
+; these 3 would also be available for general in-game use.
 level_draw_screen_addr=$86
 level_draw_sprite_src=$88
 level_draw_sprite_dest=$8a
+
+; 
+; colli_player_addr=$8c
                 
 ;-------------------------------------------------------------------------
 
@@ -1803,32 +1812,160 @@ L1326:
                 lda L007F
                 adc #1
                 sta L0075
+
+                ; ; Check for collision with player.
+
+; G0 == P0-8 || G0 == P0 || G0 == P0+8 || /* G0 overlap P0 (and so G1 overlap P1 too) */
+; G1 == P0-8 || G1 == P0 || G1 == P0+8 || /* G1 overlap P0 */
+; G0 == P1-8 || G0 == P1 || G0 == P1+8    /* G0 overlap P1 */
+
+; or (true if any line is true)
+
+; <G0 == <(P0-8) && >G0 == >(P0-8)
+; <G0 == <P0 && >G0 == >P0
+; <G0 == <(P0+8) && >G0 == >(P0+8)
+; <G1 == <(P0-8) && >G1 == >(P0-8)
+; <G1 == <P0 && >G1 == >P0
+; <G1 == <(P0+8) && >G1 == >(P0+8)
+; <G0 == <(P1-8) && >G0 == >(P1-8)
+; <G0 == <P1 && >G0 == >P1
+; <G0 == <(P1+8) && >G0 == >(P1+8)
+
+; or...
+                
+; 1. <G0 == <P0 && >G0 == >P0
+
+                .if ghost_address_collision
+collision_tests: .block
+
+g0=L007E
+g1=L0074
+                
+test1:
+                lda player_addr+0
+                cmp g0+0
+                bne test2       ; taken if <G0!=<P0
+                lda player_addr+1
+                cmp g0+1        ; taken if >G0==>P0
+                beq collision
+                
+; 2. <G1 == <P0 && >G1 == >P0
+test2:
+                lda player_addr+0
+                cmp g1+0
+                bne test3       ; taken if <G1!=<P0
+                lda player_addr+1
+                cmp g1+1        ; taken if >G1==>P0
+                beq collision
+
+; 3. <G1 == <P1 && >G1 == >P1
+test3:
+                clc
+                lda player_addr+0
+                adc #$40
+                eor g0+0
+                bne test4       ; taken if <G0!=<P1
+                lda player_addr+1
+                adc #$01
+                cmp g0+1
+                beq collision   ; taken if >G0==>P1
+
+; 4. <G0 == <(P0-8) && >G0 == >(P0-8)
+test4:
+                sec
+                lda player_addr+0
+                sbc #8
+                tax             ; X=<(P0-8)
+                lda player_addr+1
+                sbc #0          ; >(P0-8)
+                cpx g0+0
+                bne test5       ; taken if <G0!=<(P0-8)
+                cmp g0+1
+                beq collision   ; taken if >G0==>(P0-8)
+
+; 5. <G1 == <(P0-8) && >G1 == >(P0-8)
+test5:
+                cpx g1+0
+                bne test6       ; taken if <G1!=<(P0-8)
+                cmp g1+1
+                beq collision   ; taken if >G1==>(P0-8)
+
+; 6. <G0 == <(P0+8) && >G0 == >(P0+8)
+test6:
+                clc
+                lda player_addr+0
+                adc #8
+                tax             ; X=<(P0+8)
+                lda player_addr+1
+                adc #0
+                cpx g0+0
+                bne test7       ; taken if <G0!=<(P0+8)
+                cmp g0+1
+                beq collision   ; taken if >G0==>(P0+8)
+
+; 7. <G1 == <(P0+8) && >G1 == >(P0+8)
+test7:
+                cpx g1+0
+                bne test8       ; taken if <G1!=<(P0+8)
+                cmp g1+1
+                beq collision   ; taken if >G1==>(P0+8)
+
+; 8. <G0 == <(P1-8) && >G0 == >(P1-8)
+test8:
+                clc
+                lda player_addr+0
+                adc #$38
+                eor g0+0
+                bne test9
+                lda player_addr+1
+                adc #$01
+                cmp g0+1
+                beq collision
+                
+; 9. <G0 == <(P1+8) && >G0 == >(P1+8)
+test9:
+                clc
+                lda player_addr+0
+                adc #$48
+                eor g0+0
+                bne tests_done
+                lda player_addr+1
+                adc #$01
+                cmp g0+1
+                beq collision
+
+tests_done:
+                .endblock
+                .endif
+                
+                ; Draw ghost sprites and check for collision with
+                ; player.
                 ldy #$F
 
 L133A:
-                lda (L007E),y
+                lda (L007E),y   ; ghost top row
+                .if !ghost_address_collision
                 cmp #mode5_byte(0,0,2,0)
                 bne L1343
                 jmp kill_player_and_drop_caller
 
-;-------------------------------------------------------------------------
-
 L1343:
                 cmp #0
+                .endif
                 bne L134C
                 lda sprite_ghost_angry_row0,y
                 sta (L007E),y
 
 L134C:
-                lda (L0074),y
+                lda (L0074),y   ; ghost bottom row
+                .if !ghost_address_collision
                 cmp #mode5_byte(0,0,2,0)
                 bne L1355
                 jmp kill_player_and_drop_caller
 
-;-------------------------------------------------------------------------
-
 L1355:
                 cmp #0
+                .endif
                 bne L135E
                 lda sprite_ghost_angry_row1,y
                 sta (L0074),y
@@ -1849,6 +1986,9 @@ L1370:
                 cmp #$FE
                 beq L1380
                 jmp L123C
+
+collision:
+                jmp kill_player_and_drop_caller
 
 ;-------------------------------------------------------------------------
 

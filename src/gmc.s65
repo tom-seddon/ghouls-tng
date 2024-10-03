@@ -3370,13 +3370,16 @@ preview:
                 
                 ldx #0
 preview_loop:
-                jsr read_buffer
+                lda ed_text_buffer,x
+                cmp #13
+                beq preview_printed
+                
                 jsr oswrch
 
                 inx
                 cpx #text_width*text_height
                 bne preview_loop
-
+preview_printed:
                 jsr ed_clear_keyboard_buffer
                 jsr osrdch
 
@@ -3730,8 +3733,8 @@ ed_text_reset: .proc
                 .endproc                
                 
 ed_text_clear: .proc
-                lda #0
-                tax
+                lda #32
+                ldx #0
 loop:
                 sta ed_text_buffer,x
                 inx

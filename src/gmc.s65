@@ -4392,7 +4392,7 @@ one_level:
                 .byte 31,0,level_height
                 .byte 0
 
-                ldx #(31-level_height)*20-1
+                ldx #(32-level_height)*20-1
                 lda #' '
 clear_editor_hud_loop:
                 jsr oswrch

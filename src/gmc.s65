@@ -3566,17 +3566,17 @@ edit_loop:
                 jsr redraw_text
 text_drawn:
 
-                ldx #0
-                ldy #24
-                jsr ed_gotoxy
-                lda ed_text_x
-                jsr ed_print_hex
-                lda ed_text_y
-                jsr ed_print_hex
-                lda ed_text_result
-                jsr ed_print_hex
-                lda ed_mul_result+0
-                jsr ed_print_hex
+                ; ldx #0
+                ; ldy #24
+                ; jsr ed_gotoxy
+                ; lda ed_text_x
+                ; jsr ed_print_hex
+                ; lda ed_text_y
+                ; jsr ed_print_hex
+                ; lda ed_text_result
+                ; jsr ed_print_hex
+                ; lda ed_mul_result+0
+                ; jsr ed_print_hex
                 
                 ldx ed_text_x
                 lda ed_text_y

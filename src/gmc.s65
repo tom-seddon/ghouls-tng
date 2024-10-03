@@ -464,6 +464,7 @@ _..=[make_sta_otype(ltype_solid_red,sprite_solid_red,0,ed_flags_repeat)]
 _..=[make_sta_otype(ltype_lrope,sprite_lrope)]
 _..=[make_sta_otype(ltype_rrope,sprite_lrope,otype_flags_flip_x)]
 _..=[make_sta_otype(ltype_goal,sprite_goal)]
+_..=[make_sta_otype(ltype_mannequin,sprite_pl_facing,otype_flags_height2)]
 otype_treasure=len(_)
 _..=[make_sta_otype(ltype_treasure,sprite_goal_row0,otype_flags_width2|otype_flags_height2)]
 otype_treasure2=len(_)

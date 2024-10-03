@@ -132,6 +132,7 @@ ltype_treasure2={.index:81}
 ltype_spikesu={.index:82}
 ltype_lspikesu={.index:83}
 ltype_rspikesu={.index:84}
+ltype_mannequin={.index:85}
 
 speed_edef: .function prefix,speed
                 .cerror !(speed>=0 && speed<num_speeds)

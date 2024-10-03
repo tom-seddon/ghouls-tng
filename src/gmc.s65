@@ -4385,6 +4385,14 @@ file_name_end_found:
 one_level:
                 lda screen_shot_level
                 jsr ed_prepare_for_level_access
+
+                ; Invalidate test start pos.
+                ;
+                ; See also: edit_level. Must unify if any more of this
+                ; stuff appears.
+                sec
+                ror ed_test_pl_start_x
+                
                 jsr ed_editor.redraw
 
                 ; Crappy hack to clear out the editor HUD.

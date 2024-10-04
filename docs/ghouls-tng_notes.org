@@ -856,4 +856,10 @@ newlines or anything, as the text has a fixed budget vertically.
 | zx7        |          |       131f |                             |
 | original   |          |       5000 |                             |
 
+* BASIC delay loops
+
+Takes ~1 second:
+
+: FORF=1TO2000:NEXT
+
 * EOF

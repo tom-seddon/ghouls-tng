@@ -2,15 +2,16 @@ HIMEM={&gmc_org}
 DIMHI(10),N$(10):FORF=0TO9:N$(F)=CHR$132+"Ghoul Basher "+STR$(F+1):HI(F)=(20-F)*10:NEXT
 {?not debug}ONERRORGOTO{$L1920}
 {?debug}ONERROR:MODE7:REPORT:PRINT" at line ";ERL:END
-IFINKEY(-255)=-1 ?&220=166:?&221=255 ELSE GOTO{$L50}
-{:L50}
+{#LI1=0
+LI1=4
 {?not debug}ONERRORGOTO{$L1350}
 SC1=1:GO1=0
 CALL{&reset_envelopes}:GOTO{$L1350}
 {:L70}
 REM***** GHOULS *****
 VDU22,5:VDU23;11;0;0;0;
-FORF=0TO4:F?{&score_chars}={$udg_char_0}:NEXT:LI=4:SC=SC1:?{&L0AF2}=60:GO=GO1
+FORF=0TO4:F?{&score_chars}={$udg_char_0}:NEXT:LI=LI1:SC=SC1:?{&L0AF2}=60:GO=GO1
+PROCRB
 {:L100}
 FORF=1TO3:VDU19,F,0;0;:NEXT
 PRINTTAB(0,5);:COLOUR3:GCOL0,1
@@ -18,10 +19,11 @@ LDATA={&levels_org}+4+(SC-1)*{$LevelData_size}:!{&level_draw_ptr}=LDATA:A%=0:X%=
 !{&ghosts_table}=0:!{&ghosts_table+3}=0:COLOUR1:PRINTTAB(14,1);:VDU{$udg_bonus+0},{$udg_bonus+1},{$udg_bonus+2}{# TODO: ghosts_table+3 should probably be ghosts_table+4...
 GCOL0,1:MOVE0,60:DRAW0,952:MOVE1279,60:DRAW1279,952:GCOL0,2:MOVE0,952:PLOT21,1279,952
 IF(LDATA?{$LevelData_flags_offset}AND{$LevelData_flags_no_standard_treasure})=0:GCOL0,1:MOVE1080,800:DRAW1080,860:GCOL0,2:MOVE1092,864:DRAW1270,864:FORF=0TO31STEP4:F!&5CE0=F!{&sprite_goal_row0}:F!&5E20=F!{&sprite_goal_row1}:NEXT
-IFLI=1GOTO{$L160}
+IFLI<=1GOTO{$L160}
 FORF=0TO((LI-2)*16)STEP16:FORG=0TO15STEP4:G!(F+&7D80)=G!{&sprite_pl_facing}:G!(F+&7EC0)=G!{&sprite_pl_facing+16}:NEXT,
 {:L160}
-?{&bonus_chars}={$udg_char_0+5}:?{&bonus_chars+1}={$udg_char_0}:COLOUR2:PRINTTAB(18,1);:VDU{$udg_char_0+5},{$udg_char_0}
+IFLI>0:PROCRB
+COLOUR2:PRINTTAB(18,1)CHR$?{$bonus_chars}CHR$?{$bonus_chars+1}
 FORF=0TO31:F?{&data_behind_player}=0:NEXT:FORF=0TO4:PRINTTAB(F,1);CHR$(F?{&score_chars}):NEXT
 VDU23,0,1,0;0;0;0;:VDU19,1,1;0;19,2,3;0;19,3,LDATA?{$LevelData_colour3_offset};0;
 SOUND&12,4,0,18:SOUND&13,4,1,18:FORF=1TO40:VDU23,0,1,F;0;0;0;:*FX19
@@ -40,7 +42,7 @@ SOUND&10,-15,3,18:FORF=200TO0STEP-.6:SOUND&11,0,F,1:NEXT:N=?{&player_addr+1}*256
 K=110:FORG={&sprite_pl_die_0} TO {&sprite_pl_die_7} STEP16:FORF=0TO15STEP4:F!N=F!G:NEXT
 FORJ=K TO K+5STEP.3:SOUND&11,-12,J,1:SOUND&12,-12,J-12,1:NEXT:FORJ=K+5 TO K-10STEP-.8:SOUND&11,-12,J,1:SOUND&12,-12,J-12,1:NEXT:K=K-8:NEXT
 FORF=0TO15STEP4:F!N=F!{&sprite_pl_die_8}:NEXT:FORG=0TO35STEP35:FORF=G TO G+40STEP1.5:SOUND&11,-15,F,1:NEXT:FORH=1TO400:NEXT:FORH=0TO15STEP4:H!N=H!{&data_behind_player}:NEXT,
-LI=LI-1:IFLI=0GOTO{$L1000}
+IFLI>0:LI=LI-1:IFLI=0GOTO{$L1000}
 FORF=1TO3000:NEXT
 SOUND&10,4,4,18:CALL{&entry_slide_off}:VDU23,0,13,0;0;0;0;
 GOTO{$L100} 
@@ -81,7 +83,7 @@ IFF=100GCOL0,0
 MOVE300,500:PLOT85,300+232*SINRADF,500+200*COSRADF:NEXT
 GCOL0,0:MOVE308,500:DRAW532,500:VDU23,0,13,40;0;0;0;19,2,3;0;:CLS
 G=3:FORF=40TO17STEP-1:VDU23,0,13,F;0;0;0;19,1,G;0;:IFG=3G=0:SOUND&10,-15,7,-1:FORI=175TO245STEP2:SOUND&11,0,I,1:NEXT ELSE G=3:SOUND&10,0,0,0:FORI=0TO35:SOUND&10,0,0,0:NEXT
-NEXT:LI=LI+1:IFLI>6LI=6
+NEXT:IFLI>0:LI=LI+1:IFLI>6LI=6
 FORF=1TO3500:NEXT:SC=1:VDU19,1,0;0;19,2,0;0;23,0,13,0;0;0;0;26:CLS:ENDPROC
 {:L1000}
 FORF=1TO1500:NEXT:COLOUR2:FORF=13TO15:PRINTTAB(5,F);"          ":NEXT:PROCPRNT(6,14,"THE  END",400,0)
@@ -132,15 +134,23 @@ VDU22,7:VDU23,0,11;0;0;0;
 FORF=1TO2:IF((?{&level_flags_text_name} AND{$LevelData_flags_text})<>0):IFLEN(${&levels_org+TextData_offset+TextData_name_offset})>0:PRINTTAB(20-LEN(${&levels_org+TextData_offset+TextData_name_offset})DIV2-5,F)CHR$141CHR$(131-F)${&levels_org+TextData_offset+TextData_name_offset};:ELSE:PRINTTAB(10,F);CHR$141;CHR$(131-F);"G H O U L S"
 NEXT:PRINTTAB(10,3)CHR$147"``,,,ppp,,,``"
 SOUND&11,2,5,50:SOUND&12,2,5,50:SOUND&13,2,6,50:FORF=1TO2500:NEXT 
-IFINKEY(-255)=0GOTO{$L1470}
 FORF=10TO11:PRINTTAB(0,F)CHR$141CHR$130"Do you want sound in the game?"CHR$134:NEXT
 A$=GET$
 {:L1430}
-FORF=10TO11:PRINTTAB(33,F);A$:NEXT:IFA$<>"N"ANDA$<>"Y" ANDA$<>"n"ANDA$<>"y" PRINTTAB(0,20)CHR$129"INPUT NOT CORRECT, TRY AGAIN":SOUND&10,-15,2,1:A$=GET$:PRINTTAB(1,20);"                                                ":GOTO{$L1430}
+FORF=10TO11:PRINTTAB(33,F);A$:NEXT:IFA$<>"N"ANDA$<>"Y" ANDA$<>"n"ANDA$<>"y"PROCBI:GOTO{$L1430}
 IFA$="N"ORA$="n" THEN !&262=1 ELSE !&262=0{#?&262 is the value set by OSBYTE 210 - sound suppression status
-REM***** BRIEF *****
+{#Game type
 PROCCLR
-{:L1470}
+FORF=0TO1:PRINTTAB(4,7+F)CHR$141CHR$130"CLASSIC"TAB(4,11+F)CHR$141CHR$130"INFINITE LIVES"TAB(0,18+F)CHR$141CHR$130"Select game mode:"CHR$134:NEXT
+PRINTTAB(1,7)CHR$133"1."TAB(5,9)CHR$134"4 lives. Make them count!"
+PRINTTAB(1,11)CHR$133"2."TAB(5,13)CHR$134"Don't let the bonus timer reach 0"
+{:GETMODE}
+*FX15
+A$=GET$:IFASCA$<32ORASCA$>=127:A$=" "
+FORF=0TO1:PRINTTAB(20,18+F)A$:NEXT:IFA$<>"1"ANDA$<>"2"PROCBI:GOTO{$GETMODE}
+IFA$="1":LI1=4:ELSE:IFA$="2":LI1=0
+{#REM***** BRIEF *****
+PROCCLR
 PRINTTAB(0,5);:IF((?{&level_flags_text_instructions} AND{$LevelData_flags_text})<>0):IFLEN(${&levels_org+TextData_offset+TextData_instructions_offset})>0:PRINT${&levels_org+TextData_offset+TextData_instructions_offset};:ELSE:PRINTCHR$134"LEVEL INSTRUCTIONS HERE";
 IFPOS<>0:PRINT
 {#PRINTTAB(1,5)CHR$134"Situated in a deadly"CHR$129"haunted"CHR$134"mansion,"'CHR$134"you have to rescue your power jewels"'CHR$134"from the horrid ghosts that stole them."
@@ -200,6 +210,8 @@ PRINTTAB(X,Y);:FORJ=1TO LENA$:G=ASCMID$(A$,J,1):IFG<>32AND H=1SOUND&11,0,G*2,0
 PRINT;MID$(A$,J,1);:FORG=1TOL:NEXT,:SOUND&11,0,0,0:SOUND&10,0,0,0:ENDPROC
 DEFPROCCLR:SOUND&10,-15,7,255:FORF=22TO5STEP-1:SOUND&11,0,128+F*5,1:PRINTTAB(0,F);CHR$(128+(F AND7));CHR$157;"                                      ":NEXT
 FORF=22TO5STEP-1:SOUND&11,0,150+((F*300)AND105),1:PRINTTAB(0,F);"                                       ":NEXT:SOUND&10,0,0,0:ENDPROC
+DEFPROCRB:?{$bonus_chars}={$udg_char_0+5}:?{$bonus_chars+1}={$udg_char_0}:ENDPROC{#Reset Bonus
+DEFPROCBI:PRINTTAB(0,20)CHR$129"INPUT NOT CORRECT, TRY AGAIN":SOUND&10,-15,2,1:A$=GET$:PRINTTAB(1,20);"                                                ":ENDPROC{#Bad Input
 {:L1920}
 ONERRORCLEAR:GOTO{$L1920}
 MODE7:VDU23;11;0;0;0;

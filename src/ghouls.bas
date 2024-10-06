@@ -55,15 +55,21 @@ NEXT
 END
 {:L370}
 IF?{&player_addr}=192 FORJ=0TO15STEP4:J!&5CC0=0:J!&5CD0=J!{&sprite_pl_facing}:J!&5E00=0:J!&5E10=J!{&sprite_pl_facing+16}:NEXT
+IFTA:GOTO{$after_completion_tune}
 ENVELOPE1,2,-1,1,-1,1,1,1,0,-3,0,-1,126,90:RESTORE{$L1830}:FORF=1TO39:READP
 SOUND&11,1,P,4:SOUND&12,1,P+1,4:SOUND&13,1,P-1,4:FORK=1TO200:NEXT
-NEXT:FORF=1TO4000:NEXT:CALL{&reset_envelopes}
+NEXT:FORF=1TO4000:NEXT
+{:after_completion_tune}
+CALL{&reset_envelopes}
 ?{&L0AF2}=?{&L0AF2}-5:IF?{&L0AF2}<20?{&L0AF2}=20
 IFNOTTA:GOSUB{$reset_bonus}:SC=SC+1:IFSC=5:PROCtower(TRUE):GOTO{$L100}
 *FX15
-SOUND&11,2,2,50:SOUND&12,2,130,50:FORF=0TO15STEP4:F!&5CE0=F!{&sprite_ghost_happy_row0}:F!&5CF0=F!{&sprite_ghost_happy_row0}:F!&5E20=F!{&sprite_ghost_happy_row1}:F!&5E30=F!{&sprite_ghost_happy_row1}:NEXT
+SOUND&11,2,2,50:SOUND&12,2,130,50
+IFTA:GOTO{$after_level_completion}
+FORF=0TO15STEP4:F!&5CE0=F!{&sprite_ghost_happy_row0}:F!&5CF0=F!{&sprite_ghost_happy_row0}:F!&5E20=F!{&sprite_ghost_happy_row1}:F!&5E30=F!{&sprite_ghost_happy_row1}:NEXT
 FORF=1TO1000:NEXT:SOUND&10,1,2,2:FORF=0TO15STEP4:F!&5CD0=0:F!&5E10=0:NEXT:FORF=0TO15STEP4:F!&5A50=F!{&sprite_pl_facing}:F!&5B90=F!{&sprite_pl_facing+16}:NEXT:FORF=1TO500:NEXT:FORF=0TO15STEP4:F!&5A50=0:F!&5B90=0:NEXT
-GCOL0,2:MOVE0,952:PLOT21,1279,952:IFNOTTA:COLOUR2:PRINTTAB(1,14)STRING$(18," ")TAB(1,16)STRING$(18," ")TAB(1,15)"ESCAPE TO LEVEL ";SC"."
+GCOL0,2:MOVE0,952:PLOT21,1279,952:COLOUR2:PRINTTAB(1,14)STRING$(18," ")TAB(1,16)STRING$(18," ")TAB(1,15)"ESCAPE TO LEVEL ";SC"."
+{:after_level_completion}
 FORF=1TO700:NEXT:SOUND&11,2,100,50:FORF=1TO4000:NEXT
 G=999:F=999:H=999
 VDU30:FORF=0TO31:VDU11:*FX19

@@ -176,9 +176,9 @@ FORF=20TO21:PRINTTAB(1,F)CHR$141CHR$133"DO YOU WANT TO SEE GAME OBJECTS?"TAB(13,
 {:instructions_yn}
 *FX15,1
 I$=GET$:IFI$="Y" ORI$="y"PROCMODE(5):GOSUB{$PROCSHOW}
-{?debug}IFI$="C"ORI$="c":PROCMODE(5):PROCtower(FALSE):GOTO{$L100}
-{?debug}IFI$="G"ORI$="g":GOTO{$more_ghosts}
-{?debug}SC1=1:IFI$>="1"ANDI$<="4":SC1=VALI$
+{?debug}IFNOTTA:IFI$="C"ORI$="c":PROCMODE(5):PROCtower(FALSE):GOTO{$L100}
+{?debug}IFNOTTA:IFI$="G"ORI$="g":GOTO{$more_ghosts}
+{?debug}IFNOTTA:SC1=1:IFI$>="1"ANDI$<="4":SC1=VALI$
 IFTA:GOSUB{$PROCCLR}
 {:time_attack_select_level}
 IFTA:GOSUB{$select_level}

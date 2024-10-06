@@ -126,19 +126,19 @@ The bottom row contains some indicators:
   is time attack or classic/infinite lives (the distinction being moot
   in the editor)
 
-## Springs
+### Springs
 
 Springs can't be placed in the top 2 rows of the level. The resulting
 jump height would cause the player to go off the top of the screen.
 
-## Ghost start area
+### Ghost start area
 
 The ghost start area, if set, is indicated by a dotted red rectangle.
 Ghosts will start from some position in this area.
 
 If not set, ghosts will start at some random point in the level.
 
-## Level goals
+### Level goals
 
 One of the objects looks like a yellow horizontal line. That's the
 goal. If you step on it, you win the level.
@@ -151,7 +151,7 @@ is just positioned by its bottom row rather than its top row, so you
 can put it in the top row of the level. They both look the same in
 game. (Configurable goals were a late addition...)
 
-## Text editing
+### Text editing
 
 There's an extremely basic (if we're being polite) text editor kind of
 thing (for a very loose definition of "kind of thing") for editing
@@ -174,15 +174,27 @@ is indicated by a solid white square, which you can insert with
 more important for the instructions text as whatever comes next will
 follow on immediately.
 
-### Instructions text
+#### Instructions text
 
 Press `SHIFT+f1` ... `SHIFT+f7` to insert teletext colour control
 codes.
 
-### Completion text
+### #Completion text
 
 Press `CTRL+P` to see the text in an approximation of the Mode 5
 screen it's shown as in game.
+
+## Developer
+
+Select 3 to run a testing/cheat version of the game for use when
+testing levels or modifying the code.
+
+The `ON ERROR` routine prints the error encountered, and ESCAPE isn't
+trapped.
+
+In Classic or Infinite Lives mode, when asked if you want to see game
+objects, press `1`, `2`, `3` or `4` to start on that level, `G` to
+adjust the number of ghosts, or `C` to see the completion sequence.
 
 ----
 

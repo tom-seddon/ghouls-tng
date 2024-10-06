@@ -16,6 +16,18 @@ Shift+Break to boot.
 Select 1 to play the game. Enter name of levels file created using
 editor (see below), or leave blank for the default.
 
+Additional features compared to original Ghouls: multiple game modes!
+
+Classic is the authentic original. 4 lives, and that's your lot. Good
+luck (you will need it).
+  
+Infinite lives is intended to be slightly easier. Die as many times as
+you need. But don't take too long over it... the bonus timer is only
+replenished with each new level, and you'll still die if it runs out.
+
+Time attack is all new. Pick a level, and try to finish it as fast as
+you can, with no ghost to get in the way.
+
 ## Architect
 
 Select 2 to create levels.
@@ -68,6 +80,7 @@ When editing:
 - `←`/`→` select the NEW thing's type
 - `↑`/`↓` select the NEW thing's creation value (see below)
 - `RETURN` adds an instance of the NEW thing to the level
+- `A` toggles time attack mode
 - `C` changes the level-specific colour
 - `G` sets one corner of the ghost start position area (the position
   is automatically clamped if necessary)
@@ -109,12 +122,14 @@ The bottom row contains some indicators:
   value
 - `G#` ("ghost count") - number of ghosts for testing purposes. Use
   `SHIFT+3` (`#`) to change this value
+- `TA` ("time attack") - `Y` or `N` depending on whether the test mode
+  is time attack or classic/infinite lives (the distinction being moot
+  in the editor)
 
 ## Springs
 
 Springs can't be placed in the top 2 rows of the level. The resulting
-jump height would cause the player to go off the top of the screen,
-something that isn't handled properly.
+jump height would cause the player to go off the top of the screen.
 
 ## Ghost start area
 

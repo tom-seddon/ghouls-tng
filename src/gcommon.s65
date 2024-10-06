@@ -176,5 +176,11 @@ ed_flags_masked=$40 ;set if this object should have a masked/dimmed
 
 ;-------------------------------------------------------------------------
 
+; Pass flags in Y register
+
+init_level_yflag_time_attack=$01 ; set if time attack mode
+
+;-------------------------------------------------------------------------
+
 levels_header_magic=$0e73d760
                 

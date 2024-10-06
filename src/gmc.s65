@@ -27,6 +27,7 @@ ghost_address_collision=true
 
 udg_char_0=224
 udg_bonus=234
+udg_time=237
                 
 ;-------------------------------------------------------------------------
 
@@ -62,9 +63,8 @@ level_draw_screen_addr=$86
 level_draw_sprite_src=$88
 level_draw_sprite_dest=$8a
 
-; 
-; colli_player_addr=$8c
-                
+digits_addr=$8c
+
 ;-------------------------------------------------------------------------
 
 max_num_objects=85
@@ -82,6 +82,10 @@ object_var1s:
 object_var2s:
                 .fill max_num_objects
                 .cerror *>$b00,format('object tables overflow')
+
+;-------------------------------------------------------------------------
+
+number_sprites=$b00
                 
 ;-------------------------------------------------------------------------
 
@@ -101,6 +105,177 @@ gmc_start:
                 jmp ed_entry
                 jmp ed_mul_test ; cheezy crap for BASIC test
                 .endif
+
+sprite_digits:
+                .byte mode5_byte(2,2,2,2)
+                .byte mode5_byte(2,0,0,0)
+                .byte mode5_byte(2,0,0,0)
+                .byte mode5_byte(2,0,0,0)
+                .byte mode5_byte(2,0,0,0)
+                .byte mode5_byte(2,0,0,0)
+                .byte mode5_byte(2,0,0,0)
+                .byte mode5_byte(2,2,2,2)
+                .byte mode5_byte(2,2,2,0)
+                .byte mode5_byte(0,0,2,0)
+                .byte mode5_byte(0,0,2,0)
+                .byte mode5_byte(0,0,2,0)
+                .byte mode5_byte(0,2,2,0)
+                .byte mode5_byte(0,2,2,0)
+                .byte mode5_byte(0,2,2,0)
+                .byte mode5_byte(2,2,2,0)
+
+		.byte mode5_byte(0,0,0,0)
+                .byte mode5_byte(0,0,0,0)
+                .byte mode5_byte(0,0,0,0)
+                .byte mode5_byte(0,0,0,0)
+                .byte mode5_byte(0,0,0,2)
+                .byte mode5_byte(0,0,0,2)
+                .byte mode5_byte(0,0,0,2)
+                .byte mode5_byte(0,0,0,2)
+                .byte mode5_byte(2,2,0,0)
+                .byte mode5_byte(2,2,0,0)
+                .byte mode5_byte(2,2,0,0)
+                .byte mode5_byte(2,2,0,0)
+                .byte mode5_byte(2,2,0,0)
+                .byte mode5_byte(2,2,0,0)
+                .byte mode5_byte(2,2,0,0)
+                .byte mode5_byte(2,2,0,0)
+
+		.byte mode5_byte(2,2,2,2)
+                .byte mode5_byte(2,0,0,0)
+                .byte mode5_byte(2,0,0,0)
+                .byte mode5_byte(0,0,0,0)
+                .byte mode5_byte(2,2,2,2)
+                .byte mode5_byte(2,2,0,0)
+                .byte mode5_byte(2,2,0,0)
+                .byte mode5_byte(2,2,2,2)
+                .byte mode5_byte(2,2,2,0)
+                .byte mode5_byte(0,0,2,0)
+                .byte mode5_byte(0,0,2,0)
+                .byte mode5_byte(0,0,2,0)
+                .byte mode5_byte(2,2,2,0)
+                .byte mode5_byte(0,0,0,0)
+                .byte mode5_byte(0,0,0,0)
+                .byte mode5_byte(2,2,2,0)
+
+		.byte mode5_byte(2,2,2,2)
+                .byte mode5_byte(2,0,0,0)
+                .byte mode5_byte(2,0,0,0)
+                .byte mode5_byte(0,0,0,0)
+                .byte mode5_byte(0,0,2,2)
+                .byte mode5_byte(2,0,0,0)
+                .byte mode5_byte(2,0,0,0)
+                .byte mode5_byte(2,2,2,2)
+                .byte mode5_byte(2,2,0,0)
+                .byte mode5_byte(0,2,0,0)
+                .byte mode5_byte(0,2,0,0)
+                .byte mode5_byte(0,2,0,0)
+                .byte mode5_byte(2,2,2,0)
+                .byte mode5_byte(0,2,2,0)
+                .byte mode5_byte(0,2,2,0)
+                .byte mode5_byte(2,2,2,0)
+
+		.byte mode5_byte(2,2,2,2)
+                .byte mode5_byte(2,0,0,0)
+                .byte mode5_byte(2,0,0,0)
+                .byte mode5_byte(2,0,0,0)
+                .byte mode5_byte(2,0,0,0)
+                .byte mode5_byte(2,2,2,2)
+                .byte mode5_byte(0,0,0,0)
+                .byte mode5_byte(0,0,0,0)
+                .byte mode5_byte(2,2,0,0)
+                .byte mode5_byte(0,2,0,0)
+                .byte mode5_byte(0,2,0,0)
+                .byte mode5_byte(0,2,0,0)
+                .byte mode5_byte(0,2,0,0)
+                .byte mode5_byte(2,2,2,0)
+                .byte mode5_byte(2,2,0,0)
+                .byte mode5_byte(2,2,0,0)
+
+		.byte mode5_byte(2,2,2,2)
+                .byte mode5_byte(2,0,0,0)
+                .byte mode5_byte(2,0,0,0)
+                .byte mode5_byte(2,2,2,2)
+                .byte mode5_byte(0,0,0,0)
+                .byte mode5_byte(0,0,0,0)
+                .byte mode5_byte(2,0,0,0)
+                .byte mode5_byte(2,2,2,2)
+                .byte mode5_byte(2,2,2,0)
+                .byte mode5_byte(0,0,0,0)
+                .byte mode5_byte(0,0,0,0)
+                .byte mode5_byte(2,2,2,0)
+                .byte mode5_byte(0,2,2,0)
+                .byte mode5_byte(0,2,2,0)
+                .byte mode5_byte(0,2,2,0)
+                .byte mode5_byte(2,2,2,0)
+
+		.byte mode5_byte(2,2,2,2)
+                .byte mode5_byte(2,0,0,0)
+                .byte mode5_byte(2,0,0,0)
+                .byte mode5_byte(2,0,0,0)
+                .byte mode5_byte(2,2,2,2)
+                .byte mode5_byte(2,0,0,0)
+                .byte mode5_byte(2,0,0,0)
+                .byte mode5_byte(2,2,2,2)
+                .byte mode5_byte(2,2,2,0)
+                .byte mode5_byte(0,0,2,0)
+                .byte mode5_byte(0,0,2,0)
+                .byte mode5_byte(0,0,0,0)
+                .byte mode5_byte(2,2,2,0)
+                .byte mode5_byte(0,2,2,0)
+                .byte mode5_byte(0,2,2,0)
+                .byte mode5_byte(2,2,2,0)
+
+		.byte mode5_byte(2,2,2,2)
+                .byte mode5_byte(0,0,0,0)
+                .byte mode5_byte(0,0,0,0)
+                .byte mode5_byte(0,0,0,0)
+                .byte mode5_byte(0,0,0,0)
+                .byte mode5_byte(0,0,0,0)
+                .byte mode5_byte(0,0,0,0)
+                .byte mode5_byte(0,0,0,0)
+                .byte mode5_byte(2,2,2,0)
+                .byte mode5_byte(0,0,2,0)
+                .byte mode5_byte(0,0,2,0)
+                .byte mode5_byte(0,0,2,0)
+                .byte mode5_byte(0,2,2,0)
+                .byte mode5_byte(0,2,2,0)
+                .byte mode5_byte(0,2,2,0)
+                .byte mode5_byte(0,2,2,0)
+
+		.byte mode5_byte(0,2,2,2)
+                .byte mode5_byte(0,2,0,0)
+                .byte mode5_byte(0,2,0,0)
+                .byte mode5_byte(2,2,2,2)
+                .byte mode5_byte(2,0,0,0)
+                .byte mode5_byte(2,0,0,0)
+                .byte mode5_byte(2,0,0,0)
+                .byte mode5_byte(2,2,2,2)
+                .byte mode5_byte(2,2,0,0)
+                .byte mode5_byte(0,2,0,0)
+                .byte mode5_byte(0,2,0,0)
+                .byte mode5_byte(2,2,2,0)
+                .byte mode5_byte(0,2,2,0)
+                .byte mode5_byte(0,2,2,0)
+                .byte mode5_byte(0,2,2,0)
+                .byte mode5_byte(2,2,2,0)
+
+		.byte mode5_byte(2,2,2,2)
+                .byte mode5_byte(2,0,0,0)
+                .byte mode5_byte(2,0,0,0)
+                .byte mode5_byte(2,2,2,2)
+                .byte mode5_byte(0,0,0,0)
+                .byte mode5_byte(0,0,0,0)
+                .byte mode5_byte(0,0,0,0)
+                .byte mode5_byte(0,0,0,0)
+                .byte mode5_byte(2,2,2,0)
+                .byte mode5_byte(0,0,2,0)
+                .byte mode5_byte(0,0,2,0)
+                .byte mode5_byte(2,2,2,0)
+                .byte mode5_byte(0,2,2,0)
+                .byte mode5_byte(0,2,2,0)
+                .byte mode5_byte(0,2,2,0)
+                .byte mode5_byte(0,2,2,0)
 
 sprite_block:
                 .byte mode5_byte(3,3,3,3)
@@ -346,6 +521,7 @@ L0AE0:
                 .word 5         ; duration
                 .byte 0
                 .byte 0
+time_bcd: .byte 0,0             ; seconds, 100ths
 bonus_update_timer:.byte 2
 ;spider_speed: .byte $C
 ;spider_update_timer: .byte $4D
@@ -504,10 +680,13 @@ game_start_y=4
 game_start_addr=$5800+game_start_y*320
 level_name_y=28
 
-                stx go
+                stx go          ; should really be a yflag too...
+                sty yflags
 
                 lda #0
                 sta num_objects
+                sta time_bcd+0
+                sta time_bcd+1
                 ; sta conveyor_addr+1
                 ; sta spider_addr+1
                 ; sta platform_addr+1
@@ -523,9 +702,6 @@ level_name_y=28
                 sta level_draw_screen_addr+0
                 lda #>game_start_addr
                 sta level_draw_screen_addr+1
-
-                lda #$ff
-                sta colour
 
                 lda #<-(level_width*level_height)
                 sta counter+0
@@ -763,7 +939,7 @@ add_object:
                 
 go:
                 .byte 0
-colour:
+yflags:
                 .byte 0
 counter:
                 .word 0
@@ -1035,10 +1211,89 @@ L0E85:
                 lda #19
                 jsr osbyte
 
+                jsr update_time
+
                 ldx #inkey(key_escape)
                 jsr test_key
                 beq main_loop
                 rts
+
+update_time: .proc
+                lda entry_init_level.yflags
+                and #init_level_yflag_time_attack
+                beq done
+
+                ; don't update time if it wrapped.
+                lda time_bcd+0
+                cmp #$99
+                bne update
+                lda time_bcd+1
+                cmp #$99
+                beq done
+
+update:
+                sed
+                lda time_bcd+0
+                adc #$02
+                sta time_bcd+0
+                lda time_bcd+1
+                adc #$00
+                sta time_bcd+1
+                cld
+
+                ; if time wrapped, set to 99:99
+                bcc draw_digits
+
+                lda #$99
+                sta time_bcd+0
+                sta time_bcd+1
+
+draw_digits:
+dest=$5800+320+16*16
+                lda #<dest
+                sta digits_addr+0
+                lda #>dest
+                sta digits_addr+1
+                
+                ldy #8
+                
+                lda time_bcd+1
+                and #$f0
+                jsr draw_digit
+
+                lda time_bcd+1
+                asl a
+                asl a
+                asl a
+                asl a
+                jsr draw_digit
+
+                ldy #48
+                lda time_bcd+0
+                and #$f0
+                jsr draw_digit
+                
+done:
+                rts
+
+                .endproc
+
+;-------------------------------------------------------------------------
+;
+draw_digit: .proc
+                tax
+loop:
+                lda sprite_digits,x
+                sta (digits_addr),y
+                iny
+                inx
+                txa
+                ; each digit is 16 byte aligned from sprite_digits
+                and #$0f
+                bne loop
+                rts
+                .endproc
+
 
 ;-------------------------------------------------------------------------
 
@@ -2431,6 +2686,11 @@ L15DD:
 ;-------------------------------------------------------------------------
 
 update_bonus:   .block
+                ; No bonus in time attack mode.
+                lda entry_init_level.yflags
+                and #init_level_yflag_time_attack
+                bne done
+                
                 dec bonus_chars+1
                 lda bonus_chars+1
                 cmp #udg_char_0-1
@@ -2444,8 +2704,6 @@ update_bonus:   .block
                 pla
                 pla
                 jmp kill_player_and_drop_caller
-
-;-------------------------------------------------------------------------
 
 L15FE:
                 ldy #1
@@ -2473,6 +2731,7 @@ L1617:
                 jsr oswrch
                 dey
                 bpl L1617
+done:
                 rts
                 .endblock
 
@@ -2493,25 +2752,24 @@ L1636:
                 dey
                 jmp L1636
 
-;-------------------------------------------------------------------------
-
 L164C:
                 dex
                 bne add_X_to_score
-                ldy #4
+                jmp L1698
+;                 ldy #4
 
-L1651:
-                lda #$1F
-                jsr oswrch
-                tya
-                jsr oswrch
-                lda #1
-                jsr oswrch
-                lda score_chars,y
-                jsr oswrch
-                dey
-                bpl L1651
-                rts
+; L1651:
+;                 lda #$1F
+;                 jsr oswrch
+;                 tya
+;                 jsr oswrch
+;                 lda #1
+;                 jsr oswrch
+;                 lda score_chars,y
+;                 jsr oswrch
+;                 dey
+;                 bpl L1651
+;                 rts
                 .endblock
 
 ;-------------------------------------------------------------------------
@@ -2547,8 +2805,15 @@ L168A:
 L1695:
                 dex
                 bne L166D
+                .cerror *!=L1698
+                .endblock
 
-L1698:
+L1698: .block
+                ; No score in time attack mode.
+                lda entry_init_level.yflags
+                and #init_level_yflag_time_attack
+                bne done
+                
                 ldy #4
 
 L169A:
@@ -2562,6 +2827,7 @@ L169A:
                 jsr oswrch
                 dey
                 bpl L169A
+done:
                 rts
                 .endblock
 
@@ -2777,7 +3043,7 @@ test_key:
                 .if editor
 ;-------------------------------------------------------------------------
 
-ed_keys=[key_z,key_x,key_slash,key_colon,key_return,key_delete,key_tab,key_r,key_s,key_escape,key_left,key_right,key_up,key_down,key_c,key_g,key_t,key_3]
+ed_keys=[key_z,key_x,key_slash,key_colon,key_return,key_delete,key_tab,key_r,key_s,key_escape,key_left,key_right,key_up,key_down,key_c,key_g,key_t,key_3,key_a]
 
 ed_key_index: .function k
                 .for _i:=0,_i<len(ed_keys),_i+=1
@@ -2836,6 +3102,7 @@ quit=$10
                 .fill 1
                 .endblock
 ed_text_input_char: .fill 1
+ed_test_time_attack: .fill 1
                 .endsection
 
                 .section ed_basic_friendly_zp
@@ -2852,9 +3119,6 @@ ed_levels_header_magic:
 ed_old_language_rom:
                 .byte 0
 
-ed_post_brk_loop:
-                .cerror (*&$ff)==$ff,'oh no'
-                .word 0
 ed_key_counters:
                 .fill len(ed_keys),0
 ed_key_flags:
@@ -4696,6 +4960,7 @@ _..=[key_action(key_c,ed_key_flag_newly_down,next_colour)]
 _..=[key_action(key_g,ed_key_flag_newly_down,set_ghost_rect)]
 _..=[key_action(key_t,ed_key_flag_newly_down,toggle_no_standard_treasure)]
 _..=[key_action(key_3,ed_key_flag_newly_down,ghost_count)]
+_..=[key_action(key_a,ed_key_flag_newly_down,toggle_test_time_attack)]
 key_actions=_
 
 key_indexes: .byte key_actions.key_index
@@ -4703,6 +4968,13 @@ key_masks: .byte key_actions.mask
 key_routines_lo: .byte <key_actions.routine
 key_routines_hi: .byte >key_actions.routine
 
+toggle_test_time_attack: .proc
+                lda ed_test_time_attack
+                eor #$ff
+                sta ed_test_time_attack
+                jmp redraw
+                .endproc
+                
 ghost_count: .proc
                 ; the shortcut key for this is actually '#', SHIFT+3
                 bit ed_shift_pressed
@@ -5074,6 +5346,13 @@ colour3_physical_colour:
                 adc #'0'
                 jsr oswrch
 
+                jsr ed_print
+                .text ' TA:'
+                .byte 0
+
+                lda ed_test_time_attack
+                jsr print_yn
+
 draw_level:
                 jsr ed_draw_level
 
@@ -5324,8 +5603,10 @@ reset_ghosts_table_loop:
                 bpl reset_ghosts_table_loop
 
                 ; Fill ghosts table
+                lda ed_test_time_attack
+                bne ghosts_table_filled ; taken if time attack mode
                 lda ed_test_num_ghosts
-                beq ghosts_table_filled
+                beq ghosts_table_filled ; taken if G#=0
                 asl a
                 tax
 fill_ghosts_table_loop:
@@ -5343,25 +5624,24 @@ init_level:
                 ; the GO value needs to be 0 (no spider2) or !=0
                 ; (spider2).
                 ldx #0          ; assume 1 or 0 ghosts - no spider2
+                lda ed_test_time_attack
+                bne num_ghosts_set ; taken if time attack mode
                 lda ed_test_num_ghosts
                 cmp #2
-                bcc +           ; taken if 1 or 0 ghosts
+                bcc num_ghosts_set ; taken if 1 or 0 ghosts
                 inx             ; X=1
+num_ghosts_set:
+
+                lda #0          ; yflag=0
+                ldy ed_test_time_attack
+                beq +
+                ora #init_level_yflag_time_attack
 +
+                tay
+                
                 jsr entry_init_level
 
                 jsr copy_data_behind_player
-
-                ; lda #15
-                ; ldx #1
-                ; jsr osbyte
-                ; lda #7
-                ; jsr oswrch
-                ; jsr osrdch
-                
-                ; ; ???
-                ; lda #0
-                ; sta L0084
 
                 ; Initial bonus and score
                 ldx #4
@@ -5459,12 +5739,32 @@ level_name:
                 .byte 25,21
                 .word 1279,952
 
-                ; COLOUR 1
+
+                .byte 0
+
+                lda entry_init_level.yflags
+                and #init_level_yflag_time_attack
+                beq score_mode_hud
+
+time_mode_hud:
+                jsr ed_print
+
+                .byte 31,13,1
                 .byte 17,1
+                .byte udg_time+0,udg_time+1,udg_time+2
+                .byte 0
+
+                jmp hud_drawn
+
+score_mode_hud:
+                jsr ed_print
 
                 ; PRINT TAB(14,1)
                 .byte 31,14,1
 
+                ; COLOUR 1
+                .byte 17,1
+                
                 ; "BONUS"
                 .byte udg_bonus+0,udg_bonus+1,udg_bonus+2
 
@@ -5487,6 +5787,7 @@ initial_bonus:
 
                 .byte 0
 
+hud_drawn:
                 ; VDU 4 switches the cursor back on.
                 jsr ed_coff
 
@@ -6479,9 +6780,10 @@ ed_brk_handler: .proc
                 sta ed_brk_addr+0
                 lda $fe
                 sta ed_brk_addr+1
-
-                jmp (ed_post_brk_loop)
+jmp_post_brk_loop
+                jmp ed_main_loop
                 .endproc
+ed_post_brk_loop=ed_brk_handler.jmp_post_brk_loop+1
 
 ;-------------------------------------------------------------------------
 ;

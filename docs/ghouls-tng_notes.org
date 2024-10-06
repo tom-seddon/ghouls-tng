@@ -615,11 +615,13 @@ This suggests as a first draft memory map:
 | Page | What            | Notes                               |
 |------+-----------------+-------------------------------------|
 |   09 | Object arrays   |                                     |
-|   0a |                 |                                     |
+|   0a | Object arrays   |                                     |
 |------+-----------------+-------------------------------------|
-|   0b | ...             |                                     |
+|   0b | Unused          |                                     |
+|      | Econet (Master) |                                     |
 |------+-----------------+-------------------------------------|
 |   0c | UDGs (OS 1.20)  |                                     |
+|      | Econet (Master) |                                     |
 |------+-----------------+-------------------------------------|
 |   11 | GBAS            | PAGE=&1100                          |
 |   12 |                 |                                     |
@@ -861,5 +863,32 @@ newlines or anything, as the text has a fixed budget vertically.
 Takes ~1 second:
 
 : FORF=1TO2000:NEXT
+
+* Timer
+
+#+begin_example
+  01234567 01234567 01234567
+        ## ### # #    # ####
+           #   # ##  ## #
+           #   # ## ### #
+           #   # #  # # ###
+           #   # #  # # #
+           #   # #    # #
+           #   # #    # ####
+#+end_example
+
+* Bits of memory that could go elsewhere
+
+At least, they don't have to be part of the main Ghouls binary.
+
+- =data_behind_player=
+- =bonus_chars=
+- =score_chars=
+
+* ghouls.bas copy/paste
+
+LDATA={&levels_org}+4+(SC-1)*{$LevelData_size}
+
+$(LDATA+{$LevelData_name_offset})
 
 * EOF

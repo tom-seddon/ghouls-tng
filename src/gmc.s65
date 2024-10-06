@@ -65,6 +65,8 @@ level_draw_sprite_dest=$8a
 
 digits_addr=$8c
 
+time_digits_address=$5800+320+15*16+8
+                
 ;-------------------------------------------------------------------------
 
 max_num_objects=85
@@ -1249,30 +1251,37 @@ update:
                 sta time_bcd+1
 
 draw_digits:
-dest=$5800+320+16*16
-                lda #<dest
+                lda #<time_digits_address
                 sta digits_addr+0
-                lda #>dest
+                lda #>time_digits_address
                 sta digits_addr+1
                 
-                ldy #8
+                ldy #0
                 
                 lda time_bcd+1
+                pha
                 and #$f0
                 jsr draw_digit
 
-                lda time_bcd+1
+                pla
                 asl a
                 asl a
                 asl a
                 asl a
                 jsr draw_digit
 
-                ldy #48
+                ldy #40
                 lda time_bcd+0
+                pha
                 and #$f0
                 jsr draw_digit
-                
+
+                pla
+                asl a
+                asl a
+                asl a
+                asl a
+                jsr draw_digit
 done:
                 rts
 
@@ -5751,10 +5760,14 @@ level_name:
 time_mode_hud:
                 jsr ed_print
 
-                .byte 31,13,1
+                .byte 31,12,1
                 .byte 17,1
                 .byte udg_time+0,udg_time+1,udg_time+2
                 .byte 0
+
+                lda #mode5_byte(0,2,2,0)
+                sta time_digits_address+2*16+6
+                sta time_digits_address+2*16+7
 
                 jmp hud_drawn
 

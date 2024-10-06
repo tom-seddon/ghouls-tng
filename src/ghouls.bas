@@ -18,7 +18,7 @@ LDATA={&levels_org}+4+(SC-1)*{$LevelData_size}:!{&level_draw_ptr}=LDATA:A%=0:X%=
 CALL{&entry_init_level}
 VDU5:MOVE(20-LEN($(LDATA+{$LevelData_name_offset})))*64,28:PRINT$(LDATA+{$LevelData_name_offset}):VDU4
 !{&ghosts_table}=0:!{&ghosts_table+3}=0:COLOUR1{# TODO: ghosts_table+3 should probably be ghosts_table+4...
-IFTA:PRINTTAB(13,1)CHR${$udg_time+0}CHR${$udg_time+1}CHR${$udg_time+2}ELSEPRINTTAB(14,1)CHR${$udg_bonus+0}CHR${$udg_bonus+1}CHR${$udg_bonus+2};:COLOUR2:PRINTTAB(18,1)CHR$?{$bonus_chars}CHR$?{$bonus_chars+1}
+IFTA:PRINTTAB(12,1)CHR${$udg_time+0}CHR${$udg_time+1}CHR${$udg_time+2}:!{&time_digits_address+2*16+4}=&60600000:ELSEPRINTTAB(14,1)CHR${$udg_bonus+0}CHR${$udg_bonus+1}CHR${$udg_bonus+2};:COLOUR2:PRINTTAB(18,1)CHR$?{$bonus_chars}CHR$?{$bonus_chars+1}
 GCOL0,1:MOVE0,60:DRAW0,952:MOVE1279,60:DRAW1279,952:GCOL0,2:MOVE0,952:PLOT21,1279,952
 IF(LDATA?{$LevelData_flags_offset}AND{$LevelData_flags_no_standard_treasure})=0:GCOL0,1:MOVE1080,800:DRAW1080,860:GCOL0,2:MOVE1092,864:DRAW1270,864:FORF=0TO31STEP4:F!&5CE0=F!{&sprite_goal_row0}:F!&5E20=F!{&sprite_goal_row1}:NEXT
 IFLI<=1GOTO{$L160}

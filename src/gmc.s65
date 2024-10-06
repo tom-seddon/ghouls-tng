@@ -2726,36 +2726,25 @@ add_4digit_to_score: .block
 
                 clc
 
-                ldy #0
+                adc score_bcd+0
+                sta score_bcd+0
 
-                jsr add_byte
                 txa
-                jsr add_byte
+                adc score_bcd+1
+                sta score_bcd+1
 
-                lda #0          ; just propagating carry now
-                jsr add_byte
-                
+                lda score_bcd+2
+                adc #$00
+                sta score_bcd+2
+
                 cld
 
                 jmp L1698
-
-add_byte:
-                adc score_bcd,y
-                sta score_bcd,y
-                iny
-                rts
                 
                 .endblock
 
 ;-------------------------------------------------------------------------
 
-subtract_score_byte:
-                lda score_bcd,y
-                sbc #$00
-                sta score_bcd,y
-                iny
-                rts
-                
 subtract_5_from_score: .block
                 sed
 
@@ -2764,9 +2753,12 @@ subtract_5_from_score: .block
                 lda score_bcd+0
                 sbc #$05
                 sta score_bcd+0
-
-                jsr subtract_score_byte
-                jsr subtract_score_byte
+                lda score_bcd+1
+                sbc #$00
+                sta score_bcd+1
+                lda score_bcd+2
+                sbc #$00
+                sta score_bcd+2
 
                 cld
 

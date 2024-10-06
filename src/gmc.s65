@@ -1259,29 +1259,12 @@ draw_digits:
                 ldy #0
                 
                 lda time_bcd+1
-                pha
-                and #$f0
-                jsr draw_digit
-
-                pla
-                asl a
-                asl a
-                asl a
-                asl a
-                jsr draw_digit
+                jsr draw_bcd_byte_digits
 
                 ldy #40
                 lda time_bcd+0
-                pha
-                and #$f0
-                jsr draw_digit
+                jsr draw_bcd_byte_digits
 
-                pla
-                asl a
-                asl a
-                asl a
-                asl a
-                jsr draw_digit
 done:
                 rts
 
@@ -1289,6 +1272,27 @@ done:
 
 ;-------------------------------------------------------------------------
 ;
+;
+draw_bcd_byte_digits: .proc
+                pha
+                and #$f0
+                jsr draw_digit
+
+                pla
+                asl a
+                asl a
+                asl a
+                asl a
+                .cerror *!=draw_digit
+                .endproc
+
+;-------------------------------------------------------------------------
+;
+; Draw 1 decimal digit
+;
+; Entry: (digits_addr),y = where to draw to
+;        A = digit<<4
+; Exit: Y has 16 added, ready for adjacent digit
 draw_digit: .proc
                 tax
 loop:

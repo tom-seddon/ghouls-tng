@@ -3125,6 +3125,7 @@ ed_main_loop: .proc
                 jsr osbyte
 
                 jsr ed_disable_escape
+                jsr ed_cursor_keys_fkeys
                 
                 lda #<ed_main_loop
                 sta ed_post_brk_loop+0
@@ -3983,16 +3984,10 @@ ed_text_edit: .proc
                 lda #ed_text_result.handled
                 sta ed_text_result
 
-                lda #4
-                ldx #1
-                jsr osbyte      ; cursor keys = keys (AUG p120)
-                
+                jsr ed_cursor_keys_chars
                 jsr osrdch
-
                 pha
-                lda #4
-                ldx #2
-                jsr osbyte      ; cursor keys = F keys (AUG p120)
+                jsr ed_cursor_keys_fkeys
                 pla
                 
                 ;jsr ed_print_hex
@@ -4730,9 +4725,11 @@ end:
 ;-------------------------------------------------------------------------
 
 ed_osword0: .proc
-                stx reldx1+1
-                sty reldy1+1
+                stx reldx1+1    ; save OSWORD 0 block address LSB
+                sty reldy1+1    ; save OSWORD 0 block address MSB
                 jsr ed_enable_escape
+                jsr ed_cursor_keys_enabled
+                stx reldx2+1    ; save old cursor keys state
 reldx1:
                 ldx #$ff
 reldy1:
@@ -4740,8 +4737,11 @@ reldy1:
                 lda #0
                 jsr osword
                 php
-                sty reldy2+1
+                sty reldy2+1    ; save OSWORD 0 Y result
                 jsr ed_disable_escape
+reldx2:
+                ldx #$ff
+                jsr ed_cursor_keys_set_state
 reldy2:
                 ldy #$ff
                 plp
@@ -4760,6 +4760,20 @@ ed_set_escape_status:
 ed_disable_escape:
                 ldx #1          ;make Escape generate ASCII
                 bne ed_set_escape_status
+
+;-------------------------------------------------------------------------
+
+ed_cursor_keys_fkeys:
+                ldx #2
+                bne ed_cursor_keys_set_state
+ed_cursor_keys_chars:
+                ldx #1
+                bne ed_cursor_keys_set_state
+ed_cursor_keys_enabled:
+                ldx #0
+ed_cursor_keys_set_state:
+                lda #4
+                jmp osbyte
                 
 ;-------------------------------------------------------------------------
 

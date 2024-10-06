@@ -27,7 +27,7 @@ VDU23,1,1,0,0,0,0,0,0,0
 I."]"A$
 IFA$="":A$="GLEVELS"
 *FX229
-*FX4
+*FX4 1
 *RUN GUDGS
 *LOAD GMC
 OSCLI"LOAD "+A$+" {~levels_org}"

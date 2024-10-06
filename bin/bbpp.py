@@ -248,10 +248,11 @@ def main2(options):
         for basic_line in basic_lines:
             def eval_expr(f,part):
                 try: return eval(part.expr,globals_dict,locals_dict)
-                except NameError as e:
+                except (SyntaxError,NameError) as e:
                     sys.stderr.write('%s: %s\n'%(
                         loc_str(basic_line.src_line,part.begin+1),
                         e))
+                    sys.stderr.write('  Expression: %s\n'%part.expr)
                     sys.exit(1)
                 
             def print_expr(f,part,must_be_int,fmt):

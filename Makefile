@@ -86,7 +86,7 @@ endif
 
 # Print some info
 	$(_V)$(SHELLCMD) blank-line
-	$(_V)$(PYTHON) $(BIN)/budgets.py $(BEEB_OUTPUT) $(BUILD)/GMC.symbols
+	$(_V)$(PYTHON) $(BIN)/budgets.py $(BEEB_OUTPUT) $(BUILD)
 	$(_V)$(SHELLCMD) blank-line
 
 # Create a .ssd

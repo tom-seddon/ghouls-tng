@@ -1,11 +1,17 @@
 #!/usr/bin/python
 import os,os.path,sys,argparse,hashlib
 
+##########################################################################
+##########################################################################
+
 class Symbols: pass
 
-def main2(options):
+##########################################################################
+##########################################################################
+
+def load_symbol_file(path):
     symbols=Symbols()
-    with open(options.symbol_file,'rt') as f:
+    with open(path,'rt') as f:
         for line in f.readlines():
             parts=line.split('=',1)
             if len(parts)==2:
@@ -16,8 +22,17 @@ def main2(options):
                 except: pass
                 setattr(symbols,key,value)
 
+    return symbols
+
+##########################################################################
+##########################################################################
+
+def main2(options):
     any_bad=False
 
+    gmc_symbols=load_symbol_file(os.path.join(options.build_folder,'GMC.symbols'))
+    gedmc_symbols=load_symbol_file(os.path.join(options.build_folder,'GEDMC.symbols'))
+    
     def budget(name,begin,end):
         nonlocal any_bad
 
@@ -39,18 +54,24 @@ def main2(options):
 
     # the -1024 is supposed to give room for BASIC stack plus the GBAS
     # vars.
-    budget('$.GBAS',PAGE,symbols.gmc_org-1024)
-    budget('$.GMC',symbols.gmc_org,symbols.levels_org)
-    budget('$.GEDMC',symbols.gedmc_org,symbols.levels_org)
-    budget('$.GLEVELS',symbols.levels_org,symbols.himem)
+    budget('$.GBAS',PAGE,gmc_symbols.gmc_org-1024)
+    budget('$.GMC',gmc_symbols.gmc_org,gmc_symbols.levels_org)
+    budget('$.GEDMC',gedmc_symbols.gedmc_org,gedmc_symbols.gedmc_org+gedmc_symbols.max_gedmc_pages*256)
+    budget('$.GLEVELS',gmc_symbols.levels_org,gmc_symbols.himem)
     budget('$.GUDGS',0x900,0xb00)
 
     if any_bad: sys.exit(1)
 
+##########################################################################
+##########################################################################
+
 def main(argv):
     parser=argparse.ArgumentParser()
     parser.add_argument('path',metavar='PATH',help='''find ghouls-tng files in %(metavar)s''')
-    parser.add_argument('symbol_file',metavar='PATH',help='''read symbol file from %(metavar)s''')
+    parser.add_argument('build_folder',metavar='FOLDER',help='''find symbol file in %(metavar)s''')
     main2(parser.parse_args(argv))
 
+##########################################################################
+##########################################################################
+    
 if __name__=='__main__': main(sys.argv[1:])

@@ -3144,8 +3144,7 @@ max_char: .byte (\_max_char)
 ;-------------------------------------------------------------------------
 
 ed_entry:
-                jsr ed_one_time_init
-                jmp ed_main_loop
+                jmp ed_one_time_init ; carries on to ed_main_loop
 
 ed_main_loop: .proc
                 ldx #$ff
@@ -4282,6 +4281,8 @@ import_level: .proc
 
                 jsr enter_file_name
 
+                jsr ed_enable_escape
+
                 ldx #<import_levels_org
                 ldy #>import_levels_org
                 jsr init_levels_file_osfile_block
@@ -4508,6 +4509,7 @@ load_levels:
 
                 jsr enter_file_name
 
+load_named_levels:
                 ldx #<import_levels_org
                 ldy #>import_levels_org
                 jsr init_levels_file_osfile_block
@@ -6876,30 +6878,22 @@ ed_one_time_init: .proc
                 jsr oscli
 
                 jsr ed_check_levels_header_magic
-                bcs levels_loaded ;some left in RAM
+                bcs ed_main_loop ;some left in RAM - ok to start
 
-                ldx #<load_glevels
-                ldy #>load_glevels
-                jsr oscli
-
-                ; and sneak the file name into the last loaded file
-                ; buffer.
-                ldx #0
+                ; load default levels set
+                ldx #size(glevels_name)-1
 -
                 lda glevels_name,x
-                sta ed_last_file_name,x
-                inx
-                cpx #size(glevels_name)
-                bne -
+                sta ed_file_name_buffer,x
+                dex
+                bpl -
 
-levels_loaded:
-                rts
+                ; load_named_levels jumps to ed_main_loop once done
+                jmp ed_main_menu.load_named_levels
 
 run_gudgs:
                 .text '/$.GUDGS',13
 
-load_glevels:
-                .text 'LOAD '
 glevels_name: .text '$.GLEVELS',13
                 .endproc
 

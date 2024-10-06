@@ -1,21 +1,35 @@
                 .include "../submodules/beeb/include/beeb.s65"
 
+                .weak
+editor=false
+                .endweak
+
 ;-------------------------------------------------------------------------
 
 max_gmc_pages=18
 level_data_pages=11
 
 himem=$5800
-levels_org=himem-level_data_pages*256
-                .cerror (<levels_org)!=0
-gmc_org=levels_org-max_gmc_pages*256
+
+                .if editor
+
+                ; keep out of the way of MODE 2
+levels_org=$2000
+gedmc_org=levels_org+level_data_pages*256
+max_gedmc_pages=>(himem-gedmc_org)
 
 ; Importing only happens in Mode 7. Plenty of space free!
 import_levels_org=himem
                 .cerror import_levels_org+level_data_pages*256>$7c00
+
+                .else
+
+levels_org=himem-level_data_pages*256
+gmc_org=levels_org-max_gmc_pages*256
+
+                .endif
                 
-gedmc_org=$2000;levels_org-max_gedmc_pages*256
-max_gedmc_pages=(levels_org-gedmc_org)/256
+                .cerror (<levels_org)!=0
                 
 ;-------------------------------------------------------------------------
 

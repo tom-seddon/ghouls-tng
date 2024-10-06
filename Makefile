@@ -70,9 +70,11 @@ endif
 	$(_V)$(MAKE) _asm PC=gudgs BEEB=GUDGS
 	$(_V)$(MAKE) _asm PC=glevels BEEB=GLEVELS
 
-# Create GBAS
-	$(_V)$(PYTHON) $(BIN)/bbpp.py -Ddebug=True --asm-symbols $(BUILD)/GMC.symbols "" -o $(BUILD)/ghouls.bas src/ghouls.bas
-	$(_V)$(BASICTOOL) --tokenise --basic-2 --output-binary $(BUILD)/ghouls.bas $(BEEB_OUTPUT)/$$.GBAS
+# Create GBAS and D.GBAS
+	$(_V)$(PYTHON) $(BIN)/bbpp.py -Ddebug=False --asm-symbols $(BUILD)/GMC.symbols "" -o $(BUILD)/gbas.bas src/ghouls.bas
+	$(_V)$(BASICTOOL) --tokenise --basic-2 --output-binary $(BUILD)/gbas.bas $(BEEB_OUTPUT)/$$.GBAS
+	$(_V)$(PYTHON) $(BIN)/bbpp.py -Ddebug=True --asm-symbols $(BUILD)/GMC.symbols "" -o $(BUILD)/d.gbas.bas src/ghouls.bas
+	$(_V)$(BASICTOOL) --tokenise --basic-2 --output-binary $(BUILD)/d.gbas.bas $(BEEB_OUTPUT)/D.GBAS
 
 # Create GLOADER
 	$(_V)$(PYTHON) $(BIN)/bbpp.py --asm-symbols $(BUILD)/GMC.symbols "" -o $(BUILD)/gloader.bas src/gloader.bas
@@ -92,7 +94,24 @@ endif
 # Create a .ssd
 #
 # TODO: don't include everything!
-	$(_V)$(SSD_CREATE) -o $(SSD_OUTPUT) --dir $(BEEB_OUTPUT) $(BEEB_OUTPUT)/$$.!BOOT $(BEEB_OUTPUT)/$$.GLOADER $(BEEB_OUTPUT)/$$.GSCREEN $(BEEB_OUTPUT)/$$.GUDGS $(BEEB_OUTPUT)/$$.GMC $(BEEB_OUTPUT)/$$.GLEVELS $(BEEB_OUTPUT)/$$.GBAS $(BEEB_OUTPUT)/$$.GEDMC $(BEEB_VOLUME)/2/$$.TUTOR1 $(BEEB_VOLUME)/2/$$.SPIDERS $(BEEB_VOLUME)/2/$$.HEIGHTS $(BEEB_VOLUME)/2/$$.ALTERN $(BEEB_VOLUME)/2/$$.EGYPT $(BEEB_VOLUME)/2/$$.DAVE $(BEEB_VOLUME)/2/$$.TOM
+	$(_V)$(SSD_CREATE) -o "$(SSD_OUTPUT)" \
+--dir "$(BEEB_OUTPUT)" \
+"$(BEEB_OUTPUT)/$$.!BOOT" \
+"$(BEEB_OUTPUT)/$$.GLOADER" \
+"$(BEEB_OUTPUT)/$$.GSCREEN" \
+"$(BEEB_OUTPUT)/$$.GUDGS" \
+"$(BEEB_OUTPUT)/$$.GMC" \
+"$(BEEB_OUTPUT)/$$.GLEVELS" \
+"$(BEEB_OUTPUT)/$$.GBAS" \
+"$(BEEB_OUTPUT)/D.GBAS" \
+"$(BEEB_OUTPUT)/$$.GEDMC" \
+"$(BEEB_VOLUME)/2/$$.TUTOR1" \
+"$(BEEB_VOLUME)/2/$$.SPIDERS" \
+"$(BEEB_VOLUME)/2/$$.HEIGHTS" \
+"$(BEEB_VOLUME)/2/$$.ALTERN" \
+"$(BEEB_VOLUME)/2/$$.EGYPT" \
+"$(BEEB_VOLUME)/2/$$.DAVE" \
+"$(BEEB_VOLUME)/2/$$.TOM"
 
 ##########################################################################
 ##########################################################################

@@ -55,6 +55,7 @@ def main2(options):
     # the -1024 is supposed to give room for BASIC stack plus the GBAS
     # vars.
     budget('$.GBAS',PAGE,gmc_symbols.gmc_org-1024)
+    budget('D.GBAS',PAGE,gmc_symbols.gmc_org-1024)
     budget('$.GMC',gmc_symbols.gmc_org,gmc_symbols.levels_org)
     budget('$.GEDMC',gedmc_symbols.gedmc_org,gedmc_symbols.gedmc_org+gedmc_symbols.max_gedmc_pages*256)
     budget('$.GLEVELS',gmc_symbols.levels_org,gmc_symbols.himem)

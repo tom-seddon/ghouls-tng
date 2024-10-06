@@ -33,4 +33,4 @@ IFA$="":A$="GLEVELS"
 OSCLI"LOAD "+A$+" {~levels_org}"
 IFPAGE>&1100:PAGE=&1100
 IFG$="1":CH."GBAS"
-IFG$="2":CH."D.GBAS"
+IFG$="3":CH."D.GBAS"

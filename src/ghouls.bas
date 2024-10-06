@@ -9,7 +9,7 @@ CALL{&reset_envelopes}:GOTO{$L1350}
 {:L70}
 REM***** GHOULS *****
 PROCMODE(5)
-FORF=0TO4:F?{&score_chars}={$udg_char_0}:NEXT:LI=LI1:SC=SC1:?{&L0AF2}=60:GO=GO1
+!{&score_bcd}=0:LI=LI1:SC=SC1:?{&L0AF2}=60:GO=GO1
 GOSUB{$reset_bonus}
 {:L100}
 FORF=1TO3:VDU19,F,0;0;:NEXT
@@ -18,7 +18,7 @@ LDATA={&levels_org}+4+(SC-1)*{$LevelData_size}:!{&level_draw_ptr}=LDATA:A%=0:X%=
 CALL{&entry_init_level}
 VDU5:MOVE(20-LEN($(LDATA+{$LevelData_name_offset})))*64,28:PRINT$(LDATA+{$LevelData_name_offset}):VDU4
 !{&ghosts_table}=0:!{&ghosts_table+3}=0:COLOUR1{# TODO: ghosts_table+3 should probably be ghosts_table+4...
-IFTA:PRINTTAB(12,1)CHR${$udg_time+0}CHR${$udg_time+1}CHR${$udg_time+2}:!{&time_digits_address+2*16+4}=&60600000:ELSEPRINTTAB(14,1)CHR${$udg_bonus+0}CHR${$udg_bonus+1}CHR${$udg_bonus+2};:COLOUR2:PRINTTAB(18,1)CHR$?{$bonus_chars}CHR$?{$bonus_chars+1}
+IFTA:PRINTTAB(12,1)CHR${$udg_time+0}CHR${$udg_time+1}CHR${$udg_time+2}:!{&time_digits_address+2*16+4}=&60600000:ELSEPRINTTAB(14,1)CHR${$udg_bonus+0}CHR${$udg_bonus+1}CHR${$udg_bonus+2};
 GCOL0,1:MOVE0,60:DRAW0,952:MOVE1279,60:DRAW1279,952:GCOL0,2:MOVE0,952:PLOT21,1279,952
 IF(LDATA?{$LevelData_flags_offset}AND{$LevelData_flags_no_standard_treasure})=0:GCOL0,1:MOVE1080,800:DRAW1080,860:GCOL0,2:MOVE1092,864:DRAW1270,864:FORF=0TO31STEP4:F!&5CE0=F!{&sprite_goal_row0}:F!&5E20=F!{&sprite_goal_row1}:NEXT
 IFLI<=1GOTO{$L160}
@@ -26,7 +26,7 @@ FORF=0TO((LI-2)*16)STEP16:FORG=0TO15STEP4:G!(F+&7D80)=G!{&sprite_pl_facing}:G!(F
 {:L160}
 IFLI>0:GOSUB{$reset_bonus}
 FORF=0TO31:F?{&data_behind_player}=0:NEXT
-IFNOTTA:FORF=0TO4:PRINTTAB(F,1)CHR$(F?{&score_chars}):NEXT
+IFNOTTA:CALL{&L1698}:CALL{&draw_bonus_digits}{#FORF=0TO4:PRINTTAB(F,1)CHR$(F?{&score_chars}):NEXT
 VDU23,0,1,0;0;0;0;:VDU19,1,1;0;19,2,3;0;19,3,LDATA?{$LevelData_colour3_offset};0;
 SOUND&12,4,0,18:SOUND&13,4,1,18:FORF=1TO40:VDU23,0,1,F;0;0;0;:*FX19
 NEXT
@@ -76,7 +76,7 @@ FORG=0TO4STEP2:N=G?{&ghosts_table+1}*256+G?{&ghosts_table}:IFN>&5800 FORF=0TO15S
 SOUND&10,-15,7,255:FORJ=7TO0STEP-1:SOUND&11,-8,J*16,1:FORH=1TO200:NEXT
 FORG=0TO4STEP2:N=G?{&ghosts_table+1}*256+G?{&ghosts_table}:IFN>&5800 FORF=J TO15STEPJ+1:F?N=F?{&sprite_ghost_happy_row0}:F?(N+320)=F?{&sprite_ghost_angry_row1}:NEXT
 NEXT,:SOUND&10,0,0,0
-FORF=1TO1000:NEXT:FORH=1TO5:SOUND&10,1,2,2:FORF=0TO15STEP4:F!&5CD0=0:F!&5E10=0:NEXT:FORF=0TO15STEP4:F!&5B90=F!{&sprite_pl_facing}:F!&5CD0=F!{&sprite_pl_facing+16}:NEXT:FORF=1TO200:NEXT:FORF=0TO15STEP4:F!&5B90=0:F!&5CD0=0:NEXT
+FORF=1TO1000:NEXT:FORH=1TO5:SOUND&10,1,adadd2,2:FORF=0TO15STEP4:F!&5CD0=0:F!&5E10=0:NEXT:FORF=0TO15STEP4:F!&5B90=F!{&sprite_pl_facing}:F!&5CD0=F!{&sprite_pl_facing+16}:NEXT:FORF=1TO200:NEXT:FORF=0TO15STEP4:F!&5B90=0:F!&5CD0=0:NEXT
 GCOL0,2:MOVE0,952:PLOT21,1279,952
 FORF=0TO15STEP4:F!&5CD0=F!{&sprite_pl_facing}:F!&5E10=F!{&sprite_pl_facing+16}:NEXT:FORF=1TO200:NEXT
 NEXT:FORF=0TO15STEP4:F!&5CD0=F!{&sprite_pl_right_0}:F!&5E10=F!{&sprite_pl_right_0+16}:NEXT
@@ -94,7 +94,7 @@ FORF=1TO3500:NEXT:SC=1:VDU19,1,0;0;19,2,0;0;23,0,13,0;0;0;0;26:CLS:ENDPROC
 FORF=1TO1500:NEXT:COLOUR2:FORF=13TO15:PRINTTAB(5,F)STRING$(10," "):NEXT:PROCPRNT(6,14,"THE  END",400,0)
 FORF=1TO2000:NEXT:CALL{&entry_slide_off}
 PROCMODE(7)
-S=0:G=100000:FORF=0TO4:G=G/10:N=(F?{&score_chars})-{$udg_char_0}:S=S+(N*G):NEXT
+S=FNBCD(?{&score_bcd+0})+FNBCD(?{&score_bcd+1})*256+FNBCD(?{&score_bcd+2})*65536
 SC=10:FORF=9TO0STEP-1:IFHI(F)<S SC=F
 NEXT
 IFSC=10GOTO{$L1270}
@@ -226,7 +226,7 @@ PRINTMID$(A$,J,1);:FORG=1TOL:NEXT,:SOUND&11,0,0,0:SOUND&10,0,0,0:ENDPROC
 SOUND&10,-15,7,255:FORF=23TO5STEP-1:SOUND&11,0,128+F*5,1:PRINTTAB(0,F)CHR$(128+(F AND7))CHR$157STRING$(38," ");:NEXT
 FORF=23TO5STEP-1:SOUND&11,0,150+((F*300)AND105),1:PRINTTAB(0,F)STRING$(39," ");:NEXT:SOUND&10,0,0,0:RETURN
 {:reset_bonus}
-?{$bonus_chars}={$udg_char_0+5}:?{$bonus_chars+1}={$udg_char_0}:RETURN
+?{&bonus_bcd}={&initial_bonus_bcd_value}:RETURN
 {:bad_input}
 PRINTTAB(0,20)CHR$129"INPUT NOT CORRECT, TRY AGAIN":SOUND&10,-15,2,1:A$=GET$:PRINTTAB(1,20)STRING$(48," ");:RETURN
 {:L2010}

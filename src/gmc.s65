@@ -65,7 +65,15 @@ level_draw_sprite_dest=$8a
 
 digits_addr=$8c
 
+;-------------------------------------------------------------------------
+
+score_digits_address=$5800+320
 time_digits_address=$5800+320+15*16+8
+bonus_digits_address=$5800+320+18*16
+
+;-------------------------------------------------------------------------
+
+initial_bonus_bcd_value=$50
                 
 ;-------------------------------------------------------------------------
 
@@ -1102,35 +1110,11 @@ data_behind_player:
 
 ;-------------------------------------------------------------------------
 
-                .byte 0
-                .byte 0
-bonus_chars:    .byte 234, 238; 0
-                .byte 'E'
-                .byte 'S'
-                .byte 'T'
-                .byte 'S'
-                .byte 134
-                .byte '1'
-                .byte 'G'
-                .byte 'H'
-                .byte 'O'
-                .byte 'S'
-                .byte 'T'
-                .byte ' '
-                .byte ' '
-                .byte '$'
-score_chars:    .byte udg_char_0, udg_char_0, udg_char_0, udg_char_0+8, udg_char_0+2; 0
-                .byte ' '
-                .byte ' '
-                .byte '$'
-                .byte 'R'
-                .byte 'O'
-                .byte 'B'
-                .byte 'O'
-                .byte 'T'
-                .byte ' '
-L0E1E:       .byte ' '
-                .byte '$'
+bonus_bcd: .byte 0
+
+                ; only 5 digits are shown. Only needs 3 bytes, but 4
+                ; bytes makes it more concise to access from BASIC.
+score_bcd: .fill 4
 
 ;-------------------------------------------------------------------------
 
@@ -1279,6 +1263,7 @@ draw_bcd_byte_digits: .proc
                 jsr draw_digit
 
                 pla
+lsn:
                 asl a
                 asl a
                 asl a
@@ -1493,8 +1478,9 @@ L0FBF:
                 bne L0FBF
                 lda #100
                 sta L0AEE
-                ldx #100
-                jsr add_X_to_score
+                ldx #$01
+                lda #$00
+                jsr add_4digit_to_score
                 lda #4
                 sta L0AF4    ; ghost index
 
@@ -1581,8 +1567,8 @@ move_player_up_one_row:
                 sbc #1
                 sta player_addr+1
 
-                ldx #5
-                jsr add_X_to_score
+                lda #$05
+                jsr add_2digit_to_score
                 
                 jmp L1082
 
@@ -1674,8 +1660,8 @@ L1092:
                 ldy #>L0AE0
                 jsr osword
                 clc
-                ldx #3
-                jsr add_X_to_score
+                lda #$03
+                jsr add_2digit_to_score
                 jmp L10E6
 
 ;-------------------------------------------------------------------------
@@ -1906,8 +1892,8 @@ L1210:
                 jsr osword
                 lda L0AF2
                 sta L0AF1
-                ldx #5
-                jsr add_X_to_score
+                lda #$05
+                jsr add_2digit_to_score
                 jmp L1386
 
 ;-------------------------------------------------------------------------
@@ -2529,8 +2515,8 @@ L14AD:
                 jsr osword
                 lda #2
                 sta L0AC8+4  ;pitch
-                ldx #3
-                jsr add_X_to_score
+                lda #$03
+                jsr add_2digit_to_score
 
 L14CA:
                 ldy #0
@@ -2559,7 +2545,7 @@ L14CA:
                 lda player_addr+1
                 adc #1
                 sta player_addr+1
-                jsr L166B
+                jsr subtract_5_from_score
                 inc L0AFC
                 lda L0AFC
                 cmp #4
@@ -2665,32 +2651,10 @@ L15A2:
                 sta (L0074),y
                 dey
                 bpl L15A2
-                lda bonus_chars+1
-                sec
-                sbc #udg_char_0
-                beq L15BD
-                tax
-                jsr add_X_to_score
 
-L15BD:
-                lda bonus_chars
-                sec
-                sbc #udg_char_0
-                tay
-                beq L15DD
-                lda #0
-                sta L0E1E
-
-L15CB:
-                lda L0E1E
-                clc
-                adc #$A
-                sta L0E1E
-                dey
-                bne L15CB
-                ldx L0E1E
-                jsr add_X_to_score
-
+                lda bonus_bcd
+                jsr add_2digit_to_score
+                
 L15DD:
                 pla
                 pla
@@ -2702,27 +2666,31 @@ update_bonus:   .block
                 ; No bonus in time attack mode.
                 lda entry_init_level.yflags
                 and #init_level_yflag_time_attack
-                bne done
-                
-                dec bonus_chars+1
-                lda bonus_chars+1
-                cmp #udg_char_0-1
-                bne L15FE
-                lda #udg_char_0+9
-                sta bonus_chars+1
-                dec bonus_chars
-                lda bonus_chars
-                cmp #udg_char_0-1
-                bne L15FE
+                bne draw_bonus_digits.done
+
+                lda bonus_bcd
+                bne update
+
                 pla
                 pla
                 jmp kill_player_and_drop_caller
 
-L15FE:
-                ldy #1
-                lda bonus_chars
-                cmp #udg_char_0
-                bne L1617
+update:
+                sec
+                sed
+                lda bonus_bcd
+                sbc #$01
+                sta bonus_bcd
+                cld
+
+                lda bonus_bcd
+                cmp #$10
+                bcs draw_bonus_digits
+                
+                ; ldy #1
+                ; lda bonus_chars
+                ; cmp #udg_char_0
+                ; bne L1617
                 lda #$95
                 sta L0AD0+4  ;pitch
                 lda #7
@@ -2730,116 +2698,113 @@ L15FE:
                 ldy #>L0AD0
                 jsr osword
                 ldy #1
+                .cerror *!=draw_bonus_digits
+                .endblock
+draw_bonus_digits: .block
+                lda #<bonus_digits_address
+                sta digits_addr+0
+                lda #>bonus_digits_address
+                sta digits_addr+1
 
-L1617:
-                lda #31
-                jsr oswrch
-                tya
-                clc
-                adc #18
-                jsr oswrch
-                lda #1
-                jsr oswrch
-                lda bonus_chars,y
-                jsr oswrch
-                dey
-                bpl L1617
+                lda bonus_bcd
+                jsr draw_bcd_byte_digits
 done:
                 rts
                 .endblock
 
 ;-------------------------------------------------------------------------
+;
+; X/A = BCD value to add (X is more significant 2 digits, A less
+; significant)
+;
+add_2digit_to_score:
+                ldx #$00
+                .cerror *!=add_4digit_to_score
+add_4digit_to_score: .block
 
-add_X_to_score: .block
-                ldy #4
+                sed
 
-L1636:
-                lda score_chars,y
                 clc
-                adc #1
-                sta score_chars,y
-                cmp #udg_char_0+10
-                bne L164C
-                lda #udg_char_0
-                sta score_chars,y
-                dey
-                jmp L1636
 
-L164C:
-                dex
-                bne add_X_to_score
+                ldy #0
+
+                jsr add_byte
+                txa
+                jsr add_byte
+
+                lda #0          ; just propagating carry now
+                jsr add_byte
+                
+                cld
+
                 jmp L1698
-;                 ldy #4
 
-; L1651:
-;                 lda #$1F
-;                 jsr oswrch
-;                 tya
-;                 jsr oswrch
-;                 lda #1
-;                 jsr oswrch
-;                 lda score_chars,y
-;                 jsr oswrch
-;                 dey
-;                 bpl L1651
-;                 rts
+add_byte:
+                adc score_bcd,y
+                sta score_bcd,y
+                iny
+                rts
+                
                 .endblock
 
 ;-------------------------------------------------------------------------
 
-L166B:       .block
-                ldx #5
+subtract_score_byte:
+                lda score_bcd,y
+                sbc #$00
+                sta score_bcd,y
+                iny
+                rts
+                
+subtract_5_from_score: .block
+                sed
 
-L166D:
-                ldy #4
-
-L166F:
-                lda score_chars,y
                 sec
-                sbc #1
-                sta score_chars,y
-                cmp #udg_char_0-1
-                bne L1695
-                lda #udg_char_0+9
-                sta score_chars,y
-                dey
-                bpl L166F
-                ldy #4
-                lda #udg_char_0
 
-L168A:
-                sta score_chars,y
-                dey
-                bpl L168A
-                jmp L1698
+                lda score_bcd+0
+                sbc #$05
+                sta score_bcd+0
 
-;-------------------------------------------------------------------------
+                jsr subtract_score_byte
+                jsr subtract_score_byte
 
-L1695:
-                dex
-                bne L166D
+                cld
+
+                bcs +
+
+                ; oops, went negative...
+                lda #0
+                sta score_bcd+0
+                sta score_bcd+1
+                sta score_bcd+2
+
++
                 .cerror *!=L1698
-                .endblock
+
+                 .endblock
 
 L1698: .block
                 ; No score in time attack mode.
                 lda entry_init_level.yflags
                 and #init_level_yflag_time_attack
                 bne done
-                
-                ldy #4
 
-L169A:
-                lda #$1F
-                jsr oswrch
-                tya
-                jsr oswrch
-                lda #1
-                jsr oswrch
-                lda score_chars,y
-                jsr oswrch
-                dey
-                bpl L169A
+                lda #<score_digits_address
+                sta digits_addr+0
+                lda #>score_digits_address
+                sta digits_addr+1
+
+                ldy #0
+
+                lda score_bcd+2
+                jsr draw_bcd_byte_digits.lsn
+
+                lda score_bcd+1
+                jsr draw_bcd_byte_digits
+
+                lda score_bcd+0
+                jsr draw_bcd_byte_digits
+                
 done:
                 rts
                 .endblock
@@ -2872,7 +2837,7 @@ L16C6:
                 ldx #<L0AD0
                 ldy #>L0AD0
                 jsr osword
-                jsr L166B
+                jsr subtract_5_from_score
                 ldy #$F
 
 L16E4:
@@ -5659,17 +5624,19 @@ num_ghosts_set:
                 jsr copy_data_behind_player
 
                 ; Initial bonus and score
-                ldx #4
+                ldx #3
+                lda #0
 -
-                lda initial_score,x
-                sta score_chars,x
+                sta score_bcd,x
                 dex
                 bpl -
 
-                lda initial_bonus+0
-                sta bonus_chars+0
-                lda initial_bonus+1
-                sta bonus_chars+1
+                jsr L1698
+
+                lda #initial_bonus_bcd_value
+                sta bonus_bcd
+
+                jsr draw_bonus_digits
 
                 ; Copy level name
 
@@ -5786,23 +5753,6 @@ score_mode_hud:
                 
                 ; "BONUS"
                 .byte udg_bonus+0,udg_bonus+1,udg_bonus+2
-
-                ; COLOUR 2
-                .byte 17,2
-
-                ; PRINT TAB(0,1)
-                .byte 31,0,1
-
-                ; Default score
-initial_score:
-                .fill 5,udg_char_0
-
-                ; PRINT TAB(18,1)
-                .byte 31,18,1
-
-                ; Default bonus chars
-initial_bonus:
-                .byte udg_char_0+5,udg_char_0
 
                 .byte 0
 

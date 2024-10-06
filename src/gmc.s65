@@ -2707,6 +2707,7 @@ draw_bonus_digits: .block
                 sta digits_addr+1
 
                 lda bonus_bcd
+                ldy #0
                 jsr draw_bcd_byte_digits
 done:
                 rts

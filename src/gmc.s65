@@ -2864,12 +2864,21 @@ L170F:
                 sta data_behind_player+16,y  ; copy of what was under player, row 1?
                 dey
                 bpl L170F
+                
                 lda data_behind_player+16    ; copy of what was under player, row 1?
                 cmp #mode5_byte(3,3,3,3)
                 beq draw_pl_splat
                 lda data_behind_player+16+8  ; copy of what was under player, row 1?
                 cmp #mode5_byte(3,3,3,3)
                 beq draw_pl_splat
+
+                lda data_behind_player+16+7
+                cmp #mode5_byte(3,3,3,3)
+                beq draw_pl_splat
+                lda data_behind_player+16+15
+                cmp #mode5_byte(3,3,3,3)
+                beq draw_pl_splat
+                
                 lda L0078
                 clc
                 adc #$10

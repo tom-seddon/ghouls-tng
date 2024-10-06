@@ -891,4 +891,28 @@ LDATA={&levels_org}+4+(SC-1)*{$LevelData_size}
 
 $(LDATA+{$LevelData_name_offset})
 
+* generic instructions
+
+: 0123456789012345678901234567890123456789
+:   But this is not as easy as it sounds!
+:  On your trek up the house you are
+:  confronted with spooky ghosts, cracked
+:  and contracting floor boards, moving
+:  platforms, springs, and deadly spikes.
+:  There is also a nasty spider that jumps
+:  up and down ready to catch you!!
+:   By eating one of the stray power
+:  jewels you can over power and paralyse
+:  the ghosts for a few seconds helping
+:  you in your quest....
+
+: 0123456789012345678901234567890123456789
+:  Your quest will force you to confront
+: cracked and contracting floors, moving
+: platforms, springs, deadly spikes, nasty
+: spiders - and the ghost itself.
+:  By eating a stray power jewel, you can
+: overpower and paralyse the ghost for a
+: few seconds. But will that be enough?
+
 * EOF

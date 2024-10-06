@@ -159,10 +159,9 @@ GOSUB{$PROCCLR}
 PRINTTAB(0,5);:IF((?{&level_flags_text_instructions} AND{$LevelData_flags_text})<>0):IFLEN(${&levels_org+TextData_offset+TextData_instructions_offset})>0:PRINT${&levels_org+TextData_offset+TextData_instructions_offset};:ELSE:PRINTCHR$134"LEVEL INSTRUCTIONS HERE";
 IFPOS<>0:PRINT
 {#PRINTTAB(1,5)CHR$134"Situated in a deadly"CHR$129"haunted"CHR$134"mansion,"'CHR$134"you have to rescue your power jewels"'CHR$134"from the horrid ghosts that stole them."
-PRINT" "CHR$130"But this is not as easy as it sounds!"'CHR$130"On your trek up the house you are"'CHR$130"confronted with spooky"CHR$129"ghosts,"CHR$130"cracked"'CHR$130"and contracting floor boards, moving"
-PRINTCHR$130"platforms, springs, and deadly spikes."
-PRINTCHR$130"There is also a nasty spider that jumps"CHR$130"up and down ready to catch you!!"
-PRINT" "CHR$131"By eating one of the stray power"'CHR$131"jewels you can over power and paralyse"'CHR$131"the ghosts for a few seconds helping"'CHR$131"you in your quest...."
+PRINTCHR$130" Your quest will force you to confront"'CHR$130"cracked and contracting floors, moving"'CHR$130"platforms, springs, deadly spikes,"'CHR$130"nasty spiders -"CHR$129"and the ghost itself."
+PRINTCHR$131" By eating a stray power jewel, you can"CHR$131"overpower and paralyse the ghost for a"'CHR$131"few seconds. But will that be enough?"
+PRINTCHR$134" Good luck."
 FORF=21TO22:PRINTTAB(4,F)CHR$141CHR$133"Press SPACE BAR to continue":NEXT
 *FX15
 {:L1540}

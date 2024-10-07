@@ -116,7 +116,7 @@ endif
 "$(BEEB_VOLUME)/2/$$.HEIGHTS" \
 "$(BEEB_VOLUME)/2/$$.ALTERN" \
 "$(BEEB_VOLUME)/2/$$.EGYPT" \
-"$(BEEB_VOLUME)/2/$$.DAVE" \
+"$(BEEB_VOLUME)/2/$$.MASH" \
 "$(BEEB_VOLUME)/2/$$.TOM"
 
 ##########################################################################

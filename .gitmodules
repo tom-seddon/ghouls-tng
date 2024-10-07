@@ -7,3 +7,6 @@
 [submodule "submodules/basictool"]
 	path = submodules/basictool
 	url = https://github.com/tom-seddon/basictool
+[submodule "submodules/zx02"]
+	path = submodules/zx02
+	url = https://github.com/dmsc/zx02

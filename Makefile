@@ -46,8 +46,10 @@ SSD_OUTPUT:=ghouls-tng.ssd
 ifeq ($(OS),Windows_NT)
 TASS:=$(PWD)/bin/64tass.exe
 BASICTOOL:=$(PWD)/bin/basictool.exe
+ZX02:=$(PWD)/bin/zx02.exe
 else
 BASICTOOL:=$(PWD)/submodules/basictool/basictool
+ZX02:=$(PWD)/submodules/zx02/build/zx02
 endif
 
 ##########################################################################
@@ -58,7 +60,11 @@ build: _output_folders
 
 ifneq ($(OS),Windows_NT)
 	$(_V)cd submodules/basictool/src && make all
+	$(_V)cd submodules/zx02 && make all
 endif
+
+# Convert title screen
+	$(_V)$(MAKE) _title_screen
 
 # Convert !BOOT
 	$(_V)$(SHELLCMD) copy-file src/boot.txt $(BEEB_OUTPUT)/$$.!BOOT
@@ -116,6 +122,18 @@ endif
 ##########################################################################
 ##########################################################################
 
+.PHONY:_title_screen
+_title_screen: $(BUILD)/title.zx02
+
+$(BUILD)/title.zx02 : $(BUILD)/title.bbc
+	$(_V)$(ZX02) "$<" "$@"
+
+$(BUILD)/title.bbc : $(PWD)/src/GhoulsRevenge.png
+	$(_V)$(PYTHON) "$(BEEB_BIN)/png2bbc.py" -o "$@" "$<" 2
+
+##########################################################################
+##########################################################################
+
 .PHONY:_asm
 _asm:
 	$(_V)$(TASS) $(TASS_ARGS) $(TASS_EXTRA_ARGS) -L $(BUILD)/$(BEEB).lst -l $(BUILD)/$(BEEB).symbols -o $(BUILD)/$(BEEB).prg src/$(PC).s65
@@ -166,3 +184,14 @@ _tom_windows_laptop:
 
 	@$(MAKE) build
 	-curl --connect-timeout 0.25 --silent -G 'http://localhost:48075/reset/b2' --data-urlencode "config=$(CONFIG)"
+##########################################################################
+##########################################################################
+
+# Phony target for manual invocation. It doesn't run on every build,
+# because it needs the VC++ command line tools on the path, something
+# I don't want to require.
+
+.PHONY:zx02_windows
+zx02_windows: SRC:=$(PWD)/submodules/zx02/src
+zx02_windows: _output_folders
+	cd "$(BUILD)" && cl /W4 /Zi /O2 /Fe$(PWD)/bin/zx02.exe "$(SRC)/compress.c" "$(SRC)/memory.c" "$(SRC)/optimize.c" "$(SRC)/zx02.c"

@@ -264,6 +264,7 @@ def main2(options):
                 f.write(fmt%value)
 
             f.write('%d'%basic_line.basic_number)
+            pos=f.tell()
             for part in basic_line.parts:
                 if type(part) is TextType: f.write(part.text)
                 elif type(part) is ExprType: print_expr(f,part,False,'%s')
@@ -277,6 +278,16 @@ def main2(options):
                         sys.exit(1)
                     if not value: break
                 else: assert False
+            if f.tell()==pos:
+                # nothing was written for this line. If there are any
+                # labels, print a ':' so it's still available as a
+                # GOTO or GOSUB target.
+                #
+                # This situation arises in Ghouls from using {? to
+                # exclude a whole line in the debug version.
+                #
+                # This is a bodge and should be done better.
+                if len(basic_line.labels)>0: f.write(':')
             f.write('\n')
 
 ##########################################################################

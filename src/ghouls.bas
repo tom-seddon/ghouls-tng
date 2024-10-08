@@ -74,7 +74,7 @@ FORF=1TO700:NEXT:SOUND&11,2,100,50:FORF=1TO4000:NEXT
 G=999:F=999:H=999
 VDU30:FORF=0TO31:VDU11:*FX19
 NEXT
-IFTA:GOSUB{$time_attack_end}:GOSUB{$banner}:GOTO{$time_attack_select_level}
+IFTA:GOSUB{$time_attack_end}:GOTO{$time_attack_restart}
 CLS:GOTO{$L100}
 END
 DEFPROCtower(FULL):G=6:F=16:GO=GO+2:IFGO=6GO=4
@@ -104,7 +104,7 @@ PROCMODE(7)
 S=FNBCD(?{&score_bcd+0})+FNBCD(?{&score_bcd+1})*256+FNBCD(?{&score_bcd+2})*65536
 SC=10:FORF=9TO0STEP-1:IFHI(F)<S SC=F
 NEXT
-IFSC=10GOTO{$L1270}
+IFSC=10GOTO{$high_score_table}
 FORF=10TOSC+1 STEP-1:HI(F)=HI(F-1):N$(F)=N$(F-1):NEXT
 FORF=1TO2:PRINTTAB(3,F)CHR$141CHR$129"C"CHR$130"O"CHR$131"N"CHR$132"G"CHR$133"R"CHR$134"A"CHR$135"T"CHR$129"U"CHR$130"L"CHR$131"A"CHR$132"T"CHR$133"I"CHR$134"O"CHR$135"N"CHR$129"S":NEXT
 PROCPRNT(7,4,CHR$131+"YOU ARE IN THE TOP TEN",45,1):PROCPRNT(7,6,CHR$130+"PLEASE ENTER YOUR NAME",80,1)
@@ -128,7 +128,7 @@ IFK=26 ORI<32ORI>127GOTO{$L1150} ELSEK=K+1:L$=L$+CHR$I:PRINTTAB(K,10);CHR$I:F=F-
 {:L1250}
 PRINTTAB(K+1,10)" "
 N$(SC)=L$:HI(SC)=S:CLS
-{:L1270}
+{:high_score_table}
 FORF=0TO1:PRINTTAB(10,F)CHR$141CHR$130"BEST TEN TODAY":NEXT
 FORF=0TO9:PRINTTAB(2,F*2+2)CHR$134;F+1"..."TAB(7,F*2+2)" "CHR$135:PROCPRNT(9,F*2+2,N$(F),6,1):PRINTTAB(26,F*2+2)CHR$131"...";HI(F):NEXT
 IFSC=255GOTO{$L1320}
@@ -138,7 +138,7 @@ IFSC=10 PRINTTAB(9,22)CHR$134"YOU SCORED ";S
 PRINTTAB(5,23)CHR$133"Press SPACE BAR to start"
 {:L1330}
 IFINKEY(0)<>32GOTO{$L1330}
-GOTO{$L70}
+GOTO{$score_mode_start}
 {:L1350}
 REM*** INSTRUCTIONS **
 GOSUB{$banner}:SOUND&11,2,5,50:SOUND&12,2,5,50:SOUND&13,2,6,50:FORF=1TO2500:NEXT 
@@ -185,21 +185,23 @@ I$=GET$:IFI$="Y" ORI$="y"PROCMODE(5):GOSUB{$PROCSHOW}
 {?debug}IFNOTTA:IFI$="C"ORI$="c":PROCMODE(5):PROCtower(FALSE):GOTO{$L100}
 {?debug}IFNOTTA:IFI$="G"ORI$="g":GOTO{$more_ghosts}
 {?debug}IFNOTTA:SC1=1:IFI$>="1"ANDI$<="4":SC1=VALI$
-IFTA:GOSUB{$PROCCLR}
-{:time_attack_select_level}
-IFTA:GOSUB{$select_level}
+IFTA:GOSUB{$PROCCLR}:GOTO{$time_attack_select_level}
+{# definitely score mode game at this point
+{:score_mode_start}
+{?not debug}ONERRORGOTO{$score_mode_error}
 GOTO{$L70}
 {:more_ghosts}
 GO1=GO1+2:IFGO1=6:GO1=0
 PRINTTAB(0,24)"GHOSTS=";1+GO1 DIV2;
 GOTO{$instructions_yn}
-{:select_level}
+{:time_attack_select_level}
 FORI=0TO3:Y=5+I*4:FORF=0TO1:PRINTTAB(4,Y+F)CHR$141CHR$130$({&levels_org+4+LevelData_name_offset}+I*{$LevelData_size}):NEXT:PRINTTAB(1,Y)CHR$133;1+I"."TAB(5,Y+2)CHR$134"Best time: ";TI(I)DIV100"."RIGHT$("0"+STR$(TI(I)MOD100),2)"""":NEXT
 FORF=0TO1:PRINTTAB(1,22+F)CHR$141CHR$130"Select level (1-4):"CHR$134:NEXT
 {:GETLEVEL}
 A$=GET$:IFA$<"1"ORA$>"4"GOSUB{$bad_input}:GOTO{$GETLEVEL}
 SC1=VALA$:GO=0{#no ghosts in time attack mode
-RETURN
+{?not debug}ONERRORGOTO{$time_attack_restart}
+GOTO{$L70}
 {:PROCSHOW}
 FORF=1TO3:VDU19,F,0;0;:NEXT
 COLOUR2:PRINTTAB(4,1);"GAME OBJECTS"
@@ -249,7 +251,15 @@ F=FNBCD(?{&time_bcd+1})*100+FNBCD(?{&time_bcd}):IFF<TI(SC-1):TI(SC-1)=F
 RETURN
 DEFFNBCD(X)=X DIV16*10+X MOD16
 {:banner}
+{?not debug}ONERRORGOTO{$L1350}
 PROCMODE(7):*FX15,1
 FORF=1TO2:IF((?{&level_flags_text_name} AND{$LevelData_flags_text})<>0):IFLEN(${&levels_org+TextData_offset+TextData_name_offset})>0:PRINTTAB(20-LEN(${&levels_org+TextData_offset+TextData_name_offset})DIV2-5,F)CHR$141CHR$(131-F)${&levels_org+TextData_offset+TextData_name_offset};:ELSE:PRINTTAB(10,F)CHR$141;CHR$(131-F)"G H O U L S"
 NEXT:PRINTTAB(10,3)CHR$147"``,,,ppp,,,``"
 RETURN
+{:score_mode_error}
+PROCMODE(7):SC=10:S=0
+{?not debug}ONERRORGOTO{$L1350}
+GOTO{$high_score_table}
+{:time_attack_restart}
+GOSUB{$banner}
+GOTO{$time_attack_select_level}

@@ -1643,6 +1643,15 @@ L10A1:
                 
 L1092:
                 jsr copy_data_behind_player
+                .if editor
+                ; Awful hack to work around player getting stuck if
+                ; you position them just so.
+                ;
+                ; When this happens: just press ESCAPE. And stop doing
+                ; that.
+                bit $ff
+                bmi ed_editor.test_level_exit
+                .endif
                 lda data_behind_player+4  ; copy of what was under player, row 0?
                 cmp #mode5_byte(0,0,2,2)
                 bne L10DD       ; taken if not dot
@@ -5121,7 +5130,12 @@ next_colour:
 
 test_level:
                 jsr ed_coff
+                jsr ed_enable_escape
                 jsr ed_test
+test_level_exit:
+                lda #$7e        ;acknowledge Escape (D.2-37)
+                jsr osbyte
+                jsr ed_disable_escape
                 jmp ed_editor
                 
 erase_object:

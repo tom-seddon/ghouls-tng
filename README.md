@@ -126,6 +126,17 @@ The bottom row contains some indicators:
   is time attack or classic/infinite lives (the distinction being moot
   in the editor)
 
+### Glitches and oddities
+
+The Ghouls code is not designed to cater for every situation possible,
+and you may well encounter some strange stuff while testing! Could be
+anything from surprising unexpected deaths to the player just getting
+stuck entirely. (Press ESCAPE if that happens. You'll go back to edit
+mode.)
+
+These are things that you, as level designer, will just have to ensure
+are impossible.
+
 ### Springs
 
 Springs can't be placed in the top 2 rows of the level. The resulting

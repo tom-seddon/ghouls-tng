@@ -253,8 +253,9 @@ DEFFNBCD(X)=X DIV16*10+X MOD16
 {:banner}
 {?not debug}ONERRORGOTO{$L1350}
 PROCMODE(7):*FX15,1
-FORF=1TO2:IF((?{&level_flags_text_name} AND{$LevelData_flags_text})<>0):IFLEN(${&levels_org+TextData_offset+TextData_name_offset})>0:PRINTTAB(20-LEN(${&levels_org+TextData_offset+TextData_name_offset})DIV2-5,F)CHR$141CHR$(131-F)${&levels_org+TextData_offset+TextData_name_offset};:ELSE:PRINTTAB(10,F)CHR$141;CHR$(131-F)"G H O U L S"
-NEXT:PRINTTAB(10,3)CHR$147"``,,,ppp,,,``"
+FORF=1TO2:IF((?{&level_flags_text_name} AND{$LevelData_flags_text})<>0):L=LEN${&levels_org+TextData_offset+TextData_name_offset}:IFL>0:PRINTTAB(20-L DIV2-5,F)CHR$141CHR$(131-F)${&levels_org+TextData_offset+TextData_name_offset};:ELSE:PRINTTAB(10,F)CHR$141;CHR$(131-F)"G H O U L S"
+NEXT:PRINTTAB(10,3)CHR$147"``,,,p";:IFL MOD2>0PRINT"p";
+PRINT"p,,,``"
 RETURN
 {:score_mode_error}
 PROCMODE(7):SC=10:S=0

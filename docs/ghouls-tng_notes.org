@@ -488,7 +488,7 @@ Flags are:
 |   5 |                                  |
 |   4 |                                  |
 |   3 |                                  |
-|   2 |                                  |
+|   2 | Text flag                        |
 |   1 | Set if no standard goal in level |
 |   0 | Set if ghost rect is valid       |
 
@@ -497,6 +497,16 @@ behaviour: initial address is =&6000+RND(300)*16=.
 
 If there is a standard goal in the level, it will be drawn in the top
 right as per the original game.
+
+The text flag relates to text data in the level file (see below),
+rather than something specific to the level file itself, because I
+didn't think to book any file-specific flags. The interpretation
+depends on which level the text flag is for:
+
+- Level 1 :: set if file has instructions text
+- Level 2 :: set if file has ending text
+- Level 3 :: set if file has title
+- Level 4 :: unused
 
 ** Text data
 
@@ -510,6 +520,9 @@ right as per the original game.
 
 Decided against packing them in the end. The editor coding was
 supremely tedious.
+
+(This part is a bit underused, as it was a late addition. There's
+still 119 bytes free, completely unused!)
 
 ** Object types
 

@@ -1120,6 +1120,11 @@ score_bcd: .fill 4
 ;-------------------------------------------------------------------------
 
 entry_game:
+                lda #<sprite_pl_facing
+                sta L0078
+                lda #>sprite_pl_facing
+                sta L0079
+                
                 lda #1
                 ; sta spider_direction
                 ; sta conveyor_direction
@@ -2874,7 +2879,7 @@ L170F:
                 sta data_behind_player+16,y  ; copy of what was under player, row 1?
                 dey
                 bpl L170F
-                
+
                 lda data_behind_player+16    ; copy of what was under player, row 1?
                 cmp #mode5_byte(3,3,3,3)
                 beq draw_pl_splat

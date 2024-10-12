@@ -39,6 +39,7 @@ BEEB_VOLUME:=$(PWD)/beeb/ghouls-tng
 
 # Where final Beeb-visible build output goes (absolute path).
 BEEB_OUTPUT:=$(BEEB_VOLUME)/y
+BEEB_OUTPUT_2:=$(BEEB_VOLUME)/z
 
 # Name of final .ssd to produce
 SSD_OUTPUT:=ghouls-tng.ssd
@@ -107,6 +108,7 @@ endif
 # Extract side 0 of .ssd to create individual drive in BeebLink
 # volume.
 	$(_V)$(PYTHON) "$(BEEB_BIN)/ssd_extract.py" -o "$(BEEB_OUTPUT)" -0 "$(SSD_OUTPUT)"
+	$(_V)$(SHELLCMD) copy-file "$(SSD_OUTPUT)" "$(BEEB_OUTPUT_2)/S.GHOULS"
 
 ##########################################################################
 ##########################################################################
@@ -117,10 +119,7 @@ endif
 # build, it will be present.
 _ssd: _LEVELS:=$(shell $(SHELLCMD) cat -f $(BUILD)/levels.txt)
 _ssd:
-	$(info $$(shell cat build/levels.txt))
 	$(_V)$(SSD_CREATE) -o "$(SSD_OUTPUT)" --title "GHOULS R" --opt4 3 "$(BUILD)/$$.!BOOT" "$(BUILD)/$$.GLOADER" "$(BEEB_VOLUME)/0/$$.GSCREEN" "$(BUILD)/$$.GUDGS" "$(BUILD)/$$.GMC" "$(BUILD)/$$.GBAS" "$(BUILD)/D.GBAS" "$(BUILD)/$$.GEDMC" "$(BUILD)/$$.GINFO" "$(BUILD)/$$.GMENU" $(_LEVELS)
-
-# --dir "$(BEEB_OUTPUT)" "$(BEEB_OUTPUT)/$$.!BOOT" "$(BEEB_OUTPUT)/$$.GLOADER" "$(BEEB_OUTPUT)/$$.GSCREEN" "$(BEEB_OUTPUT)/$$.GUDGS" "$(BEEB_OUTPUT)/$$.GMC" "$(BEEB_OUTPUT)/$$.GBAS" "$(BEEB_OUTPUT)/D.GBAS" "$(BEEB_OUTPUT)/$$.GEDMC" "$(BEEB_OUTPUT)/$$.GINFO" $(_LEVELS)
 
 ##########################################################################
 ##########################################################################
@@ -147,17 +146,19 @@ _asm:
 
 .PHONY:_output_folders
 _output_folders:
-	$(_V)$(SHELLCMD) mkdir $(BUILD)
-	$(_V)$(SHELLCMD) mkdir $(BEEB_OUTPUT)
+	$(_V)$(SHELLCMD) mkdir "$(BUILD)"
+	$(_V)$(SHELLCMD) mkdir "$(BEEB_OUTPUT)"
+	$(_V)$(SHELLCMD) mkdir "$(BEEB_OUTPUT_2)"
 
 ##########################################################################
 ##########################################################################
 
 .PHONY:clean
 clean:
-	$(_V)$(SHELLCMD) rm-tree $(BUILD)
-	$(_V)$(SHELLCMD) rm-tree $(BEEB_OUTPUT)
-	$(_V)$(SHELLCMD) rm-file -f $(SSD_OUTPUT)
+	$(_V)$(SHELLCMD) rm-tree "$(BUILD)"
+	$(_V)$(SHELLCMD) rm-tree "$(BEEB_OUTPUT)"
+	$(_V)$(SHELLCMD) rm-tree "$(BEEB_OUTPUT_2)"
+	$(_V)$(SHELLCMD) rm-file -f "$(SSD_OUTPUT)"
 
 ##########################################################################
 ##########################################################################

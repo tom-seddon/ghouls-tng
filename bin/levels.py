@@ -172,7 +172,7 @@ def main2(options):
     levels=[]
 
     def level(path,designer,difficulty,title=None):
-        path=os.path.join(options.volume_path,path)
+        # path=os.path.join(options.volume_path,path)
 
         with open(path,'rb') as f:data=f.read()
 
@@ -231,17 +231,17 @@ def main2(options):
                             difficulty=difficulty_bytes,
                             instr=instr))
 
-    level('y/$.GLEVELS','David Hoskins','Authentic','G H O U L S')
-    level('2/$.TUTOR1','Kieran','Introductory')
-    level('2/$.SPIDERS','Kieran','Spidery')
-    level('2/$.HEIGHTS','Kieran','Elevated')
-    level('2/$.ALTERN','Kieran','Indescribable')
-    level('2/$.EGYPT','Stew','Ancient')
-    level('2/$.MASH','Dave','Let\'s Party')
-    level('2/$.TOM','Tom','Trust No-one')
-    level('2/$.GETOUT','Kieran','Extractive')
-    level('2/$.MARS','Stew','Extraplanetary')
-    level('2/$.ADR5','VectorEyes','Unknown')
+    level('build/$.GLEVELS','David Hoskins','Authentic','G H O U L S')
+    level('beeb/ghouls-tng/2/$.TUTOR1','Kieran','Introductory')
+    level('beeb/ghouls-tng/2/$.SPIDERS','Kieran','Spidery')
+    level('beeb/ghouls-tng/2/$.HEIGHTS','Kieran','Elevated')
+    level('beeb/ghouls-tng/2/$.ALTERN','Kieran','Indescribable')
+    level('beeb/ghouls-tng/2/$.EGYPT','Stew','Ancient')
+    level('beeb/ghouls-tng/2/$.MASH','Dave','Let\'s Party')
+    level('beeb/ghouls-tng/2/$.TOM','Tom','Trust No-one')
+    level('beeb/ghouls-tng/2/$.GETOUT','Kieran','Extractive')
+    level('beeb/ghouls-tng/2/$.MARS','Stew','Extraplanetary')
+    level('beeb/ghouls-tng/2/$.ADR5','VectorEyes','Unknown')
 
     # Custom levels
     instr=b''
@@ -334,7 +334,8 @@ def main2(options):
 
     if options.output_list_path is not None:
         with open(options.output_list_path,'wt') as f:
-            for level in levels:f.write(' "%s"'%level.path)
+            for level in levels:
+                if level.path is not None:f.write(' "%s"'%level.path)
             f.write('\n')
 
 ##########################################################################
@@ -342,10 +343,8 @@ def main2(options):
 
 def main(argv):
     parser=argparse.ArgumentParser()
-    parser.add_argument('volume_path',metavar='FOLDER',help='''find Ghouls BBC files in %(metavar)s''')
     parser.add_argument('-o','--output',dest='output_path',metavar='FILE',help='''write output to %(metavar)s. Specify - for stdout''')
     parser.add_argument('--output-list',dest='output_list_path',metavar='FILE',help='''write GNU Make syntax level files list to %(metavar)s''')
-    parser.add_argument('--copy-to',dest='copy_dest_path',metavar='PATH',help='''copy level files (data+.inf) to %(metavar)s''')
     main2(parser.parse_args(argv[1:]))
 
 ##########################################################################

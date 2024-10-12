@@ -67,42 +67,46 @@ endif
 	$(_V)$(MAKE) _title_screen
 
 # Convert !BOOT
-	$(_V)$(SHELLCMD) copy-file src/boot.txt $(BEEB_OUTPUT)/$$.!BOOT
-	$(_V)$(PYTHON) $(BEEB_BIN)/text2bbc.py $(BEEB_OUTPUT)/$$.!BOOT
+	$(_V)$(SHELLCMD) copy-file "src/boot.txt" "$(BUILD)/$$.!BOOT"
+	$(_V)$(PYTHON) "$(BEEB_BIN)/text2bbc.py" "$(BUILD)/$$.!BOOT"
+
+# Create levels stuff
+	$(_V)$(MAKE) _asm PC=glevels BEEB=GLEVELS
+	$(_V)$(PYTHON) "$(BIN)/levels.py" --output "$(BUILD)/levels.generated.s65" --output-list "$(BUILD)/levels.txt"
 
 # Create GMC
 	$(_V)$(MAKE) _asm PC=gmc BEEB=GMC TASS_EXTRA_ARGS=-Deditor=false
 	$(_V)$(MAKE) _asm PC=gmc BEEB=GEDMC TASS_EXTRA_ARGS=-Deditor=true
 	$(_V)$(MAKE) _asm PC=gudgs BEEB=GUDGS
-	$(_V)$(MAKE) _asm PC=glevels BEEB=GLEVELS
 	$(_V)$(MAKE) _asm PC=gmenu BEEB=GMENU
 
 # Create GBAS and D.GBAS
-	$(_V)$(PYTHON) $(BIN)/bbpp.py -Ddebug=False --asm-symbols $(BUILD)/GMC.symbols "" -o $(BUILD)/gbas.bas src/ghouls.bas
-	$(_V)$(BASICTOOL) --tokenise --basic-2 --output-binary $(BUILD)/gbas.bas $(BEEB_OUTPUT)/$$.GBAS
-	$(_V)$(PYTHON) $(BIN)/bbpp.py -Ddebug=True --asm-symbols $(BUILD)/GMC.symbols "" -o $(BUILD)/d.gbas.bas src/ghouls.bas
-	$(_V)$(BASICTOOL) --tokenise --basic-2 --output-binary $(BUILD)/d.gbas.bas $(BEEB_OUTPUT)/D.GBAS
+	$(_V)$(PYTHON) "$(BIN)/bbpp.py" -Ddebug=False --asm-symbols "$(BUILD)/GMC.symbols" "" -o "$(BUILD)/gbas.bas" "src/ghouls.bas"
+	$(_V)$(BASICTOOL) --tokenise --basic-2 --output-binary "$(BUILD)/gbas.bas" "$(BUILD)/$$.GBAS"
+	$(_V)$(PYTHON) $(BIN)/bbpp.py -Ddebug=True --asm-symbols "$(BUILD)/GMC.symbols" "" -o "$(BUILD)/d.gbas.bas" "src/ghouls.bas"
+	$(_V)$(BASICTOOL) --tokenise --basic-2 --output-binary "$(BUILD)/d.gbas.bas" "$(BUILD)/D.GBAS"
 
 # Create GLOADER
-	$(_V)$(PYTHON) $(BIN)/bbpp.py --asm-symbols $(BUILD)/GMC.symbols "" -o $(BUILD)/gloader.bas src/gloader.bas
-	$(_V)$(BASICTOOL) --tokenise --basic-2 --output-binary $(BUILD)/gloader.bas $(BEEB_OUTPUT)/$$.GLOADER
-
-# Create levels stuff
-	$(_V)$(PYTHON) $(BIN)/levels.py --output "$(BUILD)/levels.generated.s65" --output-list "$(BUILD)/levels.txt" "$(BEEB_VOLUME)"
+	$(_V)$(PYTHON) $(BIN)/bbpp.py --asm-symbols "$(BUILD)/GMC.symbols" "" -o "$(BUILD)/gloader.bas" "src/gloader.bas"
+	$(_V)$(BASICTOOL) --tokenise --basic-2 --output-binary "$(BUILD)/gloader.bas" "$(BUILD)/$$.GLOADER"
 
 # Create GCSREEN
-	$(_V)$(SHELLCMD) copy-file $(BEEB_VOLUME)/0/$$.GSCREEN $(BEEB_OUTPUT)/
+#	$(_V)$(SHELLCMD) copy-file $(BEEB_VOLUME)/0/$$.GSCREEN $(BEEB_OUTPUT)/
 
 # Set the boot option
-	$(_V)echo 3 > $(BEEB_OUTPUT)/.opt4
+#	$(_V)echo 3 > $(BEEB_OUTPUT)/.opt4
 
 # Print some info
 	$(_V)$(SHELLCMD) blank-line
-	$(_V)$(PYTHON) $(BIN)/budgets.py $(BEEB_OUTPUT) $(BUILD)
+	$(_V)$(PYTHON) "$(BIN)/budgets.py" "$(BUILD)" "$(BUILD)"
 	$(_V)$(SHELLCMD) blank-line
 
 # Build .ssd. Re-run make to ensure the $(shell cat gets re-evaluated.
 	$(_V)$(MAKE) _ssd
+
+# Extract side 0 of .ssd to create individual drive in BeebLink
+# volume.
+	$(_V)$(PYTHON) "$(BEEB_BIN)/ssd_extract.py" -o "$(BEEB_OUTPUT)" -0 "$(SSD_OUTPUT)"
 
 ##########################################################################
 ##########################################################################
@@ -114,7 +118,9 @@ endif
 _ssd: _LEVELS:=$(shell $(SHELLCMD) cat -f $(BUILD)/levels.txt)
 _ssd:
 	$(info $$(shell cat build/levels.txt))
-	$(_V)$(SSD_CREATE) -o "$(SSD_OUTPUT)" --dir "$(BEEB_OUTPUT)" "$(BEEB_OUTPUT)/$$.!BOOT" "$(BEEB_OUTPUT)/$$.GLOADER" "$(BEEB_OUTPUT)/$$.GSCREEN" "$(BEEB_OUTPUT)/$$.GUDGS" "$(BEEB_OUTPUT)/$$.GMC" "$(BEEB_OUTPUT)/$$.GBAS" "$(BEEB_OUTPUT)/D.GBAS" "$(BEEB_OUTPUT)/$$.GEDMC" "$(BEEB_OUTPUT)/$$.GINFO" $(_LEVELS)
+	$(_V)$(SSD_CREATE) -o "$(SSD_OUTPUT)" --title "GHOULS R" --opt4 3 "$(BUILD)/$$.!BOOT" "$(BUILD)/$$.GLOADER" "$(BEEB_VOLUME)/0/$$.GSCREEN" "$(BUILD)/$$.GUDGS" "$(BUILD)/$$.GMC" "$(BUILD)/$$.GBAS" "$(BUILD)/D.GBAS" "$(BUILD)/$$.GEDMC" "$(BUILD)/$$.GINFO" "$(BUILD)/$$.GMENU" $(_LEVELS)
+
+# --dir "$(BEEB_OUTPUT)" "$(BEEB_OUTPUT)/$$.!BOOT" "$(BEEB_OUTPUT)/$$.GLOADER" "$(BEEB_OUTPUT)/$$.GSCREEN" "$(BEEB_OUTPUT)/$$.GUDGS" "$(BEEB_OUTPUT)/$$.GMC" "$(BEEB_OUTPUT)/$$.GBAS" "$(BEEB_OUTPUT)/D.GBAS" "$(BEEB_OUTPUT)/$$.GEDMC" "$(BEEB_OUTPUT)/$$.GINFO" $(_LEVELS)
 
 ##########################################################################
 ##########################################################################
@@ -133,8 +139,8 @@ $(BUILD)/title.bbc : $(PWD)/src/GhoulsRevenge.png
 
 .PHONY:_asm
 _asm:
-	$(_V)$(TASS) $(TASS_ARGS) $(TASS_EXTRA_ARGS) -L $(BUILD)/$(BEEB).lst -l $(BUILD)/$(BEEB).symbols -o $(BUILD)/$(BEEB).prg src/$(PC).s65
-	$(_V)$(PYTHON) $(BEEB_BIN)/prg2bbc.py --io $(BUILD)/$(BEEB).prg $(BEEB_OUTPUT)/$$.$(BEEB)
+	$(_V)$(TASS) $(TASS_ARGS) $(TASS_EXTRA_ARGS) -L "$(BUILD)/$(BEEB).lst" -l "$(BUILD)/$(BEEB).symbols" -o "$(BUILD)/$(BEEB).prg" "src/$(PC).s65"
+	$(_V)$(PYTHON) "$(BEEB_BIN)/prg2bbc.py" --io "$(BUILD)/$(BEEB).prg" "$(BUILD)/$$.$(BEEB)"
 
 ##########################################################################
 ##########################################################################

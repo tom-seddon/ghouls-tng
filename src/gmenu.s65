@@ -167,10 +167,11 @@ type_run_commands_loop:
                 txa
                 pha
 
-                lda #138
-                ldx #0
                 ldy run_commands,x
                 beq run_commands_typed
+                
+                lda #138
+                ldx #0
 
                 jsr osbyte
 
@@ -183,6 +184,9 @@ run_commands_typed:
                 ldx #<load_gmc
                 ldy #>load_gmc
                 jsr oscli
+
+                lda #21
+                jsr oswrch
 
                 ldx #<basic
                 ldy #>basic
@@ -251,17 +255,27 @@ attr: .dword 0
 
 run_commands:
                 .text 'PAGE=&1100',13
-                .text 'CH."GBAS"',13
+                ; and sneak a cheeky VDU6 in...
+                .text 'CH."GBAS"',6,13
                 .cerror *-run_commands>=32 ; keyboard buffer is only so large...
                 .text 0
 
 load_gmc: .text 'LOAD $.GMC',13
 
 basic: .text 'BASIC',13
+
+;-------------------------------------------------------------------------
+
+; Doesn't matter if GMC overwrites the level data.
+                .cerror *>gmc_org
                 
 ;-------------------------------------------------------------------------
 
                 .include "../build/levels.generated.s65"
+
+; The level data includes the file names, so it's required for the
+; loading process.
+                .cerror *>levels_org
 
 ;-------------------------------------------------------------------------
                 .endsection code

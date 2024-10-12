@@ -66,6 +66,7 @@ endif
 
 # Convert title screen
 	$(_V)$(MAKE) _title_screen
+	$(_V)$(SHELLCMD) copy-file "$(BUILD)/title.bbc" "$(BUILD)/$$.GSCR2"
 
 # Convert !BOOT
 	$(_V)$(SHELLCMD) copy-file "src/boot.txt" "$(BUILD)/$$.!BOOT"
@@ -119,7 +120,7 @@ endif
 # build, it will be present.
 _ssd: _LEVELS:=$(shell $(SHELLCMD) cat -f $(BUILD)/levels.txt)
 _ssd:
-	$(_V)$(SSD_CREATE) -o "$(SSD_OUTPUT)" --title "GHOULS R" --opt4 3 "$(BUILD)/$$.!BOOT" "$(BUILD)/$$.GLOADER" "$(BEEB_VOLUME)/0/$$.GSCREEN" "$(BUILD)/$$.GUDGS" "$(BUILD)/$$.GMC" "$(BUILD)/$$.GBAS" "$(BUILD)/D.GBAS" "$(BUILD)/$$.GEDMC" "$(BUILD)/$$.GINFO" "$(BUILD)/$$.GMENU" $(_LEVELS)
+	$(_V)$(SSD_CREATE) -o "$(SSD_OUTPUT)" --title "GHOULS R" --opt4 3 "$(BUILD)/$$.!BOOT" "$(BUILD)/$$.GLOADER" "$(BEEB_VOLUME)/0/$$.GSCREEN" "$(BUILD)/$$.GUDGS" "$(BUILD)/$$.GMC" "$(BUILD)/$$.GBAS" "$(BUILD)/D.GBAS" "$(BUILD)/$$.GEDMC" "$(BUILD)/$$.GINFO" "$(BUILD)/$$.GMENU" "$(BUILD)/$$.GSCR2" $(_LEVELS)
 
 ##########################################################################
 ##########################################################################
@@ -186,8 +187,10 @@ _tom_windows_laptop: CONFIG=B/Acorn 1770 + BeebLink
 _tom_windows_laptop:
 #	@$(MAKE) _tom_laptop
 
-	@$(MAKE) build
-	-curl --connect-timeout 0.25 --silent -G 'http://localhost:48075/reset/b2' --data-urlencode "config=$(CONFIG)"
+#	@$(MAKE) build
+#	-curl --connect-timeout 0.25 --silent -G 'http://localhost:48075/reset/b2' --data-urlencode "config=$(CONFIG)"
+
+	@$(MAKE) zx02_code_test
 
 ##########################################################################
 ##########################################################################
@@ -200,3 +203,35 @@ _tom_windows_laptop:
 zx02_windows: SRC:=$(PWD)/submodules/zx02/src
 zx02_windows: _output_folders
 	cd "$(BUILD)" && cl /W4 /Zi /O2 /Fe$(PWD)/bin/zx02.exe "$(SRC)/compress.c" "$(SRC)/memory.c" "$(SRC)/optimize.c" "$(SRC)/zx02.c"
+
+##########################################################################
+##########################################################################
+
+# mads 2.1.7 build 33 (1 Aug 24) (2024/08/01)
+# Syntax: mads source [options]
+# -b:address      Generate binary file at specified address <address>
+# -bc             Activate branch condition test
+# -c              Activate case sensitivity for labels
+# -d:label=value  Define a label and set it to <value>
+# -f              Allow mnemonics at the first column of a line
+# -fv:value       Set raw binary fill byte to <value>
+# -hc[:filename]  Generate ".h" header file for CA65
+# -hm[:filename]  Generate ".hea" header file for MADS
+# -i:path         Use additional include directory, can be specified multiple times
+# -l[:filename]   Generate ".lst" listing file
+# -m:filename     Include macro definitions from file
+# -ml:value       Set left margin for listing to <value>
+# -o:filename     Set object file name
+# -p              Display fully qualified file names in listing and error messages
+# -vu             Verify code inside unreferenced procedures
+# -x              Exclude unreferenced procedures from code generation
+# -xp             Display warnings for unreferenced procedures
+
+.PHONY:zx02_code_test
+zx02_code_test: _MADS:=../../not-my/Mad-Assembler/bin/windows_x86_64/mads.exe
+zx02_code_test: _output_folders
+	"$(_MADS)" -d:comp_data=$$4000 -d:out_addr=$$3000 -b:$$900 -o:$(BUILD)/zx02-optim-mads.xex -l:$(BUILD)/zx02-optim-mads.lst submodules/zx02/6502/zx02-optim.asm
+	dd if=$(BUILD)/zx02-optim-mads.xex of=$(BUILD)/zx02-optim-mads.bin bs=1 skip=6
+	"$(TASS)" $(TASS_ARGS) -L $(BUILD)/zx02-optim-64tass.lst -o "$(BUILD)/zx02-optim-64tass.prg" "src/zx02-optim.s65"
+	$(PYTHON) "$(BEEB_BIN)/prg2bbc.py" "$(BUILD)/zx02-optim-64tass.prg" "$(BUILD)/zx02-optim-64tass.bbc"
+	$(SHELLCMD) cmp "$(BUILD)/zx02-optim-mads.bin" "$(BUILD)/zx02-optim-64tass.bbc"

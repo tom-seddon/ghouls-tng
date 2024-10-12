@@ -1,0 +1,9 @@
+zx02_comp_data=$4000
+zx02_out_addr=$3000
+                .include "zx02-optim.s65"
+
+*=$80
+                .dsection zx02_zp
+*=$900
+                .dsection zx02_code
+                

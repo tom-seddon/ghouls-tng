@@ -232,6 +232,6 @@ zx02_code_test: _MADS:=../../not-my/Mad-Assembler/bin/windows_x86_64/mads.exe
 zx02_code_test: _output_folders
 	"$(_MADS)" -d:comp_data=$$4000 -d:out_addr=$$3000 -b:$$900 -o:$(BUILD)/zx02-optim-mads.xex -l:$(BUILD)/zx02-optim-mads.lst submodules/zx02/6502/zx02-optim.asm
 	dd if=$(BUILD)/zx02-optim-mads.xex of=$(BUILD)/zx02-optim-mads.bin bs=1 skip=6
-	"$(TASS)" $(TASS_ARGS) -L $(BUILD)/zx02-optim-64tass.lst -o "$(BUILD)/zx02-optim-64tass.prg" "src/zx02-optim.s65"
+	"$(TASS)" $(TASS_ARGS) -L $(BUILD)/zx02-optim-64tass.lst -o "$(BUILD)/zx02-optim-64tass.prg" "src/zx02-optim-test.s65"
 	$(PYTHON) "$(BEEB_BIN)/prg2bbc.py" "$(BUILD)/zx02-optim-64tass.prg" "$(BUILD)/zx02-optim-64tass.bbc"
 	$(SHELLCMD) cmp "$(BUILD)/zx02-optim-mads.bin" "$(BUILD)/zx02-optim-64tass.bbc"

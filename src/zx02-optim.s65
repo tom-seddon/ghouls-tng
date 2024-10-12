@@ -10,20 +10,20 @@
 ; Converted to 64tass format
 
 
-*=$80
+                .section zx02_zp
 offset_hi: .fill 1
 ZX0_src:.fill 2
 ZX0_dst:.fill 2
 bitr:.fill 1
 pntr:.fill 1
+                .endsection
 
-comp_data=$4000
-out_addr=$3000
+                
 
-*=$900
-            ; Initial values for offset_hi, source, destination, bitr and pntr
+                .section zx02_code
+                ; Initial values for offset_hi, source, destination, bitr and pntr
 zx0_ini_block:
-                .byte $00, <comp_data, >comp_data, <out_addr, >out_addr, $80, $ff
+                .byte $00, <zx02_comp_data, >zx02_comp_data, <zx02_out_addr, >zx02_out_addr, $80, $ff
 
 ;--------------------------------------------------
 ; Decompress ZX0 data (6502 optimized format)
@@ -147,3 +147,6 @@ elias_skip1:
                 ; Got ending bit, stop reading
 exit:
                 rts
+
+                .endsection
+                

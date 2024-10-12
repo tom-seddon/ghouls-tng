@@ -75,6 +75,7 @@ endif
 	$(_V)$(MAKE) _asm PC=gmc BEEB=GEDMC TASS_EXTRA_ARGS=-Deditor=true
 	$(_V)$(MAKE) _asm PC=gudgs BEEB=GUDGS
 	$(_V)$(MAKE) _asm PC=glevels BEEB=GLEVELS
+	$(_V)$(MAKE) _asm PC=gmenu BEEB=GMENU
 
 # Create GBAS and D.GBAS
 	$(_V)$(PYTHON) $(BIN)/bbpp.py -Ddebug=False --asm-symbols $(BUILD)/GMC.symbols "" -o $(BUILD)/gbas.bas src/ghouls.bas
@@ -85,6 +86,9 @@ endif
 # Create GLOADER
 	$(_V)$(PYTHON) $(BIN)/bbpp.py --asm-symbols $(BUILD)/GMC.symbols "" -o $(BUILD)/gloader.bas src/gloader.bas
 	$(_V)$(BASICTOOL) --tokenise --basic-2 --output-binary $(BUILD)/gloader.bas $(BEEB_OUTPUT)/$$.GLOADER
+
+# Create levels stuff
+	$(_V)$(PYTHON) $(BIN)/levels.py --output "$(BUILD)/levels.generated.s65" --output-list "$(BUILD)/levels.txt" "$(BEEB_VOLUME)"
 
 # Create GCSREEN
 	$(_V)$(SHELLCMD) copy-file $(BEEB_VOLUME)/0/$$.GSCREEN $(BEEB_OUTPUT)/
@@ -97,30 +101,20 @@ endif
 	$(_V)$(PYTHON) $(BIN)/budgets.py $(BEEB_OUTPUT) $(BUILD)
 	$(_V)$(SHELLCMD) blank-line
 
-# Create a .ssd
-#
-# TODO: don't include everything!
-	$(_V)$(SSD_CREATE) -o "$(SSD_OUTPUT)" \
---dir "$(BEEB_OUTPUT)" \
-"$(BEEB_OUTPUT)/$$.!BOOT" \
-"$(BEEB_OUTPUT)/$$.GLOADER" \
-"$(BEEB_OUTPUT)/$$.GSCREEN" \
-"$(BEEB_OUTPUT)/$$.GUDGS" \
-"$(BEEB_OUTPUT)/$$.GMC" \
-"$(BEEB_OUTPUT)/$$.GLEVELS" \
-"$(BEEB_OUTPUT)/$$.GBAS" \
-"$(BEEB_OUTPUT)/D.GBAS" \
-"$(BEEB_OUTPUT)/$$.GEDMC" \
-"$(BEEB_VOLUME)/2/$$.TUTOR1" \
-"$(BEEB_VOLUME)/2/$$.SPIDERS" \
-"$(BEEB_VOLUME)/2/$$.HEIGHTS" \
-"$(BEEB_VOLUME)/2/$$.ALTERN" \
-"$(BEEB_VOLUME)/2/$$.EGYPT" \
-"$(BEEB_VOLUME)/2/$$.MASH" \
-"$(BEEB_VOLUME)/2/$$.TOM" \
-"$(BEEB_VOLUME)/2/$$.GETOUT" \
-"$(BEEB_VOLUME)/2/$$.MARS" \
-"$(BEEB_VOLUME)/2/$$.ADR5"
+# Build .ssd. Re-run make to ensure the $(shell cat gets re-evaluated.
+	$(_V)$(MAKE) _ssd
+
+##########################################################################
+##########################################################################
+
+.PHONY:_ssd
+# It's possible levels.txt won't exist, meaning _LEVELS ends up empty.
+# But by the time make _ssd is actually executed, as part of make
+# build, it will be present.
+_ssd: _LEVELS:=$(shell $(SHELLCMD) cat -f $(BUILD)/levels.txt)
+_ssd:
+	$(info $$(shell cat build/levels.txt))
+	$(_V)$(SSD_CREATE) -o "$(SSD_OUTPUT)" --dir "$(BEEB_OUTPUT)" "$(BEEB_OUTPUT)/$$.!BOOT" "$(BEEB_OUTPUT)/$$.GLOADER" "$(BEEB_OUTPUT)/$$.GSCREEN" "$(BEEB_OUTPUT)/$$.GUDGS" "$(BEEB_OUTPUT)/$$.GMC" "$(BEEB_OUTPUT)/$$.GBAS" "$(BEEB_OUTPUT)/D.GBAS" "$(BEEB_OUTPUT)/$$.GEDMC" "$(BEEB_OUTPUT)/$$.GINFO" $(_LEVELS)
 
 ##########################################################################
 ##########################################################################
@@ -157,7 +151,7 @@ _output_folders:
 clean:
 	$(_V)$(SHELLCMD) rm-tree $(BUILD)
 	$(_V)$(SHELLCMD) rm-tree $(BEEB_OUTPUT)
-	$(_V)$(SHELLCMD) rm-file $(SSD_OUTPUT)
+	$(_V)$(SHELLCMD) rm-file -f $(SSD_OUTPUT)
 
 ##########################################################################
 ##########################################################################
@@ -187,6 +181,7 @@ _tom_windows_laptop:
 
 	@$(MAKE) build
 	-curl --connect-timeout 0.25 --silent -G 'http://localhost:48075/reset/b2' --data-urlencode "config=$(CONFIG)"
+
 ##########################################################################
 ##########################################################################
 

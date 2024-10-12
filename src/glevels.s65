@@ -182,7 +182,7 @@ text:
                 .cerror *-text!=TextData.name,"oops"
 name:
                 .byte 13
-                .fill name+31-*
-                .fill 119
+                .fill name+31-*,0
+                .fill 119,0
                 
                 .cerror *-levels_data!=level_data_pages*256,format("glevels is the wrong size: %d",*-(levels_data+level_data_pages*256))

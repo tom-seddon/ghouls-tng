@@ -226,8 +226,9 @@ Additional dependencies are provided as EXEs in the repo.
 - [64tass](https://sourceforge.net/projects/tass64/) (`64tass`) -
   version 2974 works
 - Working C compiler
-  ([basictool](https://github.com/ZornsLemma/basictool) is compiled
-  automatically as part of the build)
+  ([basictool](https://github.com/ZornsLemma/basictool) and
+  [zx02](https://github.com/dmsc/zx02) are compiled automatically as
+  part of the build)
 
 ## Clone the repo
 

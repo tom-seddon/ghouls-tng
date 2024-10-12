@@ -82,6 +82,9 @@ endif
 	$(_V)$(MAKE) _asm PC=gudgs BEEB=GUDGS
 	$(_V)$(MAKE) _asm PC=gmenu BEEB=GMENU
 
+# Compressed screen stuff
+	$(_V)$(MAKE) _asm PC=gscrp BEEB=GSCRP
+
 # Create GBAS and D.GBAS
 	$(_V)$(PYTHON) "$(BIN)/bbpp.py" -Ddebug=False --asm-symbols "$(BUILD)/GMC.symbols" "" -o "$(BUILD)/gbas.bas" "src/ghouls.bas"
 	$(_V)$(BASICTOOL) --tokenise --basic-2 --output-binary "$(BUILD)/gbas.bas" "$(BUILD)/$$.GBAS"
@@ -120,7 +123,7 @@ endif
 # build, it will be present.
 _ssd: _LEVELS:=$(shell $(SHELLCMD) cat -f $(BUILD)/levels.txt)
 _ssd:
-	$(_V)$(SSD_CREATE) -o "$(SSD_OUTPUT)" --title "GHOULS R" --opt4 3 "$(BUILD)/$$.!BOOT" "$(BUILD)/$$.GLOADER" "$(BEEB_VOLUME)/0/$$.GSCREEN" "$(BUILD)/$$.GUDGS" "$(BUILD)/$$.GMC" "$(BUILD)/$$.GBAS" "$(BUILD)/D.GBAS" "$(BUILD)/$$.GEDMC" "$(BUILD)/$$.GINFO" "$(BUILD)/$$.GMENU" "$(BUILD)/$$.GSCR2" $(_LEVELS)
+	$(_V)$(SSD_CREATE) -o "$(SSD_OUTPUT)" --title "GHOULS R" --opt4 3 "$(BUILD)/$$.!BOOT" "$(BUILD)/$$.GLOADER" "$(BEEB_VOLUME)/0/$$.GSCREEN" "$(BUILD)/$$.GUDGS" "$(BUILD)/$$.GMC" "$(BUILD)/$$.GBAS" "$(BUILD)/D.GBAS" "$(BUILD)/$$.GEDMC" "$(BUILD)/$$.GINFO" "$(BUILD)/$$.GMENU" "$(BUILD)/$$.GSCR2" $(_LEVELS) "$(BUILD)/$$.GSCRP"
 
 ##########################################################################
 ##########################################################################
@@ -187,10 +190,10 @@ _tom_windows_laptop: CONFIG=B/Acorn 1770 + BeebLink
 _tom_windows_laptop:
 #	@$(MAKE) _tom_laptop
 
-#	@$(MAKE) build
-#	-curl --connect-timeout 0.25 --silent -G 'http://localhost:48075/reset/b2' --data-urlencode "config=$(CONFIG)"
+	@$(MAKE) build
+	-curl --connect-timeout 0.25 --silent -G 'http://localhost:48075/reset/b2' --data-urlencode "config=$(CONFIG)"
 
-	@$(MAKE) zx02_code_test
+#	@$(MAKE) zx02_code_test
 
 ##########################################################################
 ##########################################################################

@@ -15,6 +15,7 @@ GOSUB{$reset_bonus}
 FORF=1TO3:VDU19,F,0;0;:NEXT
 PRINTTAB(0,5);:COLOUR3:GCOL0,1
 LDATA={&levels_org}+4+(SC-1)*{$LevelData_size}:!{&level_draw_ptr}=LDATA:A%=0:X%=GO:Y%=0:IFTA:Y%=Y%OR{$init_level_yflag_time_attack}
+IF(LDATA?{$LevelData_flags_offset}AND{$LevelData_flags_invert_scoring})<>0:Y%=Y%OR{$init_level_yflag_invert_scoring}
 CALL{&entry_init_level}
 VDU5:MOVE(20-LEN($(LDATA+{$LevelData_name_offset})))*64,28:PRINT$(LDATA+{$LevelData_name_offset}):VDU4
 !{&ghosts_table}=0:!{&ghosts_table+3}=0:COLOUR1{# TODO: ghosts_table+3 should probably be ghosts_table+4...

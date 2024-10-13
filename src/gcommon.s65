@@ -59,6 +59,7 @@ no_standard_treasure=2
 ; Level 2 - set if file has completion text
 ; Level 3 - set if file has name
 text=4
+invert_scoring=8
                 .fill 1
                 .endblock
 ; only present if has_ghost_rect flag set. Otherwise, use default
@@ -97,6 +98,7 @@ LevelData_ghost_max_y_offset=LevelData.ghost_max_y
 LevelData_flags_has_ghost_rect=LevelData.flags.has_ghost_rect
 LevelData_flags_no_standard_treasure=LevelData.flags.no_standard_treasure
 LevelData_flags_text=LevelData.flags.text
+LevelData_flags_invert_scoring=LevelData.flags.invert_scoring
 
 TextData_offset=4+4*size(LevelData)
 TextData_instructions_offset=TextData.instructions
@@ -194,6 +196,7 @@ ed_flags_masked=$40 ;set if this object should have a masked/dimmed
 ; Pass flags in Y register
 
 init_level_yflag_time_attack=$01 ; set if time attack mode
+init_level_yflag_invert_scoring=$02 ; set if inverted scoring mode
 
 ;-------------------------------------------------------------------------
 

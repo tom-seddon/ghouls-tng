@@ -487,7 +487,7 @@ Flags are:
 |   6 |                                  |
 |   5 |                                  |
 |   4 |                                  |
-|   3 |                                  |
+|   3 | Score invert flag                |
 |   2 | Text flag                        |
 |   1 | Set if no standard goal in level |
 |   0 | Set if ghost rect is valid       |
@@ -507,6 +507,9 @@ depends on which level the text flag is for:
 - Level 2 :: set if file has ending text
 - Level 3 :: set if file has title
 - Level 4 :: unused
+
+If the score invert flag is set, your score increases as you descend
+and decreases as you ascend. A level design question.
 
 ** Text data
 

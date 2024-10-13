@@ -75,10 +75,10 @@ dir and so on. Press ESCAPE to get back to the editor menu.
 When editing:
 
 - `Z`/`X`/`*`/`?` move the cursor. CUR shows the item under the
-  cursor, and its creation value (see below)
+  cursor, and its associated value (see below)
 - `DELETE` deletes the thing under the cursor
 - `←`/`→` select the NEW thing's type
-- `↑`/`↓` select the NEW thing's creation value (see below)
+- `↑`/`↓` select the NEW thing's associated value (see below)
 - `RETURN` adds an instance of the NEW thing to the level
 - `A` toggles time attack mode
 - `C` changes the level-specific colour
@@ -86,6 +86,7 @@ When editing:
   is automatically clamped if necessary)
 - `SHIFT+G` sets the other corner of the ghost start position area
 - `CTRL+G` unsets the ghost start position area
+- `I` toggles the invert score flag (see below)
 - `R` redraws the level (since the editor isn't particularly careful
   about tidily redrawing everything while editing)
 - `S` sets the player's test start position
@@ -102,7 +103,8 @@ When editing:
 The test start position is shown in red. It isn't saved. It's there to
 make it quicker to iterate on sections of the level.
 
-The creation value is a number associated with some types of object:
+The object's associated value is a number associated with some types
+of object:
 
 - For moving platforms: the platform's speed
 - For spiders: the spider's speed
@@ -110,11 +112,15 @@ The creation value is a number associated with some types of object:
 There are two types of spider: a solid one (always present), and a
 masked/dimmed one (appears only when playing with 2+ ghosts).
 
-The bottom row contains some indicators:
+The bottom row contains indicators relating to the last test:
 
 - `VI` ("victorious") - `Y` or `N` depending on whether you completed the
   level in the last test run, or something else happened. (You
   probably died! But you might just have pressed ESCAPE)
+  
+There's a column of additional indicators on the right, relating to
+the level setup:
+  
 - `ST` ("standard treasure") - `Y` or `N` depending no whether there's
   a standard goal in the top right (as per the original levels - the
   game will automatically arrange for this to appear), or whether you
@@ -125,6 +131,12 @@ The bottom row contains some indicators:
 - `TA` ("time attack") - `Y` or `N` depending on whether the test mode
   is time attack or classic/infinite lives (the distinction being moot
   in the editor)
+- `SI` ("scoring inverted") - `Y` or `N` depending on whether the
+  scoring mechanic for ascending/descending is inverted. When not
+  inverted, climbing 1 row gets you 5 points, and dropping 1 row loses
+  you 5 points; when inverted, it's the other way round. You may want
+  to changethis if your level starts at the top of the screen and
+  finishes at the bottom
 
 ### Glitches and oddities
 

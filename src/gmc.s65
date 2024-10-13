@@ -1573,9 +1573,8 @@ move_player_up_one_row:
                 sbc #1
                 sta player_addr+1
 
-                lda #$05
-                jsr add_2digit_to_score
-                
+                jsr score_ascending
+
                 jmp L1082
 
 ;-------------------------------------------------------------------------
@@ -1675,7 +1674,7 @@ L1092:
                 ldy #>L0AE0
                 jsr osword
                 clc
-                lda #$03
+                lda #$03        ; ate power pill
                 jsr add_2digit_to_score
                 jmp L10E6
 
@@ -1907,7 +1906,8 @@ L1210:
                 jsr osword
                 lda L0AF2
                 sta L0AF1
-                lda #$05
+                lda #$05 ; added periodically to score when power pill
+                         ; active
                 jsr add_2digit_to_score
                 jmp L1386
 
@@ -2530,7 +2530,7 @@ L14AD:
                 jsr osword
                 lda #2
                 sta L0AC8+4  ;pitch
-                lda #$03
+                lda #$03     ; jumped on spring
                 jsr add_2digit_to_score
 
 L14CA:
@@ -2560,7 +2560,7 @@ L14CA:
                 lda player_addr+1
                 adc #1
                 sta player_addr+1
-                jsr subtract_5_from_score
+                jsr score_descending
                 inc L0AFC
                 lda L0AFC
                 cmp #4
@@ -2733,6 +2733,9 @@ done:
 ; X/A = BCD value to add (X is more significant 2 digits, A less
 ; significant)
 ;
+add_5_to_score:
+                lda #$05
+                .cerror *!=add_2digit_to_score
 add_2digit_to_score:
                 ldx #$00
                 .cerror *!=add_4digit_to_score
@@ -2761,6 +2764,22 @@ add_4digit_to_score: .block
 
 ;-------------------------------------------------------------------------
 
+test_inverted_scoring: .block
+                lda entry_init_level.yflags
+                and #init_level_yflag_invert_scoring
+                rts
+                .endblock
+                
+score_descending: .block
+                jsr test_inverted_scoring
+                beq subtract_5_from_score
+                bne add_5_to_score
+                .endblock
+                
+score_ascending:
+                jsr test_inverted_scoring
+                beq add_5_to_score
+                .cerror *!=subtract_5_from_score
 subtract_5_from_score: .block
                 sed
 
@@ -2845,7 +2864,7 @@ L16C6:
                 ldx #<L0AD0
                 ldy #>L0AD0
                 jsr osword
-                jsr subtract_5_from_score
+                jsr score_descending
                 ldy #$F
 
 L16E4:
@@ -3038,7 +3057,7 @@ test_key:
                 .if editor
 ;-------------------------------------------------------------------------
 
-ed_keys=[key_z,key_x,key_slash,key_colon,key_return,key_delete,key_tab,key_r,key_s,key_escape,key_left,key_right,key_up,key_down,key_c,key_g,key_t,key_3,key_a]
+ed_keys=[key_z,key_x,key_slash,key_colon,key_return,key_delete,key_tab,key_r,key_s,key_escape,key_left,key_right,key_up,key_down,key_c,key_g,key_t,key_3,key_a,key_i]
 
 ed_key_index: .function k
                 .for _i:=0,_i<len(ed_keys),_i+=1
@@ -4929,7 +4948,7 @@ update_stuff: .proc
                 lda ed_cur_otype
                 jsr ed_draw_otype
 
-                ldx #14
+                ldx #11
                 ldy #29
                 jsr ed_gotoxy
 
@@ -4972,6 +4991,7 @@ _..=[key_action(key_g,ed_key_flag_newly_down,set_ghost_rect)]
 _..=[key_action(key_t,ed_key_flag_newly_down,toggle_no_standard_treasure)]
 _..=[key_action(key_3,ed_key_flag_newly_down,ghost_count)]
 _..=[key_action(key_a,ed_key_flag_newly_down,toggle_test_time_attack)]
+_..=[key_action(key_i,ed_key_flag_newly_down,toggle_invert_scoring)]
 key_actions=_
 
 key_indexes: .byte key_actions.key_index
@@ -5005,12 +5025,19 @@ done:
                 .endproc
                 
 toggle_no_standard_treasure: .proc
+                lda #LevelData.flags.no_standard_treasure
+                jmp toggle_level_data_flag
+                .endproc
+
+toggle_invert_scoring: .proc
+                lda #LevelData.flags.invert_scoring
+                .cerror *!=toggle_level_data_flag
+                .endproc
+toggle_level_data_flag: .proc
                 ldy #LevelData.flags
-                lda (ed_level_addr),y
-                eor #LevelData.flags.no_standard_treasure
+                eor (ed_level_addr),y
                 sta (ed_level_addr),y
-                jsr redraw
-                rts
+                jmp redraw
                 .endproc
                 
 set_ghost_rect: .proc
@@ -5262,7 +5289,7 @@ draw_new_otype:
                 jsr ed_draw_otype
 
 print_new_ovalue:
-                ldx #14
+                ldx #11
                 ldy #27
                 jsr ed_gotoxy
 
@@ -5332,9 +5359,9 @@ colour3_physical_colour:
 
                 .byte 17,2
                 .text 31,0,27,'NEW:'
-                .text 31,8,27,'CVAL:'
+                .text 31,8,27,'#: --'
                 .text 31,0,29,'CUR:'
-                .text 31,8,29,'CVAL:'
+                .text 31,8,29,'#: --'
                 .text 31,0,31
                 .byte 0
 
@@ -5345,7 +5372,7 @@ colour3_physical_colour:
                 jsr print_yn
 
                 jsr ed_print
-                .text ' ST:',0
+                .text 31,16,27,'ST:',0
 
                 ldy #LevelData.flags
                 lda (ed_level_addr),y
@@ -5354,7 +5381,7 @@ colour3_physical_colour:
                 jsr print_yn
 
                 jsr ed_print
-                .text ' G#:'
+                .text 31,16,28,'G#:'
                 .byte 0
 
                 clc
@@ -5363,10 +5390,19 @@ colour3_physical_colour:
                 jsr oswrch
 
                 jsr ed_print
-                .text ' TA:'
+                .text 31,16,29,'TA:'
                 .byte 0
 
                 lda ed_test_time_attack
+                jsr print_yn
+
+                jsr ed_print
+                .text 31,16,30,'SI:'
+                .byte 0
+
+                ldy #LevelData.flags
+                lda (ed_level_addr),y
+                and #LevelData.flags.invert_scoring
                 jsr print_yn
 
 draw_level:
@@ -5649,9 +5685,20 @@ init_level:
 num_ghosts_set:
 
                 lda #0          ; yflag=0
+                
                 ldy ed_test_time_attack
                 beq +
                 ora #init_level_yflag_time_attack
++
+
+                pha             ; save yflag
+                ldy #LevelData.flags
+                lda (ed_level_addr),y
+                and #LevelData.flags.invert_scoring
+                cmp #1          ; C=1 if set
+                pla             ; restore yflag
+                bcc +           ; taken if invert scoring flag not set
+                ora #init_level_yflag_invert_scoring
 +
                 tay
                 

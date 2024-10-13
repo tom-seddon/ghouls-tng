@@ -485,7 +485,7 @@ run_commands_gbas:
 
 run_commands_dgbas:
                 .text 'PAGE=&1100',13
-                .text 'CH."D.GBAS"',6,13
+                .text 'CH."GBASD"',6,13
                 .cerror *-run_commands_dgbas>=32 ; keyboard buffer is only so large...
                 .text 0
 

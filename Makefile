@@ -84,11 +84,11 @@ endif
 # Compressed screen stuff
 	$(_V)$(MAKE) _asm PC=gscrp BEEB=GSCRP PRG2BBC_EXTRA_ARGS=--execution-address
 
-# Create GBAS and D.GBAS
+# Create GBAS and GBASD
 	$(_V)$(PYTHON) "$(BIN)/bbpp.py" -Ddebug=False --asm-symbols "$(BUILD)/GMC.symbols" "" -o "$(BUILD)/gbas.bas" "src/ghouls.bas"
 	$(_V)$(BASICTOOL) --tokenise --basic-2 --output-binary "$(BUILD)/gbas.bas" "$(BUILD)/$$.GBAS"
-	$(_V)$(PYTHON) $(BIN)/bbpp.py -Ddebug=True --asm-symbols "$(BUILD)/GMC.symbols" "" -o "$(BUILD)/d.gbas.bas" "src/ghouls.bas"
-	$(_V)$(BASICTOOL) --tokenise --basic-2 --output-binary "$(BUILD)/d.gbas.bas" "$(BUILD)/D.GBAS"
+	$(_V)$(PYTHON) $(BIN)/bbpp.py -Ddebug=True --asm-symbols "$(BUILD)/GMC.symbols" "" -o "$(BUILD)/gbasd.bas" "src/ghouls.bas"
+	$(_V)$(BASICTOOL) --tokenise --basic-2 --output-binary "$(BUILD)/gbasd.bas" "$(BUILD)/$$.GBASD"
 
 # Print some info
 	$(_V)$(SHELLCMD) blank-line
@@ -112,7 +112,7 @@ endif
 # build, it will be present.
 _ssd: _LEVELS:=$(shell $(SHELLCMD) cat -f $(BUILD)/levels.txt)
 _ssd:
-	$(_V)$(SSD_CREATE) -o "$(SSD_OUTPUT)" --title "GHOULS R" --opt4 3 "$(BUILD)/$$.!BOOT" "$(BUILD)/$$.GMC" "$(BUILD)/$$.GBAS" "$(BUILD)/D.GBAS" "$(BUILD)/$$.GEDMC" "$(BUILD)/$$.GINFO" "$(BUILD)/$$.GMENU" $(_LEVELS) "$(BUILD)/$$.GRUN" "$(BUILD)/$$.GSCRP"
+	$(_V)$(SSD_CREATE) -o "$(SSD_OUTPUT)" --title "GHOULS R" --opt4 3 "$(BUILD)/$$.!BOOT" "$(BUILD)/$$.GMC" "$(BUILD)/$$.GBAS" "$(BUILD)/$$.GBASD" "$(BUILD)/$$.GEDMC" "$(BUILD)/$$.GINFO" "$(BUILD)/$$.GMENU" $(_LEVELS) "$(BUILD)/$$.GRUN" "$(BUILD)/$$.GSCRP"
 
 ##########################################################################
 ##########################################################################

@@ -232,7 +232,7 @@ def main2(options):
                             instr=instr))
 
     level('build/$.GLEVELS','David Hoskins','Authentic','G H O U L S')
-    level('beeb/ghouls-tng/2/$.TUTOR1','Kieran','Introductory')
+    level('beeb/ghouls-tng/2/$.PRACTIC','Kieran','Introductory')
     level('beeb/ghouls-tng/2/$.SPIDERS','Kieran','Spidery')
     level('beeb/ghouls-tng/2/$.HEIGHTS','Kieran','Elevated')
     level('beeb/ghouls-tng/2/$.ALTERN','Kieran','Indescribable')
@@ -242,6 +242,8 @@ def main2(options):
     level('beeb/ghouls-tng/2/$.GETOUT','Kieran','Extractive')
     level('beeb/ghouls-tng/2/$.MARS','Stew','Extraplanetary')
     level('beeb/ghouls-tng/2/$.ADR5','VectorEyes','Unknown')
+    level('beeb/ghouls-tng/2/$.CAVES','Kieran','Subterranean')
+    level('beeb/ghouls-tng/2/$.BSIDES','Kieran','???')
 
     # Custom levels
     instr=b''

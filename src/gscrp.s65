@@ -10,30 +10,34 @@
 
 ;-------------------------------------------------------------------------
 
-*=$1100
+zx02_out_addr=$2b00
+                .cerror zx02_out_addr<gedmc_levels_org+level_data_pages*256
+                
+;-------------------------------------------------------------------------
+
+*=$8000-(end-begin)-2
+
+                .word main
+begin:
+                .dsection data
                 .dsection code
                 .dsection zx02_code
-                .dsection data
-                .cerror *>$3000
-
+end:
+                
 ;-------------------------------------------------------------------------
 
                 .section zp
                 .endsection
 
-;-------------------------------------------------------------------------
-
-zx02_out_addr=$3000
-                
                 .section code
+main:
                 jmp full_decomp
                 .endsection code
 
 ;-------------------------------------------------------------------------
 
                 .section data
-zx02_comp_data:
-                .binary '../build/title.zx02'
+zx02_comp_data: .binary '../build/title.zx02'
                 .endsection
 
 ;-------------------------------------------------------------------------

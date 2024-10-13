@@ -28,6 +28,7 @@ level: .fill 1
 text: .fill 2
 text_dest: .fill 2
 bbc_file_name: .fill 2
+commands_addr: .fill 2
                 .endsection zp
 
 ;-------------------------------------------------------------------------
@@ -162,22 +163,40 @@ load:
                 ldy #>osfile_block
                 jsr osfile
 
-                ldx #0
+                lda $0281       ; AUG p117
+                bne +
+
+                lda #<run_commands_gbas
+                sta commands_addr+0
+                lda >#run_commands_gbas
+                sta commands_addr+1
+                jmp type_run_commands
+
++
+                lda #<run_commands_dgbas
+                sta commands_addr+0
+                lda #>run_commands_dgbas
+                sta commands_addr+1
+                .cerror *!=type_run_commands
+
+type_run_commands:
+                ldy #0
 type_run_commands_loop:
-                txa
+                tya
                 pha
 
-                ldy run_commands,x
+                lda (commands_addr),y
                 beq run_commands_typed
-                
+
+                tay
                 lda #138
                 ldx #0
 
                 jsr osbyte
 
                 pla
-                tax
-                inx
+                tay
+                iny
                 jmp type_run_commands_loop
 
 run_commands_typed:
@@ -253,11 +272,17 @@ attr: .dword 0
 
 ;-------------------------------------------------------------------------
 
-run_commands:
+run_commands_gbas:
                 .text 'PAGE=&1100',13
                 ; and sneak a cheeky VDU6 in...
                 .text 'CH."GBAS"',6,13
-                .cerror *-run_commands>=32 ; keyboard buffer is only so large...
+                .cerror *-run_commands_gbas>=32 ; keyboard buffer is only so large...
+                .text 0
+
+run_commands_dgbas:
+                .text 'PAGE=&1100',13
+                .text 'CH."D.GBAS"',6,13
+                .cerror *-run_commands_dgbas>=32 ; keyboard buffer is only so large...
                 .text 0
 
 load_gmc: .text 'LOAD $.GMC',13

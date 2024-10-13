@@ -81,9 +81,10 @@ endif
 	$(_V)$(MAKE) _asm PC=gmc BEEB=GEDMC TASS_EXTRA_ARGS=-Deditor=true
 	$(_V)$(MAKE) _asm PC=gudgs BEEB=GUDGS
 	$(_V)$(MAKE) _asm PC=gmenu BEEB=GMENU
+	$(_V)$(MAKE) _asm PC=grun BEEB=GRUN
 
 # Compressed screen stuff
-	$(_V)$(MAKE) _asm PC=gscrp BEEB=GSCRP
+	$(_V)$(MAKE) _asm PC=gscrp BEEB=GSCRP PRG2BBC_EXTRA_ARGS=--execution-address
 
 # Create GBAS and D.GBAS
 	$(_V)$(PYTHON) "$(BIN)/bbpp.py" -Ddebug=False --asm-symbols "$(BUILD)/GMC.symbols" "" -o "$(BUILD)/gbas.bas" "src/ghouls.bas"
@@ -123,7 +124,7 @@ endif
 # build, it will be present.
 _ssd: _LEVELS:=$(shell $(SHELLCMD) cat -f $(BUILD)/levels.txt)
 _ssd:
-	$(_V)$(SSD_CREATE) -o "$(SSD_OUTPUT)" --title "GHOULS R" --opt4 3 "$(BUILD)/$$.!BOOT" "$(BUILD)/$$.GLOADER" "$(BEEB_VOLUME)/0/$$.GSCREEN" "$(BUILD)/$$.GUDGS" "$(BUILD)/$$.GMC" "$(BUILD)/$$.GBAS" "$(BUILD)/D.GBAS" "$(BUILD)/$$.GEDMC" "$(BUILD)/$$.GINFO" "$(BUILD)/$$.GMENU" "$(BUILD)/$$.GSCR2" $(_LEVELS) "$(BUILD)/$$.GSCRP"
+	$(_V)$(SSD_CREATE) -o "$(SSD_OUTPUT)" --title "GHOULS R" --opt4 3 "$(BUILD)/$$.!BOOT" "$(BUILD)/$$.GLOADER" "$(BEEB_VOLUME)/0/$$.GSCREEN" "$(BUILD)/$$.GUDGS" "$(BUILD)/$$.GMC" "$(BUILD)/$$.GBAS" "$(BUILD)/D.GBAS" "$(BUILD)/$$.GEDMC" "$(BUILD)/$$.GINFO" "$(BUILD)/$$.GMENU" "$(BUILD)/$$.GSCR2" $(_LEVELS) "$(BUILD)/$$.GRUN" "$(BUILD)/$$.GSCRP"
 
 ##########################################################################
 ##########################################################################
@@ -134,7 +135,7 @@ _title_screen: $(BUILD)/title.zx02
 $(BUILD)/title.zx02 : $(BUILD)/title.bbc
 	$(_V)$(ZX02) "$<" "$@"
 
-$(BUILD)/title.bbc : $(PWD)/src/GhoulsRevenge.png
+$(BUILD)/title.bbc : src/GhoulsRevenge.png
 	$(_V)$(PYTHON) "$(BEEB_BIN)/png2bbc.py" -o "$@" "$<" 2
 
 ##########################################################################
@@ -143,7 +144,7 @@ $(BUILD)/title.bbc : $(PWD)/src/GhoulsRevenge.png
 .PHONY:_asm
 _asm:
 	$(_V)$(TASS) $(TASS_ARGS) $(TASS_EXTRA_ARGS) -L "$(BUILD)/$(BEEB).lst" -l "$(BUILD)/$(BEEB).symbols" -o "$(BUILD)/$(BEEB).prg" "src/$(PC).s65"
-	$(_V)$(PYTHON) "$(BEEB_BIN)/prg2bbc.py" --io "$(BUILD)/$(BEEB).prg" "$(BUILD)/$$.$(BEEB)"
+	$(_V)$(PYTHON) "$(BEEB_BIN)/prg2bbc.py" $(PRG2BBC_EXTRA_ARGS) --io "$(BUILD)/$(BEEB).prg" "$(BUILD)/$$.$(BEEB)"
 
 ##########################################################################
 ##########################################################################
@@ -190,10 +191,8 @@ _tom_windows_laptop: CONFIG=B/Acorn 1770 + BeebLink
 _tom_windows_laptop:
 #	@$(MAKE) _tom_laptop
 
-	@$(MAKE) build
+	@$(MAKE) build DUMMY=1
 	-curl --connect-timeout 0.25 --silent -G 'http://localhost:48075/reset/b2' --data-urlencode "config=$(CONFIG)"
-
-#	@$(MAKE) zx02_code_test
 
 ##########################################################################
 ##########################################################################

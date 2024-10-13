@@ -15,7 +15,7 @@ offset_hi: .fill 1
 ZX0_src:.fill 2
 ZX0_dst:.fill 2
 bitr:.fill 1
-pntr:.fill 1
+pntr:.fill 2
                 .endsection
 
                 

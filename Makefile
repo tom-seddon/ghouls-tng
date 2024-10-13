@@ -80,6 +80,7 @@ endif
 	$(_V)$(MAKE) _asm PC=gmc BEEB=GEDMC TASS_EXTRA_ARGS=-Deditor=true
 	$(_V)$(MAKE) _asm PC=gmenu BEEB=GMENU
 	$(_V)$(MAKE) _asm PC=grun BEEB=GRUN
+	$(_V)$(MAKE) _asm PC=gdummy BEEB=GDUMMY
 
 # Compressed screen stuff
 	$(_V)$(MAKE) _asm PC=gscrp BEEB=GSCRP PRG2BBC_EXTRA_ARGS=--execution-address
@@ -112,7 +113,17 @@ endif
 # build, it will be present.
 _ssd: _LEVELS:=$(shell $(SHELLCMD) cat -f $(BUILD)/levels.txt)
 _ssd:
-	$(_V)$(SSD_CREATE) -o "$(SSD_OUTPUT)" --title "GHOULS R" --opt4 3 "$(BUILD)/$$.!BOOT" "$(BUILD)/$$.GMC" "$(BUILD)/$$.GBAS" "$(BUILD)/$$.GBASD" "$(BUILD)/$$.GEDMC" "$(BUILD)/$$.GINFO" "$(BUILD)/$$.GMENU" $(_LEVELS) "$(BUILD)/$$.GRUN" "$(BUILD)/$$.GSCRP"
+	$(_V)$(SSD_CREATE) -o "$(SSD_OUTPUT)" --title "GHOULS R" --opt4 3 \
+"$(BUILD)/$$.!BOOT" \
+"$(BUILD)/$$.GRUN" \
+"$(BUILD)/$$.GSCRP" \
+"$(BUILD)/$$.GDUMMY" \
+"$(BUILD)/$$.GMENU" \
+"$(BUILD)/$$.GMC" \
+"$(BUILD)/$$.GBAS" \
+"$(BUILD)/$$.GBASD" \
+"$(BUILD)/$$.GEDMC" \
+$(_LEVELS)
 
 ##########################################################################
 ##########################################################################

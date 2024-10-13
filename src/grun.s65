@@ -131,6 +131,7 @@ menu_getch:
 play:
                 lda #$00
                 sta $0281       ; AUG p117
+                jsr gdummy
 gmenu:
                 ldx #<run_gmenu
                 ldy #>run_gmenu
@@ -139,13 +140,31 @@ gmenu:
 debug:
                 lda #$01
                 sta $0281       ; AUG p117
+                jsr gdummy
                 jmp gmenu
 
 edit:
+                jsr gdummy
                 ldx #<run_gedmc
                 ldy #>run_gedmc
                 jmp oscli
 
+gdummy:
+                ldx #<run_gdummy
+                ldy #>run_gdummy
+                jsr oscli
+
+                lda #19
+                jsr osbyte
+
+                ; cursor off, display off, no interlace
+                lda #8
+                sta $fe00
+                lda #%11110000
+                sta $fe01
+
+                rts
+                
 run_gmenu:
                 .text '/GMENU',13
                 
@@ -155,6 +174,9 @@ run_gedmc:
 run_gscrp:
                 .text "/GSCRP",13
 
+run_gdummy:
+                .text '/GDUMMY',13
+                
                 ; Y-2 in each case due to the different screen start
                 ; address
 text: .block

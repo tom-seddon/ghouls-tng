@@ -20,15 +20,19 @@ difficulty_x=13
 difficulty_y=20
 instructions_x=0
 instructions_y=12
+
+input_buffer=$700
+                .cerror (<input_buffer)!=0
                 
 ;-------------------------------------------------------------------------
 
                 .section zp
 level: .fill 1
-text: .fill 2
+text_src: .fill 2
 text_dest: .fill 2
 bbc_file_name: .fill 2
 commands_addr: .fill 2
+old_brkv: .fill 2
                 .endsection zp
 
 ;-------------------------------------------------------------------------
@@ -36,9 +40,9 @@ commands_addr: .fill 2
 load_text: .macro stem
                 ldx level
                 lda \1_lo,x
-                sta text+0
+                sta text_src+0
                 lda \1_hi,x
-                sta text+1
+                sta text_src+1
                 .endmacro
 
 mode7_addr: .function _x,_y
@@ -65,16 +69,35 @@ write_text0n: .macro x_,y_,_n
 ;-------------------------------------------------------------------------
 
 entry:
+                lda brkv+0
+                sta old_brkv+0
+                lda brkv+1
+                sta old_brkv+1
+                
+                ; re-enable Escape
+                lda #229
                 ldx #0
-print_screen_loop:
-                lda screen,x
-                jsr oswrch
-                inx
-                cpx #size(screen)
-                bne print_screen_loop
+                ldy #0
+                jsr osbyte
 
+                lda #22
+                jsr oswrch
+                lda #7
+                jsr oswrch
+                
                 lda #0
                 sta level
+
+restart:
+                lda old_brkv+0
+                sta brkv+0
+                lda old_brkv+1
+                sta brkv+1
+                
+                ldx #$ff
+                txs
+
+                jsr redraw_screen
 
                 ; cursor keys = ASCII values
                 lda #4
@@ -82,7 +105,10 @@ print_screen_loop:
                 jsr osbyte
 
 main_loop:
-                jsr redraw
+                lda #19
+                jsr osbyte
+                
+                jsr redraw_level_info
 
 key_loop:
                 ; don't care about ESCAPE...
@@ -92,7 +118,7 @@ key_loop:
                 jsr osrdch
 
                 cmp #13
-                beq load
+                beq load_level
 
                 cmp #136
                 beq left
@@ -100,9 +126,27 @@ key_loop:
                 cmp #137
                 beq right
 
-                jmp key_loop
-                
-                rts
+                cmp #'a'
+                bcc +
+                cmp #'z'+1
+                bcs +
+                and #$df
++
+                cmp #'Z'
+                beq custom_levels
+                cmp #'A'+num_levels-1
+                bcs key_loop
+                cmp #'A'
+                bcc key_loop
+                sec
+                sbc #'A'
+                sta level
+                jmp main_loop
+
+custom_levels:
+                lda #num_levels-1
+                sta level
+                jmp main_loop
 
 left:
                 dec level
@@ -120,10 +164,7 @@ right:
                 sta level
                 jmp main_loop
 
-redraw:
-                lda #19
-                jsr osbyte
-
+redraw_level_info:
                 .load_text level_title_addrs
                 .write_text0n level_name_x,level_name_y+0,title_length
                 .write_text0n level_name_x,level_name_y+1,title_length
@@ -136,12 +177,34 @@ redraw:
 
                 .load_text level_difficulty_addrs
                 .write_text0n difficulty_x,difficulty_y,25
-                
+
+                lda level
+                cmp #num_levels-1
+                beq +
+                clc
+                adc #'A'
+                jmp store
++
+                lda #'Z'
+store:
+                sta mode7_addr(39,24)
                 rts
 
 ;-------------------------------------------------------------------------
 
-load:
+redraw_screen:
+                ldx #0
+print_screen_loop:
+                lda screen,x
+                jsr oswrch
+                inx
+                cpx #size(screen)
+                bne print_screen_loop
+                rts
+
+;-------------------------------------------------------------------------
+
+load_level:
                 ldx level
                 lda level_bbc_file_name_addrs_lo,x
                 sta bbc_file_name+0
@@ -151,8 +214,9 @@ load:
                 ldy #0
                 lda (bbc_file_name),y
                 cmp #13
-                beq main_loop       ; TODO...
+                beq custom
 
+load_bbc_file_name:
                 lda bbc_file_name+0
                 sta osfile_block+0
                 lda bbc_file_name+1
@@ -210,6 +274,113 @@ run_commands_typed:
                 ldx #<basic
                 ldy #>basic
                 jmp oscli
+
+;-------------------------------------------------------------------------
+
+restart_custom:
+                jsr redraw_screen
+                jsr redraw_level_info
+                .cerror *!=custom
+custom: .proc
+                ldx #0
+print_loop:
+                lda text,x
+                jsr oswrch
+                inx
+                cpx #size(text)
+                bne print_loop
+
+                ldx #<input
+                ldy #>input
+                lda #0
+                jsr osword
+                bcs restart
+
+                lda #<brk_handler_custom_star
+                sta brkv+0
+                lda #>brk_handler_custom_star
+                sta brkv+1
+
+                ldx #0
+skip_spaces_loop:
+                lda input_buffer,x
+                cmp #' '
+                bne spaces_skipped
+                inx
+                jmp skip_spaces_loop
+spaces_skipped:
+                cmp #'*'
+                beq star
+
+                cmp #13
+                beq restart     ; empty input
+
+                stx bbc_file_name+0
+                lda #>input_buffer
+                sta bbc_file_name+1
+                jmp load_bbc_file_name
+
+input:
+                .word input_buffer
+                .byte 169
+                .byte 32
+                .byte 126
+                
+text: .block
+                .byte 28,0,difficulty_y,39,instructions_y
+                .byte 12
+                .byte 26
+                .byte 31,0,designer_y
+                .text 134,"Enter levels file name to load, *",10,13,134,"command to execute, or",135,"ESCAPE",134,"to",10,13,134,"cancel"
+                .for _i=0,_i<5,_i+=1
+                .byte 31,0,instructions_y+_i
+                .byte 132,157,131
+                .byte 31,39,instructions_y+_i
+                .byte 156
+                .endfor
+                .byte 28,3,instructions_y+4,38,instructions_y
+                .byte 12
+                .byte 28,3,instructions_y+4,36,instructions_y
+                .byte 23,1,1,0,0,0,0,0,0,0
+                .endblock
+
+star:
+                lda #26
+                jsr oswrch
+                lda #12
+                jsr oswrch
+
+                ldx #<input_buffer
+                ldy #>input_buffer
+                jsr oscli
+                jsr press_any_key
+                jmp restart_custom 
+                .endproc
+
+;-------------------------------------------------------------------------
+
+press_any_key: .proc
+                ldx #0
+print_press_any_key_loop:
+                lda press_any_key_message,x
+                jsr oswrch
+                inx
+                cpx #size(press_any_key_message)
+                bne print_press_any_key_loop
+
+                lda #15
+                ldx #0
+                jsr osbyte
+
+                jsr osrdch
+
+                rts
+
+press_any_key_message: .block
+                .text 13,10,13,10,'Press any key to continue'
+                .endblock
+                
+                .endproc
                 
 ;-------------------------------------------------------------------------
 
@@ -234,7 +405,7 @@ write_text_routine: .proc
                 sty text_dest+1
                 ldy #0
 loop:
-                lda (text),y
+                lda (text_src),y
                 beq done
                 sta (text_dest),y
                 iny
@@ -245,8 +416,37 @@ done:
 
 ;-------------------------------------------------------------------------
 
+; brk_handler_custom_load: .proc
+;                 jsr print_brk_message
+;                 rts
+;                 .endproc
+                
+brk_handler_custom_star: .proc
+                jsr print_brk_message
+                jsr press_any_key
+                jmp restart_custom
+                .endproc
+
+;-------------------------------------------------------------------------
+
+print_brk_message: .proc
+                jsr osnewl
+                
+                ldy #1
+brk_handler_loop:
+                lda ($fd),y
+                beq done
+                jsr oswrch
+                iny
+                bne brk_handler_loop
+done:
+                rts
+                .endproc
+                
+;-------------------------------------------------------------------------
+
 screen: .block
-                .text 22,7
+                .text 26,12
                 .text 23,1,0,0,0,0,0,0,0,0
                 .for _i=0,_i<2,_i+=1
                 .text 31,11,0+_i,141,129+_i,'GHOULS: REVENGE'
@@ -258,6 +458,10 @@ screen: .block
                 .text 31,9,5,134,'Press',135,'RETURN',134,'to select'
                 .text 31,0,designer_y,134,'Designer:',133
                 .text 31,0,difficulty_y,134,'Difficulty:',133
+                ;.text 31,38,24,129
+                ; there's a 13 in the text inserted in the keyboard
+                ; buffer, so ensure the cursor ends up somewhere safe.
+                .text 30
                 .endblock
 
 ;-------------------------------------------------------------------------
@@ -288,7 +492,7 @@ run_commands_dgbas:
 load_gmc: .text 'LOAD $.GMC',13
 
 basic: .text 'BASIC',13
-
+                
 ;-------------------------------------------------------------------------
 
 ; Doesn't matter if GMC overwrites the level data.

@@ -59,7 +59,6 @@ def main2(options):
     budget('$.GMC',gmc_symbols.gmc_org,gmc_symbols.levels_org)
     budget('$.GEDMC',gedmc_symbols.gedmc_org,gedmc_symbols.gedmc_org+gedmc_symbols.max_gedmc_pages*256)
     budget('$.GLEVELS',gmc_symbols.levels_org,gmc_symbols.himem)
-    budget('$.GUDGS',0x900,0xb00)
 
     if any_bad: sys.exit(1)
 

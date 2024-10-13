@@ -6876,10 +6876,6 @@ ed_one_time_init: .proc
                 and #$fe
                 sta ed_random_ghost_addr_table_index
 
-                ldx #<run_gudgs
-                ldy #>run_gudgs
-                jsr oscli
-
                 jsr ed_check_levels_header_magic
                 bcs ed_main_loop ;some left in RAM - ok to start
 
@@ -6893,9 +6889,6 @@ ed_one_time_init: .proc
 
                 ; load_named_levels jumps to ed_main_loop once done
                 jmp ed_main_menu.load_named_levels
-
-run_gudgs:
-                .text '/$.GUDGS',13
 
 glevels_name: .text '$.GLEVELS',13
                 .endproc

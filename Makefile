@@ -66,7 +66,6 @@ endif
 
 # Convert title screen
 	$(_V)$(MAKE) _title_screen
-	$(_V)$(SHELLCMD) copy-file "$(BUILD)/title.bbc" "$(BUILD)/$$.GSCR2"
 
 # Convert !BOOT
 	$(_V)$(SHELLCMD) copy-file "src/boot.txt" "$(BUILD)/$$.!BOOT"
@@ -79,7 +78,6 @@ endif
 # Create GMC
 	$(_V)$(MAKE) _asm PC=gmc BEEB=GMC TASS_EXTRA_ARGS=-Deditor=false
 	$(_V)$(MAKE) _asm PC=gmc BEEB=GEDMC TASS_EXTRA_ARGS=-Deditor=true
-	$(_V)$(MAKE) _asm PC=gudgs BEEB=GUDGS
 	$(_V)$(MAKE) _asm PC=gmenu BEEB=GMENU
 	$(_V)$(MAKE) _asm PC=grun BEEB=GRUN
 
@@ -91,16 +89,6 @@ endif
 	$(_V)$(BASICTOOL) --tokenise --basic-2 --output-binary "$(BUILD)/gbas.bas" "$(BUILD)/$$.GBAS"
 	$(_V)$(PYTHON) $(BIN)/bbpp.py -Ddebug=True --asm-symbols "$(BUILD)/GMC.symbols" "" -o "$(BUILD)/d.gbas.bas" "src/ghouls.bas"
 	$(_V)$(BASICTOOL) --tokenise --basic-2 --output-binary "$(BUILD)/d.gbas.bas" "$(BUILD)/D.GBAS"
-
-# Create GLOADER
-	$(_V)$(PYTHON) $(BIN)/bbpp.py --asm-symbols "$(BUILD)/GMC.symbols" "" -o "$(BUILD)/gloader.bas" "src/gloader.bas"
-	$(_V)$(BASICTOOL) --tokenise --basic-2 --output-binary "$(BUILD)/gloader.bas" "$(BUILD)/$$.GLOADER"
-
-# Create GCSREEN
-#	$(_V)$(SHELLCMD) copy-file $(BEEB_VOLUME)/0/$$.GSCREEN $(BEEB_OUTPUT)/
-
-# Set the boot option
-#	$(_V)echo 3 > $(BEEB_OUTPUT)/.opt4
 
 # Print some info
 	$(_V)$(SHELLCMD) blank-line
@@ -124,7 +112,7 @@ endif
 # build, it will be present.
 _ssd: _LEVELS:=$(shell $(SHELLCMD) cat -f $(BUILD)/levels.txt)
 _ssd:
-	$(_V)$(SSD_CREATE) -o "$(SSD_OUTPUT)" --title "GHOULS R" --opt4 3 "$(BUILD)/$$.!BOOT" "$(BUILD)/$$.GLOADER" "$(BEEB_VOLUME)/0/$$.GSCREEN" "$(BUILD)/$$.GUDGS" "$(BUILD)/$$.GMC" "$(BUILD)/$$.GBAS" "$(BUILD)/D.GBAS" "$(BUILD)/$$.GEDMC" "$(BUILD)/$$.GINFO" "$(BUILD)/$$.GMENU" "$(BUILD)/$$.GSCR2" $(_LEVELS) "$(BUILD)/$$.GRUN" "$(BUILD)/$$.GSCRP"
+	$(_V)$(SSD_CREATE) -o "$(SSD_OUTPUT)" --title "GHOULS R" --opt4 3 "$(BUILD)/$$.!BOOT" "$(BUILD)/$$.GMC" "$(BUILD)/$$.GBAS" "$(BUILD)/D.GBAS" "$(BUILD)/$$.GEDMC" "$(BUILD)/$$.GINFO" "$(BUILD)/$$.GMENU" $(_LEVELS) "$(BUILD)/$$.GRUN" "$(BUILD)/$$.GSCRP"
 
 ##########################################################################
 ##########################################################################

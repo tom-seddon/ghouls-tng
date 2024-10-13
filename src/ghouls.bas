@@ -54,7 +54,7 @@ GOTO{$L100}
 NEXT
 END
 {:L370}
-IF?{&player_addr}=192 FORJ=0TO15STEP4:J!&5CC0=0:J!&5CD0=J!{&sprite_pl_facing}:J!&5E00=0:J!&5E10=J!{&sprite_pl_facing+16}:NEXT
+IFFNST:IF?{&player_addr}=192 FORJ=0TO15STEP4:J!&5CC0=0:J!&5CD0=J!{&sprite_pl_facing}:J!&5E00=0:J!&5E10=J!{&sprite_pl_facing+16}:NEXT
 IFTA:GOTO{$after_completion_tune}
 ENVELOPE1,2,-1,1,-1,1,1,1,0,-3,0,-1,126,90:RESTORE{$L1830}:FORF=1TO39:READP
 SOUND&11,1,P,4:SOUND&12,1,P+1,4:SOUND&13,1,P-1,4:FORK=1TO200:NEXT
@@ -66,8 +66,9 @@ IFNOTTA:GOSUB{$reset_bonus}:SC=SC+1:IFSC=5:PROCtower(TRUE):GOTO{$L100}
 *FX15
 SOUND&11,2,2,50:SOUND&12,2,130,50
 IFTA:GOTO{$after_level_completion}
-FORF=0TO15STEP4:F!&5CE0=F!{&sprite_ghost_happy_row0}:F!&5CF0=F!{&sprite_ghost_happy_row0}:F!&5E20=F!{&sprite_ghost_happy_row1}:F!&5E30=F!{&sprite_ghost_happy_row1}:NEXT
-FORF=1TO1000:NEXT:SOUND&10,1,2,2:FORF=0TO15STEP4:F!&5CD0=0:F!&5E10=0:NEXT:FORF=0TO15STEP4:F!&5A50=F!{&sprite_pl_facing}:F!&5B90=F!{&sprite_pl_facing+16}:NEXT:FORF=1TO500:NEXT:FORF=0TO15STEP4:F!&5A50=0:F!&5B90=0:NEXT
+IFFNST:FORF=0TO15STEP4:F!&5CE0=F!{&sprite_ghost_happy_row0}:F!&5CF0=F!{&sprite_ghost_happy_row0}:F!&5E20=F!{&sprite_ghost_happy_row1}:F!&5E30=F!{&sprite_ghost_happy_row1}:NEXT
+FORF=1TO1000:NEXT
+IFFNST:SOUND&10,1,2,2:FORF=0TO15STEP4:F!&5CD0=0:F!&5E10=0:NEXT:FORF=0TO15STEP4:F!&5A50=F!{&sprite_pl_facing}:F!&5B90=F!{&sprite_pl_facing+16}:NEXT:FORF=1TO500:NEXT:FORF=0TO15STEP4:F!&5A50=0:F!&5B90=0:NEXT
 GCOL0,2:MOVE0,952:PLOT21,1279,952:COLOUR2:PRINTTAB(1,14)STRING$(18," ")TAB(1,16)STRING$(18," ")TAB(1,15)"ESCAPE TO LEVEL ";SC"."
 {:after_level_completion}
 FORF=1TO700:NEXT:SOUND&11,2,100,50:FORF=1TO4000:NEXT
@@ -83,10 +84,11 @@ FORG=0TO4STEP2:N=G?{&ghosts_table+1}*256+G?{&ghosts_table}:IFN>&5800 FORF=0TO15S
 SOUND&10,-15,7,255:FORJ=7TO0STEP-1:SOUND&11,-8,J*16,1:FORH=1TO200:NEXT
 FORG=0TO4STEP2:N=G?{&ghosts_table+1}*256+G?{&ghosts_table}:IFN>&5800 FORF=J TO15STEPJ+1:F?N=F?{&sprite_ghost_happy_row0}:F?(N+320)=F?{&sprite_ghost_angry_row1}:NEXT
 NEXT,:SOUND&10,0,0,0
+IFNOTFNST:FORF=1TO2500:NEXT:GOTO{$finish_sequence}
 FORF=1TO1000:NEXT:FORH=1TO5:SOUND&10,1,2,2:FORF=0TO15STEP4:F!&5CD0=0:F!&5E10=0:NEXT:FORF=0TO15STEP4:F!&5B90=F!{&sprite_pl_facing}:F!&5CD0=F!{&sprite_pl_facing+16}:NEXT:FORF=1TO200:NEXT:FORF=0TO15STEP4:F!&5B90=0:F!&5CD0=0:NEXT
 GCOL0,2:MOVE0,952:PLOT21,1279,952
 FORF=0TO15STEP4:F!&5CD0=F!{&sprite_pl_facing}:F!&5E10=F!{&sprite_pl_facing+16}:NEXT:FORF=1TO200:NEXT
-NEXT:FORF=0TO15STEP4:F!&5CD0=F!{&sprite_pl_right_0}:F!&5E10=F!{&sprite_pl_right_0+16}:NEXT
+NEXT:IFFNST:FORF=0TO15STEP4:F!&5CD0=F!{&sprite_pl_right_0}:F!&5E10=F!{&sprite_pl_right_0+16}:NEXT
 {:finish_sequence}
 FORF=1TO3000:NEXT:CLS:VDU28,0,9,19,0,19,3,6;0;:COLOUR3:PRINTTAB(0,1);:IF((?{&level_flags_text_completion} AND{$LevelData_flags_text})<>0):IFLEN(${$levels_org+TextData_offset+TextData_completion_offset})>0:PRINT${$levels_org+TextData_offset+TextData_completion_offset};:ELSE:PRINT"COMPLETION TEXT HERE";
 FORG=-1TO-15STEP-.02:SOUND&11,G,0,30:SOUND&12,G,0,30:SOUND&13,G,2,30:NEXT
@@ -266,3 +268,4 @@ GOTO{$time_attack_select_level}
 DEFFNTIA:IF(?{$level_flags_text_name}AND{$LevelData_flags_text})<>0:={&levels_org+TextData_offset+TextData_name_offset}:ELSE:=0
 DEFFNTI:IFFNTIA<>0:=$FNTIA:ELSE:="G H O U L S"
 DEFFNHSTI:IFFNTIA<>0:=$FNTIA+": TOP 10":ELSE:="TOP TEN TODAY"
+DEFFNST:=(LDATA?{$LevelData_flags_offset}AND{$LevelData_flags_no_standard_treasure})=0

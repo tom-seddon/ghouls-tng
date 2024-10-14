@@ -28,9 +28,6 @@ BEEB_BIN:=$(PWD)/submodules/beeb/bin
 # bin (absolute path)
 BIN:=$(PWD)/bin
 
-# How to run ssd_create.py from any folder.
-SSD_CREATE:=$(PYTHON) $(BEEB_BIN)/ssd_create.py
-
 # Where intermediate build output goes (absolute path).
 BUILD:=$(PWD)/build
 
@@ -43,6 +40,7 @@ BEEB_OUTPUT_2:=$(BEEB_VOLUME)/z
 
 # Name of final .ssd to produce
 SSD_OUTPUT:=ghouls-tng.ssd
+ADL_OUTPUT:=ghouls-tng.adl
 
 ifeq ($(OS),Windows_NT)
 TASS:=$(PWD)/bin/64tass.exe
@@ -96,13 +94,16 @@ endif
 	$(_V)$(PYTHON) "$(BIN)/budgets.py" "$(BUILD)" "$(BUILD)"
 	$(_V)$(SHELLCMD) blank-line
 
-# Build .ssd. Re-run make to ensure the $(shell cat gets re-evaluated.
-	$(_V)$(MAKE) _ssd
+# Build disk images. Re-run make to ensure the $(shell cat gets re-evaluated.
+	$(_V)$(MAKE) _disk_images
 
 # Extract side 0 of .ssd to create individual drive in BeebLink
 # volume.
 	$(_V)$(PYTHON) "$(BEEB_BIN)/ssd_extract.py" -o "$(BEEB_OUTPUT)" -0 "$(SSD_OUTPUT)"
+
+# Copy disk images somewhere useful for BeebLink.
 	$(_V)$(SHELLCMD) copy-file "$(SSD_OUTPUT)" "$(BEEB_OUTPUT_2)/S.GHOULS"
+	$(_V)$(SHELLCMD) copy-file "$(ADL_OUTPUT)" "$(BEEB_OUTPUT_2)/L.GHOULS"
 
 ##########################################################################
 ##########################################################################
@@ -111,9 +112,8 @@ endif
 # It's possible levels.txt won't exist, meaning _LEVELS ends up empty.
 # But by the time make _ssd is actually executed, as part of make
 # build, it will be present.
-_ssd: _LEVELS:=$(shell $(SHELLCMD) cat -f $(BUILD)/levels.txt)
-_ssd:
-	$(_V)$(SSD_CREATE) -o "$(SSD_OUTPUT)" --title "GHOULS R" --opt4 3 \
+_disk_images: _LEVELS:=$(shell $(SHELLCMD) cat -f $(BUILD)/levels.txt)
+_disk_images: _FILES:=\
 "$(BUILD)/$$.!BOOT" \
 "$(BUILD)/$$.GRUN" \
 "$(BUILD)/$$.GSCRP" \
@@ -124,6 +124,9 @@ _ssd:
 "$(BUILD)/$$.GBASD" \
 "$(BUILD)/$$.GEDMC" \
 $(_LEVELS)
+_disk_images:
+	$(_V)$(PYTHON) "$(BEEB_BIN)/ssd_create.py" -o "$(SSD_OUTPUT)" --title "GHOULS R" --opt4 3 $(_FILES)
+	$(_V)$(PYTHON) "$(BEEB_BIN)/adf_create.py" -o "$(ADL_OUTPUT)" --title "GHOULS REVENGE" --opt4 3 $(_FILES)
 
 ##########################################################################
 ##########################################################################
@@ -169,10 +172,12 @@ clean:
 
 .PHONY:ci_build
 ci_build: OUTPUT_SSD=$(error Must specify OUTPUT_SSD)
+ci_build: OUTPUT_ADL=$(error Must specify OUTPUT_ADL)
 ci_build:
 	$(_V)$(MAKE) build
 	$(_V)$(SHELLCMD) copy-file "$(SSD_OUTPUT)" "$(OUTPUT_SSD)"
-	$(_V)echo "$(OUTPUT_SSD)"
+	$(_V)$(SHELLCMD) copy-file "$(ADL_OUTPUT)" "$(OUTPUT_ADL)"
+	$(_V)echo "$(OUTPUT_SSD)" "$(OUTPUT_ADL)"
 
 ##########################################################################
 ##########################################################################

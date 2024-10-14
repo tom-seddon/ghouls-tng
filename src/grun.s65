@@ -19,10 +19,13 @@
 
                 .section code
 main:
-                ; CLOSE #0
-                lda #0
-                tay
-                jsr osfind
+                ; ; CLOSE #0
+                ; lda #0
+                ; tay
+                ; jsr osfind
+
+                lda #$77
+                jsr osbyte
 
                 ; disable shadow RAM
                 lda #114

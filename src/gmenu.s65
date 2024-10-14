@@ -193,6 +193,8 @@ store:
 ;-------------------------------------------------------------------------
 
 redraw_screen:
+                jsr full_cls
+                jsr cursor_off
                 ldx #0
 print_screen_loop:
                 lda screen,x
@@ -290,6 +292,8 @@ print_loop:
                 cpx #size(text)
                 bne print_loop
 
+                jsr cursor_on
+
                 ldx #<input
                 ldy #>input
                 lda #0
@@ -300,6 +304,8 @@ print_loop:
                 sta brkv+0
                 lda #>brk_handler_custom_star
                 sta brkv+1
+
+                jsr cursor_off
 
                 ldx #0
 skip_spaces_loop:
@@ -341,18 +347,18 @@ text: .block
                 .byte 28,3,instructions_y+4,38,instructions_y
                 .byte 12
                 .byte 28,3,instructions_y+4,36,instructions_y
-                .byte 23,1,1,0,0,0,0,0,0,0
                 .endblock
 
 star:
-                lda #26
+                jsr full_cls
+                jsr cursor_on
+                lda #14
                 jsr oswrch
-                lda #12
-                jsr oswrch
-
                 ldx #<input_buffer
                 ldy #>input_buffer
                 jsr oscli
+                lda #15
+                jsr oswrch
                 jsr press_any_key
                 jmp restart_custom 
                 .endproc
@@ -368,6 +374,8 @@ print_press_any_key_loop:
                 cpx #size(press_any_key_message)
                 bne print_press_any_key_loop
 
+                jsr cursor_off
+                
                 lda #15
                 ldx #0
                 jsr osbyte
@@ -446,8 +454,8 @@ done:
 ;-------------------------------------------------------------------------
 
 screen: .block
-                .text 26,12
-                .text 23,1,0,0,0,0,0,0,0,0
+                ; .text 26,12
+                ; .text 23,1,0,0,0,0,0,0,0,0
                 .for _i=0,_i<2,_i+=1
                 .text 31,11,0+_i,141,129+_i,'GHOULS: REVENGE'
                 .text 31,0,level_name_y+_i,141,131,'[',130
@@ -463,6 +471,41 @@ screen: .block
                 ; buffer, so ensure the cursor ends up somewhere safe.
                 .text 30
                 .endblock
+
+;-------------------------------------------------------------------------
+
+full_cls:
+                lda #26
+                jsr oswrch
+                lda #12
+                jmp oswrch
+                
+;-------------------------------------------------------------------------
+                
+cursor_on:
+                lda #1
+                jmp set_cursor_state
+cursor_off:
+                lda #0
+                .cerror *!=set_cursor_state
+set_cursor_state: .proc
+                sta state
+                ldx #0
+loop:
+                lda text,x
+                jsr oswrch
+                inx
+                cpx #text_end-text
+                bne loop
+                rts
+
+text:
+                .byte 23,1
+state:
+                .byte 0
+                .fill 7,0
+text_end:
+                .endproc
 
 ;-------------------------------------------------------------------------
 

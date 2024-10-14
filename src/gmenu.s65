@@ -20,6 +20,8 @@ difficulty_x=13
 difficulty_y=20
 instructions_x=0
 instructions_y=12
+file_name_x=12
+file_name_y=21
 
 input_buffer=$700
                 .cerror (<input_buffer)!=0
@@ -178,6 +180,9 @@ redraw_level_info:
                 .load_text level_difficulty_addrs
                 .write_text0n difficulty_x,difficulty_y,25
 
+                .load_text level_bbc_file_name_addrs
+                .write_text0n file_name_x,file_name_y,39-file_name_x
+
                 lda level
                 cmp #num_levels-1
                 beq +
@@ -333,7 +338,7 @@ input:
                 .byte 126
                 
 text: .block
-                .byte 28,0,difficulty_y,39,instructions_y
+                .byte 28,0,file_name_y,39,instructions_y
                 .byte 12
                 .byte 26
                 .byte 31,0,designer_y
@@ -414,7 +419,8 @@ write_text_routine: .proc
                 ldy #0
 loop:
                 lda (text_src),y
-                beq done
+                cmp #32
+                bcc done
                 sta (text_dest),y
                 iny
                 bne loop
@@ -466,6 +472,7 @@ screen: .block
                 .text 31,9,5,134,'Press',135,'RETURN',134,'to select'
                 .text 31,0,designer_y,134,'Designer:',133
                 .text 31,0,difficulty_y,134,'Difficulty:',133
+                .text 31,0,file_name_y,134,'File name:',133
                 ;.text 31,38,24,129
                 ; there's a 13 in the text inserted in the keyboard
                 ; buffer, so ensure the cursor ends up somewhere safe.

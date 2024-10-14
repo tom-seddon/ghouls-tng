@@ -238,7 +238,7 @@ def main2(options):
     level('beeb/ghouls-tng/2/$.ALTERN','Kieran','Indescribable')
     level('beeb/ghouls-tng/2/$.EGYPT','Stew','Ancient')
     level('beeb/ghouls-tng/2/$.MASH','Dave','Let\'s Party')
-    level('beeb/ghouls-tng/2/$.TOM','Tom','Trust No-one')
+    level('beeb/ghouls-tng/2/$.FACILIT','Tom','Trust No-one')
     level('beeb/ghouls-tng/2/$.GETOUT','Kieran','Extractive')
     level('beeb/ghouls-tng/2/$.MARS','Stew','Extraplanetary')
     level('beeb/ghouls-tng/2/$.ADR5','VectorEyes','Unknown')

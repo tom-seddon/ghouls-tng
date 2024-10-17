@@ -16,14 +16,13 @@ install:
   - svn checkout -r 2980 https://svn.code.sf.net/p/tass64/code/trunk tass64-code
   - cd ~/tass64-code && make -j$(nproc)
   - popd
-  - ps: $env:SUFFIX = $(git log -1 --format=%cd-%h --date=format:%Y%m%d-%H%M%S $env:APPVEYOR_REPO_COMMIT)
-  - ps: $env:TIMESTAMP = $(git log -1 --format=%cd --date=format:%Y%m%d-%H%M%S $env:APPVEYOR_REPO_COMMIT)
-  - ps: $env:RELEASE_NAME = "ghouls-tng-"+$env:SUFFIX
+  - ps: $env:GHOULS_TNG_BUILD_SUFFIX = $(git log -1 --format=%cd-%h --date=format:%Y%m%d-%H%M%S $env:APPVEYOR_REPO_COMMIT)
+  - ps: $env:GHOULS_TNG_RELEASE_NAME = "ghouls-tng-"+$env:GHOULS_TNG_BUILD_SUFFIX
 
 build_script:
-  - ps: $env:OUTPUT_SSD=$env:RELEASE_NAME+".ssd"
-  - ps: $env:OUTPUT_ADL=$env:RELEASE_NAME+".adl"
-  - ps: $env:OUTPUT_ZIP=$env:RELEASE_NAME+".zip"
+  - ps: $env:OUTPUT_SSD=$env:GHOULS_TNG_RELEASE_NAME+".ssd"
+  - ps: $env:OUTPUT_ADL=$env:GHOULS_TNG_RELEASE_NAME+".adl"
+  - ps: $env:OUTPUT_ZIP=$env:GHOULS_TNG_RELEASE_NAME+".zip"
   - ps: make ci_build VERBOSE=1 TASS=$HOME/tass64-code/64tass OUTPUT_SSD=$env:OUTPUT_SSD OUTPUT_ADL=$env:OUTPUT_ADL
   - ps: zip -9 $env:OUTPUT_ZIP $env:OUTPUT_SSD $env:OUTPUT_ADL
   - env
@@ -31,19 +30,15 @@ build_script:
 artifacts:
   - path: $(OUTPUT_ZIP)
     name: zip
-  # - path: $(OUTPUT_SSD)
-  #   name: ssd
 
 deploy:
-  - release: $(RELEASE_NAME)
+  - release: $(GHOULS_TNG_RELEASE_NAME)
     description: |
-      $(APPVEYOR_REPO_COMMIT_MESSAGE)
-      
-      $(APPVEYOR_REPO_COMMIT_MESSAGE_EXTENDED)
+      Details to follow
       
     provider: GitHub
     auth_token:
       secure: 4W5gLh9wP/h+mqHPWAnfkq+TdLFmrzC926Z1KZSM8A4HSkZ2bzS+cP/RAUkm9Qao
-    artifact: zip,ssd
+    artifact: zip
     draft: false
     prerelease: false

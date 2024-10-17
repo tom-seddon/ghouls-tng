@@ -116,6 +116,12 @@ print_loop:
 
 key_loop:
                 jsr menu_getch
+
+                cmp #'V'
+                beq version
+                cmp #'v'
+                beq version
+                
                 jmp key_loop
 
                 rts
@@ -135,7 +141,18 @@ menu_getch:
 
                 cmp #'3'
                 beq debug
+
                 rts
+
+version:
+                ldx #0
+-
+                lda version_text,x
+                jsr oswrch
+                inx
+                cpx #size(version_text)
+                bne -
+                jmp key_loop
 
 play:
                 lda #$00
@@ -185,9 +202,20 @@ run_gscrp:
 
 run_gdummy:
                 .text '/GDUMMY',13
-                
+
+; 01234567890123456789
+; V1.01  ID: 20241015-
+; 000458-90730ec
+
                 ; Y-2 in each case due to the different screen start
                 ; address
+                
+version_text: .block
+                .cerror len(version_major)!=1
+                .cerror len(version_minor)!=2
+                .text 31,14,29,17,6,'V',version_major,'.',version_minor
+                .endblock
+                
 text: .block
                 .text 31,10,25,'          '
                 .text 31,10,26,17,7,' 1. ',17,3,'PLAY  '

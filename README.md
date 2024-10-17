@@ -9,12 +9,21 @@ Play the original in your browser: http://bbcmicro.co.uk/game.php?id=2506
 Get .ssd file (or .zip file containing .ssd file) for the latest build
 here: https://github.com/tom-seddon/ghouls-tng/releases/latest
 
-Shift+Break to boot.
+Shift+Break to boot. Press any key at the title screen then select the
+item of interest.
+
+(If you know which entry you want, you can press it at the title
+screen and save a keypress. Also: press `V` at the menu to report the
+build version number.)
 
 ## Adventurer
 
-Select 1 to play the game. Enter name of levels file created using
-editor (see below), or leave blank for the default.
+Select 1 to play the game. Select the level set of interest from the
+menu, or use the `YOUR LEVELS HERE` option to load some alternative
+set from a file.
+
+(Jump to a specific set quickly by pressing its shortcut key, shown in
+the bottom right as you scroll through.)
 
 Additional features compared to original Ghouls: multiple game modes!
 
@@ -135,7 +144,7 @@ the level setup:
   scoring mechanic for ascending/descending is inverted. When not
   inverted, climbing 1 row gets you 5 points, and dropping 1 row loses
   you 5 points; when inverted, it's the other way round. You may want
-  to changethis if your level starts at the top of the screen and
+  to change this if your level starts at the top of the screen and
   finishes at the bottom
 
 ### Glitches and oddities
@@ -227,12 +236,14 @@ adjust the number of ghosts, or `C` to see the completion sequence.
 
 ### Windows
 
+- Git on PATH
 - Python 3.x
 
 Additional dependencies are provided as EXEs in the repo.
 
 ### POSIX-type
 
+- Git
 - GNU Make (`make`)
 - Python 3.x (`/usr/bin/python3`)
 - [64tass](https://sourceforge.net/projects/tass64/) (`64tass`) -
@@ -254,15 +265,22 @@ the following from inside the working copy:
     git submodule init
 	git submodule update
 
+(The source zip files that GitHub makes available are no good. The
+only supported way to build this project is to clone it from GitHub as
+above.)
+
 ## Build
 
 Run `make` in the working copy. (A `make.bat` is supplied for Windows,
 which will run the supplied copy of GNU Make.)
 
-The output is a .ssd file, `ghouls-tng.ssd`, suitable for use with an
-emulator.
+The output disk images are in the root of the working copy:
 
-The output files can also be found in `beeb/ghouls-tng/y/`. If you use
+* `ghouls-tng.ssd` - 80 track DFS disk image
+* `ghouls-tng.adl` - ADFS L disk image
+
+The game files can also be found in .inf format in
+`beeb/ghouls-tng/y/`. If you use
 [BeebLink](https://github.com/tom-seddon/beeblink/), configure it so
 it can find this folder - the output will be available in drive Y of
 the ghouls-tng volume.

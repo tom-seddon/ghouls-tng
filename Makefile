@@ -1,6 +1,20 @@
 ##########################################################################
 ##########################################################################
 
+# 64tass's -D option seems to be for numbers only. So, the minor
+# version is 2 digits. Leading 0s are inserted as required.
+#
+# So major=0 minor=1 (say) means version 0.01.
+VERSION_MAJOR:=0
+VERSION_MINOR:=01
+
+# 20241015-000458-90730ec
+# local
+GHOULS_TNG_BUILD_SUFFIX?=local-build
+
+##########################################################################
+##########################################################################
+
 ifeq ($(OS),Windows_NT)
 PYTHON:=py -3
 else
@@ -66,7 +80,9 @@ endif
 	$(_V)$(MAKE) _title_screen
 
 # Convert !BOOT
-	$(_V)$(SHELLCMD) copy-file "src/boot.txt" "$(BUILD)/$$.!BOOT"
+	$(_V)echo *RUN GRUN > "$(BUILD)/$$.!BOOT"
+	$(_V)echo V$(VERSION_MAJOR).$(VERSION_MINOR) >> "$(BUILD)/$$.!BOOT"
+	$(_V)echo Build ID: $(GHOULS_TNG_BUILD_SUFFIX) >> "$(BUILD)/$$.!BOOT"
 	$(_V)$(PYTHON) "$(BEEB_BIN)/text2bbc.py" "$(BUILD)/$$.!BOOT"
 
 # Create levels stuff
@@ -77,7 +93,7 @@ endif
 	$(_V)$(MAKE) _asm PC=gmc BEEB=GMC TASS_EXTRA_ARGS=-Deditor=false
 	$(_V)$(MAKE) _asm PC=gmc BEEB=GEDMC TASS_EXTRA_ARGS=-Deditor=true
 	$(_V)$(MAKE) _asm PC=gmenu BEEB=GMENU
-	$(_V)$(MAKE) _asm PC=grun BEEB=GRUN
+	$(_V)$(MAKE) _asm PC=grun BEEB=GRUN "TASS_EXTRA_ARGS=-Dversion_major=\'$(VERSION_MAJOR)\' -Dversion_minor=\'$(VERSION_MINOR)\' -Dbuild_suffix=\'$(GHOULS_TNG_BUILD_SUFFIX)\'"
 	$(_V)$(MAKE) _asm PC=gdummy BEEB=GDUMMY
 
 # Compressed screen stuff

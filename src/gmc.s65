@@ -4037,8 +4037,8 @@ ed_text_edit: .proc
                 
                 cmp #13
                 beq newline
-                cmp #135
-                beq forwards_delete
+                ; cmp #135
+                ; beq forwards_delete
                 cmp #136
                 beq left
                 cmp #137
@@ -4058,7 +4058,7 @@ ed_text_edit: .proc
                 cmp #32
                 bcc unhandled
                 cmp #127
-                beq backwards_delete
+                beq delete
                 bcc insert
 
 unhandled:
@@ -4124,6 +4124,11 @@ set_text_result_flags:
 
 newline:
                 rts
+
+delete:
+                ldx #inkey(key_shift)
+                jsr ed_test_key
+                bcs forwards_delete
                 
 backwards_delete:
                 jsr left

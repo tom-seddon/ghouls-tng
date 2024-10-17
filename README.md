@@ -179,8 +179,8 @@ game. (Configurable goals were a late addition...)
 There's an extremely basic (if we're being polite) text editor kind of
 thing (for a very loose definition of "kind of thing") for editing
 completion text and instruction text. Navigate using the cursor keys,
-DELETE to delete backwards, COPY to delete forwards, and press keys to
-insert chars.
+DELETE to delete backwards, SHIFT+DELETE to delete forwards, and press
+keys to insert chars.
 
 The whole text is treated as one big string, rather than separate
 lines, so inserting text at the start will affect subsequent lines and
@@ -202,7 +202,7 @@ follow on immediately.
 Press `SHIFT+f1` ... `SHIFT+f7` to insert teletext colour control
 codes.
 
-### #Completion text
+### Completion text
 
 Press `CTRL+P` to see the text in an approximation of the Mode 5
 screen it's shown as in game.

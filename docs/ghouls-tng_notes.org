@@ -950,4 +950,22 @@ $(LDATA+{$LevelData_name_offset})
 : X...X.X...X...X...X.....X...X...X...X...X.X...X.X.....X...X.....................
 : X...X.XXXX....X...XXXXX.X...X...X....XXX..X...X.XXXXX.X...X.....................
 
+* version number management
+
+Planned workflow.
+
+1. Make commits as required
+
+2. =git push=. AppVeyor will build and release with version number in
+   Makefile
+
+2. Bump version number in Makefile. Commit with specific comment:
+
+   : Bump version number. [skip appveyor]
+
+3. =git push=. AppVeyor will do nothing due to =skip= tag
+
+Looks like this has to be a double push as AppVeyor only looks at the
+head revision at the time of checking.
+
 * EOF

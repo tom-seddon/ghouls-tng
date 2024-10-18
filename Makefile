@@ -191,11 +191,17 @@ clean:
 .PHONY:ci_build
 ci_build: OUTPUT_SSD=$(error Must specify OUTPUT_SSD)
 ci_build: OUTPUT_ADL=$(error Must specify OUTPUT_ADL)
+ci_build: _VERSIONED_STEM:=$(BUILD)/ghouls-tng.$(VERSION_MAJOR).$(VERSION_MINOR)
 ci_build:
 	$(_V)$(MAKE) build
 	$(_V)$(SHELLCMD) copy-file "$(SSD_OUTPUT)" "$(OUTPUT_SSD)"
 	$(_V)$(SHELLCMD) copy-file "$(ADL_OUTPUT)" "$(OUTPUT_ADL)"
-	$(_V)echo "$(OUTPUT_SSD)" "$(OUTPUT_ADL)"
+	$(_V)$(SHELLCMD) copy-file "$(SSD_OUTPUT)" "$(_VERSIONED_STEM).ssd"
+	$(_V)$(SHELLCMD) copy-file "$(ADL_OUTPUT)" "$(_VERSIONED_STEM).adl"
+
+.PHONY:echo_version
+echo_version:
+	@echo $(VERSION_MAJOR).$(VERSION_MINOR)
 
 ##########################################################################
 ##########################################################################

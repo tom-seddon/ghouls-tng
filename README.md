@@ -62,7 +62,10 @@ Press `R` to reset a level's data. The level will be emptied, leaving
 just a row of blocks along the bottom and a few blocks underneath the
 treasure in the top right.
 
-Press `L` to load levels. Enter file name.
+Press `L` to load levels. Enter file name. File names for the supplied
+level sets are given in the levels menu (if not obvious from `*CAT` -
+which hopefully it is). An entirely empty level set, `BLANK`, is also
+provided, if you want to start from a blank sheet.
 
 Press `S` to save levels. Enter file name.
 

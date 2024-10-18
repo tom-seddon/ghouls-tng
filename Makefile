@@ -129,6 +129,7 @@ endif
 # But by the time make _ssd is actually executed, as part of make
 # build, it will be present.
 _disk_images: _LEVELS:=$(shell $(SHELLCMD) cat -f $(BUILD)/levels.txt)
+# $.BLANK gets added separately as it isn't included in the menus.
 _disk_images: _FILES:=\
 "$(BUILD)/$$.!BOOT" \
 "$(BUILD)/$$.GRUN" \
@@ -139,7 +140,8 @@ _disk_images: _FILES:=\
 "$(BUILD)/$$.GBAS" \
 "$(BUILD)/$$.GBASD" \
 "$(BUILD)/$$.GEDMC" \
-$(_LEVELS)
+$(_LEVELS) \
+"$(BEEB_VOLUME)/2/$$.BLANK"
 _disk_images:
 	$(_V)$(PYTHON) "$(BEEB_BIN)/ssd_create.py" -o "$(SSD_OUTPUT)" --title "GHOULS R" --opt4 3 $(_FILES)
 	$(_V)$(PYTHON) "$(BEEB_BIN)/adf_create.py" -o "$(ADL_OUTPUT)" --title "GHOULS REVENGE" --opt4 3 $(_FILES)

@@ -3472,6 +3472,14 @@ x_loop:
                 inx
                 jsr ed_write_level
 
+                ; Save old text flag, so it can be retained. It
+                ; belongs to the file rather than the level. (Yes,
+                ; this arrangement is rubbish...)
+                ldy #LevelData.flags
+                lda (ed_level_addr),y
+                and #LevelData.flags.text
+                pha
+
                 ; Clear header
                 ldy #0
                 ldx #LevelData.map
@@ -3491,6 +3499,11 @@ x_loop:
                 iny
                 dex
                 bne -
+
+                ; Restore text flag.
+                pla
+                ldy #LevelData.flags
+                sta (ed_level_addr),y
 
                 ; Other stuff
                 lda #1

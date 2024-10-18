@@ -52,9 +52,8 @@ BEEB_VOLUME:=$(PWD)/beeb/ghouls-tng
 BEEB_OUTPUT:=$(BEEB_VOLUME)/y
 BEEB_OUTPUT_2:=$(BEEB_VOLUME)/z
 
-# Name of final .ssd to produce
-SSD_OUTPUT:=ghouls-tng.ssd
-ADL_OUTPUT:=ghouls-tng.adl
+# Name stem for disk images. Extension (etc.) appended.
+OUTPUT_DISK_IMAGE_STEM?=ghouls-tng
 
 ifeq ($(OS),Windows_NT)
 TASS:=$(PWD)/bin/64tass.exe
@@ -115,16 +114,21 @@ endif
 
 # Extract side 0 of .ssd to create individual drive in BeebLink
 # volume.
-	$(_V)$(PYTHON) "$(BEEB_BIN)/ssd_extract.py" -o "$(BEEB_OUTPUT)" -0 "$(SSD_OUTPUT)"
+	$(_V)$(SHELLCMD) rm-tree "$(BEEB_OUTPUT)"
+	$(_V)$(SHELLCMD) mkdir "$(BEEB_OUTPUT)"
+	$(_V)$(PYTHON) "$(BEEB_BIN)/ssd_extract.py" -o "$(BEEB_OUTPUT)" -0 "$(OUTPUT_DISK_IMAGE_STEM).ssd"
 
 # Copy disk images somewhere useful for BeebLink.
-	$(_V)$(SHELLCMD) copy-file "$(SSD_OUTPUT)" "$(BEEB_OUTPUT_2)/S.GHOULS"
-	$(_V)$(SHELLCMD) copy-file "$(ADL_OUTPUT)" "$(BEEB_OUTPUT_2)/L.GHOULS"
+	$(_V)$(SHELLCMD) copy-file "$(OUTPUT_DISK_IMAGE_STEM).ssd" "$(BEEB_OUTPUT_2)/S.GHOULS"
+	$(_V)$(SHELLCMD) copy-file "$(OUTPUT_DISK_IMAGE_STEM).40.ssd" "$(BEEB_OUTPUT_2)/S.GHOULS40"
+	$(_V)$(SHELLCMD) copy-file "$(OUTPUT_DISK_IMAGE_STEM).adl" "$(BEEB_OUTPUT_2)/L.GHOULSA"
+	$(_V)$(SHELLCMD) copy-file "$(OUTPUT_DISK_IMAGE_STEM).adm" "$(BEEB_OUTPUT_2)/M.GHOULSA"
+	$(_V)$(SHELLCMD) copy-file "$(OUTPUT_DISK_IMAGE_STEM).ads" "$(BEEB_OUTPUT_2)/S.GHOULSA"
 
 ##########################################################################
 ##########################################################################
 
-.PHONY:_ssd
+.PHONY:_disk_images
 # It's possible levels.txt won't exist, meaning _LEVELS ends up empty.
 # But by the time make _ssd is actually executed, as part of make
 # build, it will be present.
@@ -142,9 +146,15 @@ _disk_images: _FILES:=\
 "$(BUILD)/$$.GEDMC" \
 $(_LEVELS) \
 "$(BEEB_VOLUME)/2/$$.BLANK"
+_disk_images: _SSD_OPTIONS:=--title "GHOULS R" --opt4 3 --must-exist
+_disk_images: _ADF_OPTIONS:=--title "GHOULS REVENGE" --opt4 3 
 _disk_images:
-	$(_V)$(PYTHON) "$(BEEB_BIN)/ssd_create.py" -o "$(SSD_OUTPUT)" --title "GHOULS R" --opt4 3 $(_FILES)
-	$(_V)$(PYTHON) "$(BEEB_BIN)/adf_create.py" -o "$(ADL_OUTPUT)" --title "GHOULS REVENGE" --opt4 3 $(_FILES)
+	$(_V)$(PYTHON) "$(BEEB_BIN)/ssd_create.py" -o "$(OUTPUT_DISK_IMAGE_STEM).ssd" $(_SSD_OPTIONS) $(_FILES)
+	$(_V)$(PYTHON) "$(BEEB_BIN)/ssd_create.py" -o "$(OUTPUT_DISK_IMAGE_STEM).40.ssd" $(_SSD_OPTIONS) --40 --must-exist $(_FILES)
+
+	$(_V)$(PYTHON) "$(BEEB_BIN)/adf_create.py" -o "$(OUTPUT_DISK_IMAGE_STEM).adl" --type l $(_ADF_OPTIONS) "$(BEEB_OUTPUT)/*"
+	$(_V)$(PYTHON) "$(BEEB_BIN)/adf_create.py" -o "$(OUTPUT_DISK_IMAGE_STEM).adm" --type m $(_ADF_OPTIONS) "$(BEEB_OUTPUT)/*"
+	$(_V)$(PYTHON) "$(BEEB_BIN)/adf_create.py" -o "$(OUTPUT_DISK_IMAGE_STEM).ads" --type s $(_ADF_OPTIONS) "$(BEEB_OUTPUT)/*"
 
 ##########################################################################
 ##########################################################################
@@ -172,7 +182,6 @@ _asm:
 .PHONY:_output_folders
 _output_folders:
 	$(_V)$(SHELLCMD) mkdir "$(BUILD)"
-	$(_V)$(SHELLCMD) mkdir "$(BEEB_OUTPUT)"
 	$(_V)$(SHELLCMD) mkdir "$(BEEB_OUTPUT_2)"
 
 ##########################################################################
@@ -183,25 +192,45 @@ clean:
 	$(_V)$(SHELLCMD) rm-tree "$(BUILD)"
 	$(_V)$(SHELLCMD) rm-tree "$(BEEB_OUTPUT)"
 	$(_V)$(SHELLCMD) rm-tree "$(BEEB_OUTPUT_2)"
-	$(_V)$(SHELLCMD) rm-file -f "$(SSD_OUTPUT)"
+	$(_V)$(SHELLCMD) rm-file -f "$(OUTPUT_DISK_IMAGE_STEM).ssd"
+	$(_V)$(SHELLCMD) rm-file -f "$(OUTPUT_DISK_IMAGE_STEM).40.ssd"
+	$(_V)$(SHELLCMD) rm-file -f "$(OUTPUT_DISK_IMAGE_STEM).ads"
+	$(_V)$(SHELLCMD) rm-file -f "$(OUTPUT_DISK_IMAGE_STEM).adm"
+	$(_V)$(SHELLCMD) rm-file -f "$(OUTPUT_DISK_IMAGE_STEM).adl"
 
 ##########################################################################
 ##########################################################################
 
+# This can be run locally, but it doesn't clean up after itself, and
+# will leave some extra disk images in the working copy that aren't
+# gitignored.
+#
+# The build is run twice so that every ADFS disk image has its own
+# disk ID.
 .PHONY:ci_build
-ci_build: OUTPUT_SSD=$(error Must specify OUTPUT_SSD)
-ci_build: OUTPUT_ADL=$(error Must specify OUTPUT_ADL)
-ci_build: _VERSIONED_STEM:=$(BUILD)/ghouls-tng.$(VERSION_MAJOR).$(VERSION_MINOR)
 ci_build:
-	$(_V)$(MAKE) build
-	$(_V)$(SHELLCMD) copy-file "$(SSD_OUTPUT)" "$(OUTPUT_SSD)"
-	$(_V)$(SHELLCMD) copy-file "$(ADL_OUTPUT)" "$(OUTPUT_ADL)"
-	$(_V)$(SHELLCMD) copy-file "$(SSD_OUTPUT)" "$(_VERSIONED_STEM).ssd"
-	$(_V)$(SHELLCMD) copy-file "$(ADL_OUTPUT)" "$(_VERSIONED_STEM).adl"
+	$(_V)$(MAKE) build ci_zip OUTPUT_DISK_IMAGE_STEM=$(shell $(MAKE) ci_echo_versioned_stem)
+	$(_V)$(MAKE) build ci_zip OUTPUT_DISK_IMAGE_STEM=$(shell $(MAKE) ci_echo_build_suffixed_stem)
 
-.PHONY:echo_version
-echo_version:
-	@echo $(VERSION_MAJOR).$(VERSION_MINOR)
+.PHONY:ci_zip
+ci_zip:
+	$(_V)zip -9 "$(OUTPUT_DISK_IMAGE_STEM).zip" "$(OUTPUT_DISK_IMAGE_STEM).ssd" "$(OUTPUT_DISK_IMAGE_STEM).40.ssd" "$(OUTPUT_DISK_IMAGE_STEM).ads" "$(OUTPUT_DISK_IMAGE_STEM).adm" "$(OUTPUT_DISK_IMAGE_STEM).adl"
+
+# If testing ci_build locally, ci_clean will remove all the junk it
+# produces - along with anything else that matches the not very
+# careful wildcards it uses. Good luck.
+.PHONY:ci_clean
+ci_clean:
+	$(_V)$(MAKE) clean
+	$(_V)$(SHELLCMD) rm-file -f $(wildcard *.ssd) $(wildcard *.ads) $(wildcard *.adm) $(wildcard *.adl) $(wildcard *.zip)
+
+.PHONY:ci_echo_versioned_stem
+ci_echo_versioned_stem:
+	@echo ghouls-tng-v$(VERSION_MAJOR).$(VERSION_MINOR)
+
+.PHONY:ci_echo_build_suffixed_stem
+ci_echo_build_suffixed_stem:
+	@echo ghouls-tng-$(GHOULS_TNG_BUILD_SUFFIX)
 
 ##########################################################################
 ##########################################################################

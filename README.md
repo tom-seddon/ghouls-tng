@@ -280,7 +280,13 @@ which will run the supplied copy of GNU Make.)
 The output disk images are in the root of the working copy:
 
 * `ghouls-tng.ssd` - 80 track DFS disk image
+* `ghouls-tng.40.ssd` - 40 track DFS disk image
+* `ghouls-tng.ads` - ADFS S disk image
+* `ghouls-tng.adm` - ADFS M disk image
 * `ghouls-tng.adl` - ADFS L disk image
+
+(Note that the build process is deliberately not quite deterministic,
+and the ADFS disk images have random disk IDs.)
 
 The game files can also be found in .inf format in
 `beeb/ghouls-tng/y/`. If you use

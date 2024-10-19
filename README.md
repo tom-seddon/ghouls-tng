@@ -16,7 +16,7 @@ item of interest.
 screen and save a keypress. Also: press `V` at the menu to report the
 build version number.)
 
-## Adventurer
+## Play
 
 Select 1 to play the game. Select the level set of interest from the
 menu, or use the `YOUR LEVELS HERE` option to load some alternative
@@ -37,7 +37,7 @@ replenished with each new level, and you'll still die if it runs out.
 Time attack is all new. Pick a level, and try to finish it as fast as
 you can, with no ghost to get in the way.
 
-## Architect
+## Edit
 
 Select 2 to create levels.
 
@@ -219,7 +219,7 @@ codes.
 Press `CTRL+P` to see the text in an approximation of the Mode 5
 screen it's shown as in game.
 
-## Developer
+## Debug
 
 Select 3 to run a testing/cheat version of the game for use when
 testing levels or modifying the code.

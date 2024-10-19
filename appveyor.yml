@@ -17,6 +17,7 @@ install:
   - cd ~/tass64-code && make -j$(nproc)
   - popd
   - ps: $env:GHOULS_TNG_BUILD_SUFFIX = $(git log -1 --format=%cd-%h --date=format:%Y%m%d-%H%M%S $env:APPVEYOR_REPO_COMMIT)
+  - ps: $env:GHOULS_TNG_RELEASE_NAME = "ghouls-tng-"+$env:GHOULS_TNG_BUILD_SUFFIX
   - export GHOULS_TNG_VERSIONED_STEM=$(make ci_echo_versioned_stem)
   - export GHOULS_TNG_BUILD_SUFFIXED_STEM=$(make ci_echo_build_suffixed_stem)
 

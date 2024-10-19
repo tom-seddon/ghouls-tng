@@ -146,8 +146,8 @@ _disk_images: _FILES:=\
 "$(BUILD)/$$.GEDMC" \
 $(_LEVELS) \
 "$(BEEB_VOLUME)/2/$$.BLANK"
-_disk_images: _SSD_OPTIONS:=--title "GHOULS R" --opt4 3 --must-exist
-_disk_images: _ADF_OPTIONS:=--title "GHOULS REVENGE" --opt4 3 
+_disk_images: _SSD_OPTIONS:=--all-locked --title "GHOULS R" --opt4 3 --must-exist
+_disk_images: _ADF_OPTIONS:=--all-non-writeable --title "GHOULS REVENGE" --opt4 3 
 _disk_images:
 	$(_V)$(PYTHON) "$(BEEB_BIN)/ssd_create.py" -o "$(OUTPUT_DISK_IMAGE_STEM).ssd" $(_SSD_OPTIONS) $(_FILES)
 	$(_V)$(PYTHON) "$(BEEB_BIN)/ssd_create.py" -o "$(OUTPUT_DISK_IMAGE_STEM).40.ssd" $(_SSD_OPTIONS) --40 --must-exist $(_FILES)

@@ -3,12 +3,12 @@
 When first loaded, the level editor shows its main menu, with the
 default Ghouls level set loaded.
 
-# Main menu
+![editor main menu](./editor.main_menu.png)
 
 From the level editor main menu, the following items are available:
 
 - `1`, `2`, `3`, `4` - edit the corresponding level. See the editing
-  section
+  section below
   
 - `N` - set a level's name. Select level number then enter its new
   name. Level names are limited to 16 characters
@@ -54,6 +54,8 @@ From the level editor main menu, the following items are available:
 When editing, you'll see the current level displayed in the top half
 of the screen and a status area at the bottom.
 
+![editor screen](./editor.editor.png)
+
 To test the level shown, press `TAB`. You get one life, and you'll be
 taken back to edit mode if you die or complete the level. (You can
 always test again!)
@@ -87,6 +89,8 @@ always redrawing everything perfectly. Press `R` to redraw the level.)
 
 Ground. The different types are purely cosmetic and all behave the
 same way.
+
+
 
 ## Player start position
 

@@ -81,15 +81,26 @@ used for the floor tiles. Press `C` to cycle through the options.
 (For performance reasons, the level editor isn't super careful about
 always redrawing everything perfectly. Press `R` to redraw the level.)
 
+## Object types
+
+[./objects ground.png]
+
+Ground. The player can walk on this. The difference between the types
+is purely decorative.
+
+
+
+
 ## Player start position
 
-Press `SHIFT`+`S` to set the player's start position.
+Press `SHIFT`+`S` to set the player's start position, indicated by the
+player sprite.
 
 ## Level goal position
 
 By default, each level has a standard treasure-type goal in the top
 right: a yellow line (the goal you need to step on), a red line (a
-sort of rope kind of thing), and a treasure.
+sort of rope kind of thing), and a treasure (not shown in the editor).
 
 If you'd like additional level goals, or a level goal in some other
 place, you'll need to disable this. Press `T` to do that. (The current
@@ -119,8 +130,6 @@ status area.)
 When scoring is inverted, points are added as you descend and
 subtracted as you ascend - as would make more sense if starting from
 the top of the screen with the goal at the bottom.
-
-
 
 ## Ghost start position
 
@@ -180,15 +189,15 @@ One of your jobs as level designer is to avoid these situations...
 - `A` - toggle test mode game type
 - `C` - change the level-specific colour
 - `G` - set one corner of the ghost start position area
-- `SHIFT+G` - set the other corner of the ghost start position area
-- `CTRL+G` - unset the ghost start position area
+- `SHIFT`+`G` - set the other corner of the ghost start position area
+- `CTRL`+`G` - unset the ghost start position area
 - `I` - toggle the invert score flag
 - `R` - redraw the level
 - `S` - set the player's test start position
-- `SHIFT+S` - set the player's start position
+- `SHIFT`+`S` - set the player's start position
 - `T` - toggle presence of standard treasure or not (see below)
-- ` SHIFT+3` (`#`) - cycle the number of ghosts
-- `SHIFT+TAB` - test the level, always using the level start position
+- `SHIFT`+`3` (`#`) - cycle the number of ghosts
+- `SHIFT`+`TAB` - test the level, always using the level start position
 - `ESCAPE` - return to main menu
 
 # Text editing

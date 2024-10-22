@@ -1,10 +1,13 @@
 # Ghouls: Revenge
 
 It's been 40 years since the deadly haunted mansion. What horrors has
-the ghost been cooking up? Now, revisit the mansion - and 12
-terrifying new 4-level situations.
+the ghost been cooking up? Now, revisit the mansion - and 14 exciting
+new 4-level situations. (But beware! Wherever your adventures take
+you, the ghost is never far behind!)
 
-Once the ghost is defeated, take on his mantle yourself, and construct
+
+
+Once the ghost is defeated, take on his mantle yourself, and devise
 fresh torments.
 
 # Running the game
@@ -69,16 +72,16 @@ Mostly as the ordinary game, with a few differences:
 
 Original game (much of which is retained): David J Hoskins
 
-Additional programming (level editor and some game code): Tom Seddon
-(https://www.stardot.org.uk/forums/memberlist.php?mode=viewprofile&u=454)
+Additional programming (level editor and some game code): [Tom
+Seddon](https://www.stardot.org.uk/forums/memberlist.php?mode=viewprofile&u=454)
 
 Level design:
 
-- Kieran Connell (https://www.stardot.org.uk/forums/memberlist.php?mode=viewprofile&u=10431)
-- Stew Badger (https://www.stardot.org.uk/forums/memberlist.php?mode=viewprofile&u=9784)
-- Dave Footitt (https://www.stardot.org.uk/forums/memberlist.php?mode=viewprofile&u=605)
-- VectorEyes (https://www.stardot.org.uk/forums/memberlist.php?mode=viewprofile&u=11399)
-- Tom Seddon
+- [Kieran Connell](https://www.stardot.org.uk/forums/memberlist.php?mode=viewprofile&u=10431)
+- [Stew Badger](https://www.stardot.org.uk/forums/memberlist.php?mode=viewprofile&u=9784)
+- [Dave Footitt](https://www.stardot.org.uk/forums/memberlist.php?mode=viewprofile&u=605)
+- [VectorEyes](https://www.stardot.org.uk/forums/memberlist.php?mode=viewprofile&u=11399)
+- [Tom Seddon](https://www.stardot.org.uk/forums/memberlist.php?mode=viewprofile&u=454)
 
-Title screen: Dethmunk (https://www.stardot.org.uk/forums/memberlist.php?mode=viewprofile&u=10689)
+Title screen: [Dethmunk(https://www.stardot.org.uk/forums/memberlist.php?mode=viewprofile&u=10689)
 

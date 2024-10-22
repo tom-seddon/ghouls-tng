@@ -83,7 +83,7 @@ always redrawing everything perfectly. Press `R` to redraw the level.)
 
 ## Object types
 
-![ground](./objects ground.png)
+![ground](./objects - ground.png)
 
 Ground. The different types are purely cosmetic and all behave the
 same way.

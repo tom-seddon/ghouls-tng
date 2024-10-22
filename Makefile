@@ -152,9 +152,9 @@ _disk_images:
 	$(_V)$(PYTHON) "$(BEEB_BIN)/ssd_create.py" -o "$(OUTPUT_DISK_IMAGE_STEM).ssd" $(_SSD_OPTIONS) $(_FILES)
 	$(_V)$(PYTHON) "$(BEEB_BIN)/ssd_create.py" -o "$(OUTPUT_DISK_IMAGE_STEM).40.ssd" $(_SSD_OPTIONS) --40 --must-exist $(_FILES)
 
-	$(_V)$(PYTHON) "$(BEEB_BIN)/adf_create.py" -o "$(OUTPUT_DISK_IMAGE_STEM).adl" --type l $(_ADF_OPTIONS) "$(BEEB_OUTPUT)/*"
-	$(_V)$(PYTHON) "$(BEEB_BIN)/adf_create.py" -o "$(OUTPUT_DISK_IMAGE_STEM).adm" --type m $(_ADF_OPTIONS) "$(BEEB_OUTPUT)/*"
-	$(_V)$(PYTHON) "$(BEEB_BIN)/adf_create.py" -o "$(OUTPUT_DISK_IMAGE_STEM).ads" --type s $(_ADF_OPTIONS) "$(BEEB_OUTPUT)/*"
+	$(_V)$(PYTHON) "$(BEEB_BIN)/adf_create.py" -o "$(OUTPUT_DISK_IMAGE_STEM).adl" --type l $(_ADF_OPTIONS) $(_FILES)
+	$(_V)$(PYTHON) "$(BEEB_BIN)/adf_create.py" -o "$(OUTPUT_DISK_IMAGE_STEM).adm" --type m $(_ADF_OPTIONS) $(_FILES)
+	$(_V)$(PYTHON) "$(BEEB_BIN)/adf_create.py" -o "$(OUTPUT_DISK_IMAGE_STEM).ads" --type s $(_ADF_OPTIONS) $(_FILES)
 
 ##########################################################################
 ##########################################################################

@@ -83,13 +83,10 @@ always redrawing everything perfectly. Press `R` to redraw the level.)
 
 ## Object types
 
-[./objects ground.png]
+![ground](./objects ground.png)
 
-Ground. The player can walk on this. The difference between the types
-is purely decorative.
-
-
-
+Ground. The different types are purely cosmetic and all behave the
+same way.
 
 ## Player start position
 

@@ -241,10 +241,11 @@ def main2(options):
     level('beeb/ghouls-tng/2/$.FACILIT','Tom','Trust No-one')
     level('beeb/ghouls-tng/2/$.GETOUT','Kieran','Extractive')
     level('beeb/ghouls-tng/2/$.MARS','Stew','Extraplanetary')
-    level('beeb/ghouls-tng/2/$.ADR5','VectorEyes','Unknown')
     level('beeb/ghouls-tng/2/$.CAVES','Kieran','Subterranean')
     level('beeb/ghouls-tng/2/$.BSIDES','Kieran','Remixed')
     level('beeb/ghouls-tng/2/$.MORE','Dave','More')
+    level('beeb/ghouls-tng/2/$.BOTNST','VectorEyes','Miniscule')
+    level('beeb/ghouls-tng/2/$.COLLECT','VectorEyes','Ineffable')
 
     # Custom levels
     instr=b''

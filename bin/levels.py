@@ -243,7 +243,7 @@ def main2(options):
     level('beeb/ghouls-tng/2/$.MARS','Stew','Extraplanetary')
     level('beeb/ghouls-tng/2/$.ADR5','VectorEyes','Unknown')
     level('beeb/ghouls-tng/2/$.CAVES','Kieran','Subterranean')
-    level('beeb/ghouls-tng/2/$.BSIDES','Kieran','???')
+    level('beeb/ghouls-tng/2/$.BSIDES','Kieran','Remixed')
     level('beeb/ghouls-tng/2/$.MORE','Dave','More')
 
     # Custom levels

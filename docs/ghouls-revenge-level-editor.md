@@ -25,9 +25,9 @@ From the level editor main menu, the following items are available:
   the ending screen. (See the text editing section below.) If not set,
   obvious placeholder text will be shown
   
-- `R` - set a level's data. The level will be emptied, leaving just a
-  row of blocks along the bottom and a few blocks underneath the
-  treasure in the top right
+- `R` - reset a level's data. The level will be emptied, leaving just
+  a row of blocks along the bottom and a few blocks underneath the
+  standard treasure in the top right
   
 - `L` - load levels. Enter file name. File names for the supplied
   level sets are given in the levels menu (if not obvious from
@@ -143,7 +143,7 @@ infinite lives mode.
 There are multiple speeds available. Speed 0 is unusually slow.
 
 Spiders can't be placed right at the left or right edges of the map,
-as they would overlap the level borer.
+as they would overlap the level border.
 
 ![moving platform](./objects.moving_platform.png)
 
@@ -152,7 +152,7 @@ Moving platform.
 There are multiple speeds available. Speed 0 is unusually slow.
 
 Moving platforms can't be placed right at the left or right edges of
-the map, as they would overlap the level borer.
+the map, as they would overlap the level border.
 
 ![moving floor](./objects.moving_floor.png)
 
@@ -181,25 +181,22 @@ can't walk through it.
 Press `SHIFT`+`S` to set the player's start position, indicated by the
 player sprite.
 
-## Level goal position
+## Level goal position/treasure
 
 By default, each level has a standard treasure-type goal in the top
 right: a yellow line (the goal you need to step on), a red line (a
 sort of rope kind of thing), and a treasure (not shown in the editor).
-When you reach the end of the level, the treasure turns into 2 ghosts
-and the player jumps from the end position off the top of the level.
 
-So if you'd like additional level goals, or you'd like a level goal in
+If you'd like additional level goals, or you'd like a level goal in
 some other place, you'll need to disable this. Press `T` to do that.
 (The current status is shown by the `ST` ("standard treasure")
 indicator in the status area.)
 
 If the standard treasure is off, you'll need to provide your own level
-goal somewhere. (Treasure is optional.) There's also no end of level
-animation.
+goal(s) somewhere. (Treasure is optional.) The end of level anim is
+unfortunately not available in this case.
 
-If you have standard treasure in the level, additional goals will not
-behave properly.
+You can't combine standard treasure with additional goals.
 
 ## Inverted scoring
 

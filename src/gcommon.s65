@@ -182,6 +182,8 @@ otype_flags_height2=$40         ;set if Nx2 rather than Nx1
 otype_flags_spring=$20          ;set if spring - can't position in top
                                 ;2 rows
 otype_flags_flip_x=$10          ;set to draw mirrored - 1x1 only
+otype_flags_width2_moving=$08   ;can't position in left or right
+                                ;column
 otype_flags_flip_y=$01          ;set to draw upside down - 1x1 only
 
 ;-------------------------------------------------------------------------

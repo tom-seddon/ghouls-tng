@@ -659,10 +659,10 @@ _..=[make_sta_otype(ltype_treasure2,sprite_goal_row1,otype_flags_width2)]
 otype_conveyor=len(_)           ;temp
 _..=[make_dyn_otype(ltype_conveyor,1,sprite_conveyor,update_conveyor)]
 otype_platform=len(_)           ;temp
-_..=[make_dyn_otype(ltype_platform,num_speeds,sprite_floating_platform,update_platform,otype_flags_width2)]
+_..=[make_dyn_otype(ltype_platform,num_speeds,sprite_floating_platform,update_platform,otype_flags_width2|otype_flags_width2_moving)]
 otype_spider=len(_)             ;temp
-_..=[make_dyn_otype(ltype_spider,num_speeds,sprite_spider_0_row0,update_spider,otype_flags_width2|otype_flags_height2)]
-_..=[make_dyn_otype(ltype_spider2,num_speeds,sprite_spider_0_row0,update_spider,otype_flags_width2|otype_flags_height2,ed_flags_masked)]
+_..=[make_dyn_otype(ltype_spider,num_speeds,sprite_spider_0_row0,update_spider,otype_flags_width2|otype_flags_height2|otype_flags_width2_moving)]
+_..=[make_dyn_otype(ltype_spider2,num_speeds,sprite_spider_0_row0,update_spider,otype_flags_width2|otype_flags_height2|otype_flags_width2_moving,ed_flags_masked)]
 otypes=_
                 .cerror len(otypes)>=128 ; must be BMI-friendly
 
@@ -5210,6 +5210,26 @@ add_object: .proc
 add:
                 ldx ed_new_otype
 
+                cpx #otype_conveyor
+                bne check_width2_moving
+
+                ; Can't place in left column. It makes a mess!
+                lda ed_cx
+                beq done        ; taken if X=0
+                
+check_width2_moving:
+                lda otypes_otype_flags,x
+                and #otype_flags_width2_moving
+                beq check_spring
+
+                ; Can't place a moving width2 object in left or right
+                ; column, as it'll overwrite the level borders.
+                lda ed_cx
+                beq done        ; taken if X=0
+                cmp #18
+                bcs done        ; taken if X>=18
+
+check_spring:
                 lda otypes_otype_flags,x
                 and #otype_flags_spring
                 beq add_ok      ; taken if not spring

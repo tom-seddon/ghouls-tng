@@ -142,11 +142,17 @@ infinite lives mode.
 
 There are multiple speeds available. Speed 0 is unusually slow.
 
+Spiders can't be placed right at the left or right edges of the map,
+as they would overlap the level borer.
+
 ![moving platform](./objects.moving_platform.png)
 
 Moving platform. 
 
 There are multiple speeds available. Speed 0 is unusually slow.
+
+Moving platforms can't be placed right at the left or right edges of
+the map, as they would overlap the level borer.
 
 ![moving floor](./objects.moving_floor.png)
 
@@ -154,6 +160,8 @@ Moving floor.
 
 There is only one speed available and it always extends from right to
 left.
+
+The moving floor can't be placed at the left edge of the map.
 
 ![goal](./objects.goal.png)
 
@@ -250,7 +258,7 @@ It's also possible for the player to end up in infinite loops of dying
 (press `ESCAPE` to exit testing if you get this) or to die in some
 slightly surprising way.
 
-One of your jobs as level designer is to avoid these situations...
+As level designer, you will have to attempt to avoid these situations!
 
 ## Edit mode key reference
 

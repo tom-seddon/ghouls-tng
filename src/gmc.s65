@@ -2381,6 +2381,10 @@ L1412:
                 lda object_var0s,x;spider_direction
                 and #1
                 jsr object_addr_up_or_down
+
+                ; emergency direction change at bottom of screen!
+                cmp #$80
+                bcs L1457
                 
                 lda object_addr
                 clc
@@ -2476,6 +2480,7 @@ object_addr_right:
 +
                 rts
 
+                ; Returns MSB of addr in A.
 object_addr_up_or_down:
                 cmp #0
                 beq object_addr_down

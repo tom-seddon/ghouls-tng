@@ -87,10 +87,86 @@ always redrawing everything perfectly. Press `R` to redraw the level.)
 
 ![ground](./objects.ground.png)
 
-Ground. The different types are purely cosmetic and all behave the
-same way.
+Ground, coloured according to the level-specific colour. The different
+types are purely cosmetic and all behave the same way.
 
+![spikes](./ojects.spikes.png)
 
+Deadly spikes. There are also 4 half-spike objects, also deadly, that
+you can use.
+
+![springs](./objects.springs.png)
+
+Springs. Both types behave the same way, but the half height one only
+uses up 1 row.
+
+![edibles](./objects.dots.png)
+
+Edibles. To be edible while moving these need to be positioned at
+player head height, i.e., with a 1 row gap between ground and edible.
+
+There are also 2 individual edibles, should you need them.
+
+![power pill](./objects.pill.png)
+
+Power pill. As with the edibles, this must be positioned at head
+height to be edible while moving.
+
+![red block](./objects.red_block.png)
+
+A general-purpose deadly red square, filling an entire cell.
+
+![decorative player](./objects.player.png)
+
+A purely decorative player. (To set the player's start position, see
+the Player start position section below.)
+
+The decorative players are indistinguishable from the player start
+position in the editor and you just have to remember which is which.
+
+![treasure](./objects.treasure.png)
+
+Decorative treasure. (The decorative treasure is purely decorative,
+and plays no specific part in the level end position. See the Level
+goal position section below.)
+
+The bottom half treasure appears as the full size treasure in game,
+but as it's a shorter object you can position it in the top row of the
+screen.
+
+![spiders](./objects.spiders.png)
+
+Spiders. The masked/dimmed spider only appears when playing with 2+
+ghosts, i.e., 2nd or subsequent time through the levels in classic or
+infinite lives mode.
+
+There are multiple speeds available. Speed 0 is unusually slow.
+
+![moving platform](./objects.moving_platform.png)
+
+Moving platform. 
+
+There are multiple speeds available. Speed 0 is unusually slow.
+
+![moving floor](./objects.moving_floor.png)
+
+Moving floor.
+
+There is only one speed available and it always extends from right to
+left.
+
+![goal](./objects.goal.png)
+
+Goal. If the player steps on this, the level ends. See the Level goal
+position section.
+
+![red line](./objects.red_line.png)
+
+A general purpose vertical red line. There are two, one aligned with
+the left edge of the cell and one with the right. This is used as the rope for the default level goal.
+
+It behaves like the barrier at the edge of the level, and the player
+can't walk through it.
 
 ## Player start position
 
@@ -110,14 +186,6 @@ status area.)
 
 If the standard treasure is off, you'll need to provide your own level
 goal (the object that looks like a yellow horizontal line).
-
-If you want additional treasure objects in the level, there are two
-treasure objects provided: one that looks like the ordinary treasure,
-and one that looks like its bottom half. The bottom half treasure
-appears as a full size treasure in game, but is provided so you can
-put a treasure in the top row of the map. (I simply didn't consider
-this possibility when deciding on the top left object positioning
-rule!)
 
 ## Inverted scoring
 

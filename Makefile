@@ -71,8 +71,8 @@ endif
 build: _output_folders
 
 ifneq ($(OS),Windows_NT)
-	$(_V)cd submodules/basictool/src && make all
-	$(_V)cd submodules/zx02 && make all
+	$(_V)cd submodules/basictool/src && $(MAKE) all
+	$(_V)cd submodules/zx02 && $(MAKE) all
 endif
 
 # Convert title screen
@@ -197,6 +197,10 @@ clean:
 	$(_V)$(SHELLCMD) rm-file -f "$(OUTPUT_DISK_IMAGE_STEM).ads"
 	$(_V)$(SHELLCMD) rm-file -f "$(OUTPUT_DISK_IMAGE_STEM).adm"
 	$(_V)$(SHELLCMD) rm-file -f "$(OUTPUT_DISK_IMAGE_STEM).adl"
+ifneq ($(OS),Windows_NT)
+	$(_V)cd submodules/basictool/src && $(MAKE) clean
+	$(_V)cd submodules/zx02 && $(MAKE) clean
+endif
 
 ##########################################################################
 ##########################################################################

@@ -247,7 +247,7 @@ Additional dependencies are provided as EXEs in the repo.
 ### POSIX-type
 
 - Git
-- GNU Make (`make`)
+- GNU Make (version 4 or later)
 - Python 3.x (`/usr/bin/python3`)
 - [64tass](https://sourceforge.net/projects/tass64/) (`64tass`) -
   version 2974 works
@@ -293,6 +293,14 @@ The game files can also be found in .inf format in
 [BeebLink](https://github.com/tom-seddon/beeblink/), configure it so
 it can find this folder - the output will be available in drive Y of
 the ghouls-tng volume.
+
+## macOS notes
+
+- You may need to install GNU Make from MacPorts or similar. Xcode
+  comes with GNU Make 3.81, which is too old.
+
+- If using MacPorts GNU Make, if you get errors from the C compiler
+  about `-Wall` not being recognised, run it with `gmake CC=cc`.
 
 ----
 

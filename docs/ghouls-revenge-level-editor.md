@@ -90,7 +90,7 @@ always redrawing everything perfectly. Press `R` to redraw the level.)
 Ground, coloured according to the level-specific colour. The different
 types are purely cosmetic and all behave the same way.
 
-![spikes](./ojects.spikes.png)
+![spikes](./objects.spikes.png)
 
 Deadly spikes. There are also 4 half-spike objects, also deadly, that
 you can use.
@@ -178,14 +178,20 @@ player sprite.
 By default, each level has a standard treasure-type goal in the top
 right: a yellow line (the goal you need to step on), a red line (a
 sort of rope kind of thing), and a treasure (not shown in the editor).
+When you reach the end of the level, the treasure turns into 2 ghosts
+and the player jumps from the end position off the top of the level.
 
-If you'd like additional level goals, or a level goal in some other
-place, you'll need to disable this. Press `T` to do that. (The current
-status is shown by the `ST` ("standard treasure") indicator in the
-status area.)
+So if you'd like additional level goals, or you'd like a level goal in
+some other place, you'll need to disable this. Press `T` to do that.
+(The current status is shown by the `ST` ("standard treasure")
+indicator in the status area.)
 
 If the standard treasure is off, you'll need to provide your own level
-goal (the object that looks like a yellow horizontal line).
+goal somewhere. (Treasure is optional.) There's also no end of level
+animation.
+
+If you have standard treasure in the level, additional goals will not
+behave properly.
 
 ## Inverted scoring
 
@@ -217,12 +223,12 @@ back to starting from some random position.
 
 Press `A` to toggle the test mode: time attack or score mode. (The
 difference between Classic and Infinite Lives is largely moot in the
-editor.) The current setting is shown in the `TA` (~time attack~)
+editor.) The current setting is shown in the `TA` ("time attack")
 indicator in the status area: `Y` for time attack, `N` for score mode.
 
 Press `SHIFT`+`3` (i.e., `#`) to cycle through the test mode ghost
-count options. The current setting is shown in the `G#` indicator in
-the status area.
+count options. The current setting is shown in the `G#` ("ghost
+count") indicator in the status area.
 
 Press `S` to set the test start position, shown in red. When you test
 the level using `TAB`, the player will start from the test start
@@ -234,12 +240,11 @@ altering the normal start position.
 To test the level always starting from the normal start position,
 press `SHIFT`+`TAB`.
 
-## Glitches and oddities
+## Found a glitch? Seen something odd?
 
 The Ghouls code does not cater for every situation possible, and (as
 you will probably discover when testing) you can engineer some
-surprising stuff without even having to try too hard. Try putting a
-spider in the rightmost column, for example!
+surprising stuff without even having to try too hard.
 
 It's also possible for the player to end up in infinite loops of dying
 (press `ESCAPE` to exit testing if you get this) or to die in some

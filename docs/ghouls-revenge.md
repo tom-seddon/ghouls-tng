@@ -2,13 +2,13 @@
 
 It's been 40 years since the deadly haunted mansion. What horrors has
 the ghost been cooking up? Now, revisit the mansion - and 14 exciting
-new 4-level situations. (But beware! Wherever your adventures take
-you, the ghost is never far behind!)
+new 4-level situations.
 
+But beware! Wherever your adventures take you, the ghost is never far
+behind! And... don't expect it to be easy.
 
-
-Once the ghost is defeated, take on his mantle yourself, and devise
-fresh torments.
+Once the ghost is defeated, or if you admit defeat yourself, use the
+level editor to devise fresh torments.
 
 # Running the game
 
@@ -51,9 +51,11 @@ Select the game mode on startup:
 There are in-game instructions giving a brief overview of how to play,
 and the keys to use.
 
+The game objects list may not be _quite_ complete...
+
 # Level editor
 
-The level editor has its own page: 
+The level editor has its own page: [level editor instructions](./ghouls-revenge-level-editor.md)
 
 # Debug game
 
@@ -75,7 +77,7 @@ Original game (much of which is retained): David J Hoskins
 Additional programming (level editor and some game code): [Tom
 Seddon](https://www.stardot.org.uk/forums/memberlist.php?mode=viewprofile&u=454)
 
-Level design:
+Level design and testing:
 
 - [Kieran Connell](https://www.stardot.org.uk/forums/memberlist.php?mode=viewprofile&u=10431)
 - [Stew Badger](https://www.stardot.org.uk/forums/memberlist.php?mode=viewprofile&u=9784)
@@ -83,5 +85,5 @@ Level design:
 - [VectorEyes](https://www.stardot.org.uk/forums/memberlist.php?mode=viewprofile&u=11399)
 - [Tom Seddon](https://www.stardot.org.uk/forums/memberlist.php?mode=viewprofile&u=454)
 
-Title screen: [Dethmunk(https://www.stardot.org.uk/forums/memberlist.php?mode=viewprofile&u=10689)
+Title screen: [Dethmunk](https://www.stardot.org.uk/forums/memberlist.php?mode=viewprofile&u=10689)
 
